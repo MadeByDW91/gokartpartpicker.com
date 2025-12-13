@@ -1,0 +1,271 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Engine {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  baseHpMin   Float
+  baseHpMax   Float
+  stockRpm    Int
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  compatibleParts PartCompatibility[]
+  guides          GuideEngine[]
+  todoTemplates   TodoTemplate[]
+
+  @@index([slug])
+}
+
+model Part {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  category    String   // intake, exhaust, springs, cam, flywheel, rod, governor_delete, oil_sensor_delete, torque_converter, tool
+  hpGainMin    Float    @default(0)
+  hpGainMax    Float    @default(0)
+  rpmLimitDelta Int     @default(0) // Change to safe RPM limit
+  imageUrl     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  compatibleEngines PartCompatibility[]
+  vendorOffers      VendorOffer[]
+  guideParts        GuidePart[]
+  todoTemplates     TodoTemplatePart[]
+
+  @@index([slug])
+  @@index([category])
+}
+
+model PartCompatibility {
+  id       String @id @default(cuid())
+  partId   String
+  engineId String
+
+  // Relations
+  part   Part   @relation(fields: [partId], references: [id], onDelete: Cascade)
+  engine Engine @relation(fields: [engineId], references: [id], onDelete: Cascade)
+
+  @@unique([partId, engineId])
+  @@index([partId])
+  @@index([engineId])
+}
+
+model Vendor {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  priority    Int      @default(999) // Lower = higher priority (0 = Amazon)
+  websiteUrl  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  offers VendorOffer[]
+
+  @@index([priority])
+}
+
+model VendorOffer {
+  id           String   @id @default(cuid())
+  partId       String
+  vendorId     String
+  priceUsd     Float
+  shippingUsd  Float    @default(0)
+  affiliateUrl String?  @db.Text
+  inStock      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  part   Part   @relation(fields: [partId], references: [id], onDelete: Cascade)
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([partId])
+  @@index([vendorId])
+}
+
+model Guide {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String?  @db.Text
+  difficulty  String?  // beginner, intermediate, advanced
+  estimatedTimeMinutes Int?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  steps      GuideStep[]
+  engines    GuideEngine[]
+  parts      GuidePart[]
+
+  @@index([slug])
+}
+
+model GuideStep {
+  id          String   @id @default(cuid())
+  guideId     String
+  stepNumber  Int
+  title       String
+  content     String   @db.Text
+  imageUrl    String?
+  warning     String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  guide Guide @relation(fields: [guideId], references: [id], onDelete: Cascade)
+
+  @@unique([guideId, stepNumber])
+  @@index([guideId])
+}
+
+model GuideEngine {
+  id       String @id @default(cuid())
+  guideId String
+  engineId String
+
+  // Relations
+  guide Guide @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  engine Engine @relation(fields: [engineId], references: [id], onDelete: Cascade)
+
+  @@unique([guideId, engineId])
+  @@index([guideId])
+  @@index([engineId])
+}
+
+model GuidePart {
+  id       String @id @default(cuid())
+  guideId String
+  partId  String
+
+  // Relations
+  guide Guide @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  part  Part  @relation(fields: [partId], references: [id], onDelete: Cascade)
+
+  @@unique([guideId, partId])
+  @@index([guideId])
+  @@index([partId])
+}
+
+model TodoTemplate {
+  id          String   @id @default(cuid())
+  title       String
+  description String?  @db.Text
+  engineId    String?  // Optional: can be general or engine-specific
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  engine Engine?  @relation(fields: [engineId], references: [id], onDelete: SetNull)
+  steps  TodoTemplateStep[]
+  parts  TodoTemplatePart[]
+
+  @@index([engineId])
+}
+
+model TodoTemplateStep {
+  id             String   @id @default(cuid())
+  todoTemplateId String
+  stepNumber     Int
+  title          String
+  content        String   @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  todoTemplate TodoTemplate @relation(fields: [todoTemplateId], references: [id], onDelete: Cascade)
+
+  @@unique([todoTemplateId, stepNumber])
+  @@index([todoTemplateId])
+}
+
+model TodoTemplatePart {
+  id             String @id @default(cuid())
+  todoTemplateId String
+  partId         String
+
+  // Relations
+  todoTemplate TodoTemplate @relation(fields: [todoTemplateId], references: [id], onDelete: Cascade)
+  part         Part         @relation(fields: [partId], references: [id], onDelete: Cascade)
+
+  @@unique([todoTemplateId, partId])
+  @@index([todoTemplateId])
+  @@index([partId])
+}
+
+// StoreProduct model (for future Stripe integration)
+model StoreProduct {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  priceUsd    Float
+  sku         String?  @unique
+  inStock     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sku])
+}
+
+// Build models (for future persistence - not used in MVP)
+model Build {
+  id        String   @id @default(cuid())
+  engineId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  parts BuildPart[]
+  todos BuildTodoItem[]
+}
+
+model BuildPart {
+  id           String   @id @default(cuid())
+  buildId      String
+  partId       String
+  vendorOfferId String?
+  quantity     Int      @default(1)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  build       Build        @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  part        Part         @relation(fields: [partId], references: [id], onDelete: Cascade)
+  vendorOffer VendorOffer? @relation(fields: [vendorOfferId], references: [id], onDelete: SetNull)
+
+  @@index([buildId])
+  @@index([partId])
+}
+
+model BuildTodoItem {
+  id        String   @id @default(cuid())
+  buildId   String
+  title     String
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  build Build @relation(fields: [buildId], references: [id], onDelete: Cascade)
+
+  @@index([buildId])
+}
+
