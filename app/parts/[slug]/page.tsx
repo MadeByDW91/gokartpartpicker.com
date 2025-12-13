@@ -2,6 +2,8 @@ import Link from 'next/link'
 import AddToBuildButton from '@/components/AddToBuildButton'
 import { prisma } from '@/lib/prisma'
 import { sortVendorOffers } from '@/lib/vendorSort'
+import { getContextualVideos } from '@/lib/videoUtils'
+import VideoCarousel from '@/components/VideoCarousel'
 
 async function getPart(slug: string) {
   const part = await prisma.part.findUnique({
@@ -36,6 +38,13 @@ async function getPart(slug: string) {
 export default async function PartDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const part = await getPart(slug)
+  
+  // Fetch context-aware videos for this part
+  const videos = await getContextualVideos({
+    partId: part.id,
+    partSlug: part.slug,
+    limit: 8,
+  })
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -96,6 +105,13 @@ export default async function PartDetailPage({ params }: { params: Promise<{ slu
           </div>
         )}
       </div>
+
+      {/* Useful Videos Section */}
+      {videos.length > 0 && (
+        <div className="mt-8">
+          <VideoCarousel videos={videos} title="Useful Videos" compact={true} />
+        </div>
+      )}
     </div>
   )
 }

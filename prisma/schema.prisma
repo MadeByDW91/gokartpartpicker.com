@@ -11,21 +11,34 @@ datasource db {
 }
 
 model Engine {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  description String?  @db.Text
-  baseHpMin   Float
-  baseHpMax   Float
-  stockRpm    Int
-  imageUrl    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  description     String?  @db.Text
+  manufacturer    String?
+  displacementCc  Int?
+  boreMm          Float?
+  strokeMm        Float?
+  compressionRatio Float?
+  baseHpMin       Float
+  baseHpMax       Float
+  stockHp         Float?   // Single stock HP value
+  stockRpm        Int
+  stockRpmLimit   Int?     // Explicit RPM limit
+  stockTimingDegBtdc Float? // Stock timing in degrees BTDC (Before Top Dead Center)
+  oilCapacityOz   Int?
+  oilType         String?
+  imageUrl        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
   compatibleParts PartCompatibility[]
   guides          GuideEngine[]
   todoTemplates   TodoTemplate[]
+  schematics      EngineSchematic[]
+  torqueSpecs     TorqueSpec[]
+  upgrades        EngineUpgrade[]
 
   @@index([slug])
 }
@@ -213,18 +226,139 @@ model TodoTemplatePart {
   @@index([partId])
 }
 
-// StoreProduct model (for future Stripe integration)
-model StoreProduct {
+// Storefront Models
+
+enum ProductType {
+  DIGITAL
+  PHYSICAL
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FULFILLED
+  CANCELED
+  REFUNDED
+}
+
+model Product {
+  id               String      @id @default(cuid())
+  slug             String      @unique
+  name             String
+  description      String?     @db.Text
+  type             ProductType
+  priceCents       Int
+  currency         String      @default("USD")
+  images           Json?       // Array of image URLs
+  isActive         Boolean     @default(true)
+  digitalAssetPath String?     // Local path or storage key for digital products
+  weightOz         Int?        // Optional for shipping calculation
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  // Relations
+  orderItems           OrderItem[]
+  digitalDownloadTokens DigitalDownloadToken[]
+
+  @@index([slug])
+  @@index([type])
+  @@index([isActive])
+}
+
+model Order {
+  id                      String   @id @default(cuid())
+  userId                  String?  // Nullable for guest checkout
+  email                   String   // Required for guest orders
+  status                  OrderStatus @default(PENDING)
+  totalCents              Int
+  currency                String   @default("USD")
+  stripeCheckoutSessionId String?   @unique
+  stripePaymentIntentId   String?
+  shippingName            String?
+  shippingAddress         Json?     // Full address object
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  // Relations
+  user  User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items OrderItem[]
+  digitalDownloads DigitalDownloadToken[]
+
+  @@index([userId])
+  @@index([email])
+  @@index([status])
+  @@index([stripeCheckoutSessionId])
+}
+
+model OrderItem {
+  id                  String   @id @default(cuid())
+  orderId             String
+  productId           String
+  nameSnapshot        String   // Store product name at time of purchase
+  typeSnapshot        ProductType
+  unitPriceCentsSnapshot Int    // Store price at time of purchase
+  quantity            Int      @default(1)
+  createdAt           DateTime @default(now())
+
+  // Relations
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model DigitalDownloadToken {
+  id           String   @id @default(cuid())
+  orderId      String
+  productId    String
+  token        String   @unique
+  expiresAt    DateTime
+  maxDownloads Int      @default(5)
+  downloadCount Int     @default(0)
+  createdAt    DateTime @default(now())
+
+  // Relations
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([orderId])
+  @@index([productId])
+  @@index([expiresAt])
+}
+
+// User model for authentication
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String?  // Only if using credentials provider
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  builds SavedBuild[]
+  orders Order[]
+
+  @@index([email])
+}
+
+// Saved Build model (for authenticated users)
+model SavedBuild {
   id          String   @id @default(cuid())
-  name        String
+  userId      String
+  name        String   @db.VarChar(60)
   description String?  @db.Text
-  priceUsd    Float
-  sku         String?  @unique
-  inStock     Boolean  @default(true)
+  data        Json     // Full build configuration (engine, parts, etc.)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@index([sku])
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, updatedAt])
 }
 
 // Build models (for future persistence - not used in MVP)
@@ -269,5 +403,150 @@ model BuildTodoItem {
   build Build @relation(fields: [buildId], references: [id], onDelete: Cascade)
 
   @@index([buildId])
+}
+
+// Engine Pages v1 Models
+
+model EngineSchematic {
+  id        String   @id @default(cuid())
+  engineId  String
+  title     String
+  imageUrl  String
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  engine Engine @relation(fields: [engineId], references: [id], onDelete: Cascade)
+
+  @@index([engineId])
+}
+
+model TorqueSpec {
+  id        String   @id @default(cuid())
+  engineId  String
+  fastener  String
+  spec      String
+  unit      String?  // e.g., "ft-lb", "Nm"
+  notes     String?  @db.Text
+  category  String?  // e.g., "Top end", "Bottom end"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  engine Engine @relation(fields: [engineId], references: [id], onDelete: Cascade)
+
+  @@index([engineId])
+  @@index([engineId, category])
+}
+
+enum RiskLevel {
+  LOW
+  MED
+  HIGH
+}
+
+model Upgrade {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  category    String   // intake, exhaust, valvetrain, ignition, bottom-end, etc.
+  description String?  @db.Text
+  hpGainMin   Float?
+  hpGainMax   Float?
+  rpmDelta    Int?     // Change to RPM limit
+  riskLevel   RiskLevel @default(LOW)
+  requires    Json?    // Array of upgrade slugs required
+  conflicts   Json?    // Array of upgrade slugs that conflict
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  engines EngineUpgrade[]
+  tools   UpgradeTool[]
+
+  @@index([slug])
+  @@index([category])
+}
+
+model EngineUpgrade {
+  id        String   @id @default(cuid())
+  engineId  String
+  upgradeId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  engine  Engine  @relation(fields: [engineId], references: [id], onDelete: Cascade)
+  upgrade Upgrade @relation(fields: [upgradeId], references: [id], onDelete: Cascade)
+
+  @@unique([engineId, upgradeId])
+  @@index([engineId])
+  @@index([upgradeId])
+}
+
+model Tool {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?  @db.Text
+  affiliateUrl String  @db.Text
+  vendor      String?  // e.g., "Amazon", "Harbor Freight"
+  priceHint   String?  // e.g., "$15-25"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  upgrades UpgradeTool[]
+
+  @@index([slug])
+}
+
+model UpgradeTool {
+  id          String   @id @default(cuid())
+  upgradeId   String
+  toolId      String
+  isRequired  Boolean  @default(false)
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  upgrade Upgrade @relation(fields: [upgradeId], references: [id], onDelete: Cascade)
+  tool    Tool    @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  @@unique([upgradeId, toolId])
+  @@index([upgradeId])
+  @@index([toolId])
+}
+
+// Video model for "Useful Videos" section
+enum VideoCategory {
+  INSTALL
+  TEARDOWN
+  TUNING
+  SAFETY
+}
+
+model Video {
+  id            String         @id @default(cuid())
+  youtubeId     String         @unique
+  title         String
+  channelName   String
+  durationSeconds Int
+  thumbnailUrl  String
+  category      VideoCategory
+  tags          Json?          // Array of tag strings
+  engineIds     Json?          // Array of engine IDs
+  upgradeIds    Json?          // Array of upgrade IDs (Upgrade slugs)
+  partIds       Json?          // Array of part IDs (Part slugs)
+  guideIds      Json?          // Array of guide IDs (Guide slugs)
+  timestamps    Json?          // Array of {time: number, label: string} objects
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([category])
+  @@index([youtubeId])
 }
 

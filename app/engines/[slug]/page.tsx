@@ -1,51 +1,78 @@
 import Link from 'next/link'
-import AddToBuildButton from '@/components/AddToBuildButton'
+import { Suspense } from 'react'
 import { prisma } from '@/lib/prisma'
+import EnginePageClient from '@/components/EnginePageClient'
+import { getContextualVideos } from '@/lib/videoUtils'
 
 async function getEngine(slug: string) {
-  const engine = await prisma.engine.findUnique({
-    where: { slug },
-    include: {
-      compatibleParts: {
-        include: {
-          part: true,
+  try {
+    const engine = await prisma.engine.findUnique({
+      where: { slug },
+      include: {
+        schematics: {
+          orderBy: { createdAt: 'asc' },
+        },
+        torqueSpecs: {
+          orderBy: [
+            { category: 'asc' },
+            { fastener: 'asc' },
+          ],
+        },
+        upgrades: {
+          include: {
+            upgrade: {
+              include: {
+                tools: {
+                  include: {
+                    tool: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        compatibleParts: {
+          include: {
+            part: true,
+          },
         },
       },
-    },
-  })
+    })
 
-  if (!engine) {
-    throw new Error('Engine not found')
+    if (!engine) {
+      throw new Error('Engine not found')
+    }
+
+    return engine as any // Type will be correct after Prisma client regeneration
+  } catch (error) {
+    console.error('Error fetching engine:', error)
+    throw error
   }
-
-  return engine
 }
 
 export default async function EngineDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const engine = await getEngine(slug)
+  
+  // Fetch context-aware videos for this engine
+  const videos = await getContextualVideos({
+    engineId: engine.id,
+    engineSlug: engine.slug,
+    limit: 12,
+  })
 
   return (
     <div className="container mx-auto px-4 py-8">
       <Link href="/engines" className="text-garage-orange hover:underline mb-4 inline-block">
         ← Back to Engines
       </Link>
-      <div className="bg-white rounded-lg border border-gray-200 p-8">
-        <h1 className="text-4xl font-heading font-bold text-garage-dark mb-4">{engine.name}</h1>
-        <p className="text-lg text-garage-gray mb-6">{engine.description}</p>
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <div>
-            <p className="text-sm text-garage-gray mb-1">Base HP Range</p>
-            <p className="text-2xl font-semibold">{engine.baseHpMin}-{engine.baseHpMax} HP</p>
-          </div>
-          <div>
-            <p className="text-sm text-garage-gray mb-1">Stock RPM Limit</p>
-            <p className="text-2xl font-semibold">{engine.stockRpm} RPM</p>
-          </div>
+      <Suspense fallback={
+        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+          <p className="text-garage-gray">Loading...</p>
         </div>
-        <AddToBuildButton type="engine" item={engine} />
-      </div>
+      }>
+        <EnginePageClient engine={engine} videos={videos} />
+      </Suspense>
     </div>
   )
 }
-

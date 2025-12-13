@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, Prisma } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
@@ -21,7 +21,11 @@ async function main() {
   await prisma.partCompatibility.deleteMany()
   await prisma.part.deleteMany()
   await prisma.engine.deleteMany()
-  await prisma.storeProduct.deleteMany()
+  await prisma.digitalDownloadToken.deleteMany()
+  await prisma.orderItem.deleteMany()
+  await prisma.order.deleteMany()
+  await prisma.product.deleteMany()
+  await prisma.video.deleteMany()
 
   // Create Vendors
   const amazon = await prisma.vendor.create({
@@ -42,15 +46,25 @@ async function main() {
 
   console.log('✅ Created vendors')
 
-  // Create Engines
+  // Create Engines with full specs
   const predator212Hemi = await prisma.engine.create({
     data: {
       name: 'Predator 212 Hemi',
       slug: 'predator-212-hemi',
       description: 'The Predator 212 Hemi is a popular 6.5 HP engine with a hemi-style combustion chamber for better performance.',
+      manufacturer: 'Harbor Freight',
+      displacementCc: 212,
+      boreMm: 70.0,
+      strokeMm: 55.0,
+      compressionRatio: 8.5,
       baseHpMin: 6.5,
       baseHpMax: 6.5,
+      stockHp: 6.5,
       stockRpm: 3600,
+      stockRpmLimit: 3600,
+      stockTimingDegBtdc: 22.0,
+      oilCapacityOz: 20,
+      oilType: 'SAE 10W-30',
       imageUrl: null,
     },
   })
@@ -60,9 +74,19 @@ async function main() {
       name: 'Predator 212 Non-Hemi',
       slug: 'predator-212-non-hemi',
       description: 'The Predator 212 Non-Hemi is the standard 6.5 HP engine variant.',
+      manufacturer: 'Harbor Freight',
+      displacementCc: 212,
+      boreMm: 70.0,
+      strokeMm: 55.0,
+      compressionRatio: 8.5,
       baseHpMin: 6.5,
       baseHpMax: 6.5,
+      stockHp: 6.5,
       stockRpm: 3600,
+      stockRpmLimit: 3600,
+      stockTimingDegBtdc: 22.0,
+      oilCapacityOz: 20,
+      oilType: 'SAE 10W-30',
       imageUrl: null,
     },
   })
@@ -72,9 +96,19 @@ async function main() {
       name: 'Predator 212 Ghost',
       slug: 'predator-212-ghost',
       description: 'The Predator 212 Ghost is a high-performance variant with increased RPM capability.',
+      manufacturer: 'Harbor Freight',
+      displacementCc: 212,
+      boreMm: 70.0,
+      strokeMm: 55.0,
+      compressionRatio: 8.5,
       baseHpMin: 6.5,
       baseHpMax: 7.0,
+      stockHp: 6.75,
       stockRpm: 4000,
+      stockRpmLimit: 4000,
+      stockTimingDegBtdc: 23.0,
+      oilCapacityOz: 20,
+      oilType: 'SAE 10W-30',
       imageUrl: null,
     },
   })
@@ -224,6 +258,34 @@ async function main() {
       hpGainMax: 0,
       rpmLimitDelta: 0,
     },
+    // Timing Keys
+    {
+      name: '2° Advanced Timing Key',
+      slug: 'timing-key-2deg',
+      description: 'Mild timing advance for improved performance. Safe for most builds up to 5000 RPM.',
+      category: 'ignition',
+      hpGainMin: 0.3,
+      hpGainMax: 0.8,
+      rpmLimitDelta: 0,
+    },
+    {
+      name: '4° Advanced Timing Key',
+      description: 'Moderate timing advance for performance builds. Requires billet flywheel for safety.',
+      slug: 'timing-key-4deg',
+      category: 'ignition',
+      hpGainMin: 0.5,
+      hpGainMax: 1.2,
+      rpmLimitDelta: 0,
+    },
+    {
+      name: '6° Advanced Timing Key',
+      description: 'Aggressive timing advance for race builds. Requires billet flywheel and billet rod for safety.',
+      slug: 'timing-key-6deg',
+      category: 'ignition',
+      hpGainMin: 0.8,
+      hpGainMax: 1.5,
+      rpmLimitDelta: 0,
+    },
   ]
 
   const createdParts = await Promise.all(
@@ -301,6 +363,16 @@ async function main() {
     // Torque Converter
     { part: createdParts[12], vendor: amazon, price: 149.99, shipping: 0, affiliateUrl: 'https://amazon.com/dp/TORQCONV' },
     { part: createdParts[12], vendor: gopowersports, price: 139.99, shipping: 12.99, affiliateUrl: 'https://gopowersports.com/torque-converter' },
+    
+    // Timing Keys
+    { part: createdParts[13], vendor: amazon, price: 8.99, shipping: 0, affiliateUrl: 'https://amazon.com/dp/TIMING2DEG' },
+    { part: createdParts[13], vendor: gopowersports, price: 7.99, shipping: 4.99, affiliateUrl: 'https://gopowersports.com/timing-key-2deg' },
+    
+    { part: createdParts[14], vendor: amazon, price: 9.99, shipping: 0, affiliateUrl: 'https://amazon.com/dp/TIMING4DEG' },
+    { part: createdParts[14], vendor: gopowersports, price: 8.99, shipping: 4.99, affiliateUrl: 'https://gopowersports.com/timing-key-4deg' },
+    
+    { part: createdParts[15], vendor: amazon, price: 10.99, shipping: 0, affiliateUrl: 'https://amazon.com/dp/TIMING6DEG' },
+    { part: createdParts[15], vendor: gopowersports, price: 9.99, shipping: 4.99, affiliateUrl: 'https://gopowersports.com/timing-key-6deg' },
   ]
 
   await Promise.all(
@@ -682,6 +754,563 @@ async function main() {
   })
 
   console.log('✅ Created todo templates')
+
+  // ===== Engine Pages v1 Data =====
+
+  // Clear new models (if they exist)
+  await prisma.upgradeTool.deleteMany().catch(() => {})
+  await prisma.tool.deleteMany().catch(() => {})
+  await prisma.engineUpgrade.deleteMany().catch(() => {})
+  await prisma.upgrade.deleteMany().catch(() => {})
+  await prisma.torqueSpec.deleteMany().catch(() => {})
+  await prisma.engineSchematic.deleteMany().catch(() => {})
+
+  // Create Torque Specs (same specs apply to all Predator 212 variants)
+  const torqueSpecs212 = [
+    { fastener: 'Head Bolts', spec: '17', unit: 'ft-lb', category: 'Top end', notes: 'Tighten in sequence' },
+    { fastener: 'Rocker Arm Bolts', spec: '7', unit: 'ft-lb', category: 'Top end' },
+    { fastener: 'Valve Cover Bolts', spec: '5', unit: 'ft-lb', category: 'Top end' },
+    { fastener: 'Connecting Rod Bolts', spec: '12', unit: 'ft-lb', category: 'Bottom end', notes: 'Use new bolts' },
+    { fastener: 'Flywheel Nut', spec: '50', unit: 'ft-lb', category: 'Bottom end', notes: 'Use thread locker' },
+    { fastener: 'Crankcase Bolts', spec: '8', unit: 'ft-lb', category: 'Bottom end' },
+    { fastener: 'Side Cover Bolts', spec: '6', unit: 'ft-lb', category: 'Bottom end' },
+    { fastener: 'Oil Drain Plug', spec: '10', unit: 'ft-lb', category: 'Bottom end' },
+  ]
+
+  // Add torque specs to all Predator 212 variants
+  const predator212EnginesForTorque = [predator212Hemi.id, predator212NonHemi.id, predator212Ghost.id]
+  for (const engineId of predator212EnginesForTorque) {
+    for (const spec of torqueSpecs212) {
+      await prisma.torqueSpec.create({
+        data: {
+          engineId,
+          ...spec,
+        },
+      })
+    }
+  }
+
+  // Add torque specs for Predator 420
+  const torqueSpecs420 = [
+    { fastener: 'Head Bolts', spec: '22', unit: 'ft-lb', category: 'Top end', notes: 'Tighten in sequence' },
+    { fastener: 'Rocker Arm Bolts', spec: '8', unit: 'ft-lb', category: 'Top end' },
+    { fastener: 'Valve Cover Bolts', spec: '6', unit: 'ft-lb', category: 'Top end' },
+    { fastener: 'Connecting Rod Bolts', spec: '15', unit: 'ft-lb', category: 'Bottom end', notes: 'Use new bolts' },
+    { fastener: 'Flywheel Nut', spec: '55', unit: 'ft-lb', category: 'Bottom end', notes: 'Use thread locker' },
+    { fastener: 'Crankcase Bolts', spec: '10', unit: 'ft-lb', category: 'Bottom end' },
+    { fastener: 'Side Cover Bolts', spec: '7', unit: 'ft-lb', category: 'Bottom end' },
+    { fastener: 'Oil Drain Plug', spec: '12', unit: 'ft-lb', category: 'Bottom end' },
+  ]
+
+  for (const spec of torqueSpecs420) {
+    await prisma.torqueSpec.create({
+      data: {
+        engineId: predator420.id,
+        ...spec,
+      },
+    })
+  }
+
+  // Add torque specs for Predator 670
+  const torqueSpecs670 = [
+    { fastener: 'Head Bolts', spec: '25', unit: 'ft-lb', category: 'Top end', notes: 'Tighten in sequence' },
+    { fastener: 'Rocker Arm Bolts', spec: '10', unit: 'ft-lb', category: 'Top end' },
+    { fastener: 'Valve Cover Bolts', spec: '7', unit: 'ft-lb', category: 'Top end' },
+    { fastener: 'Connecting Rod Bolts', spec: '18', unit: 'ft-lb', category: 'Bottom end', notes: 'Use new bolts' },
+    { fastener: 'Flywheel Nut', spec: '60', unit: 'ft-lb', category: 'Bottom end', notes: 'Use thread locker' },
+    { fastener: 'Crankcase Bolts', spec: '12', unit: 'ft-lb', category: 'Bottom end' },
+    { fastener: 'Side Cover Bolts', spec: '8', unit: 'ft-lb', category: 'Bottom end' },
+    { fastener: 'Oil Drain Plug', spec: '15', unit: 'ft-lb', category: 'Bottom end' },
+  ]
+
+  for (const spec of torqueSpecs670) {
+    await prisma.torqueSpec.create({
+      data: {
+        engineId: predator670.id,
+        ...spec,
+      },
+    })
+  }
+
+  // Create Schematics
+  await prisma.engineSchematic.create({
+    data: {
+      engineId: predator212Hemi.id,
+      title: 'Predator 212 Hemi Exploded View',
+      imageUrl: '/images/schematics/predator-212-hemi-exploded.png',
+      notes: 'Complete parts breakdown for Predator 212 Hemi engine',
+    },
+  })
+
+  await prisma.engineSchematic.create({
+    data: {
+      engineId: predator212NonHemi.id,
+      title: 'Predator 212 Non-Hemi Exploded View',
+      imageUrl: '/images/schematics/predator-212-non-hemi-exploded.png',
+      notes: 'Complete parts breakdown for Predator 212 Non-Hemi engine',
+    },
+  })
+
+  console.log('✅ Created torque specs and schematics')
+
+  // Create Upgrades
+  const upgrades = [
+    {
+      slug: 'stage-1-air-filter',
+      name: 'Stage 1 Air Filter Kit',
+      category: 'intake',
+      description: 'High-flow air filter with adapter plate',
+      hpGainMin: 0.5,
+      hpGainMax: 1.0,
+      rpmDelta: 0,
+      riskLevel: 'LOW' as const,
+      requires: null,
+      conflicts: null,
+    },
+    {
+      slug: 'mikuni-vm22',
+      name: 'Mikuni VM22 Carburetor',
+      category: 'intake',
+      description: 'Performance carburetor for increased airflow',
+      hpGainMin: 1.5,
+      hpGainMax: 2.5,
+      rpmDelta: 0,
+      riskLevel: 'MED' as const,
+      requires: null,
+      conflicts: null,
+    },
+    {
+      slug: 'header-exhaust',
+      name: 'Header Exhaust',
+      category: 'exhaust',
+      description: 'Performance exhaust header',
+      hpGainMin: 0.5,
+      hpGainMax: 1.0,
+      rpmDelta: 0,
+      riskLevel: 'LOW' as const,
+      requires: null,
+      conflicts: null,
+    },
+    {
+      slug: '18lb-valve-springs',
+      name: '18lb Valve Springs',
+      category: 'valvetrain',
+      description: 'Heavy-duty valve springs for higher RPM',
+      hpGainMin: 0,
+      hpGainMax: 0,
+      rpmDelta: 500,
+      riskLevel: 'LOW' as const,
+      requires: null,
+      conflicts: ['22lb-valve-springs'],
+    },
+    {
+      slug: '22lb-valve-springs',
+      name: '22lb Valve Springs',
+      category: 'valvetrain',
+      description: 'Extra heavy-duty valve springs for very high RPM',
+      hpGainMin: 0,
+      hpGainMax: 0,
+      rpmDelta: 1000,
+      riskLevel: 'MED' as const,
+      requires: null,
+      conflicts: ['18lb-valve-springs'],
+    },
+    {
+      slug: 'billet-rod',
+      name: 'Billet Connecting Rod',
+      category: 'bottom-end',
+      description: 'Stronger connecting rod for high RPM',
+      hpGainMin: 0,
+      hpGainMax: 0,
+      rpmDelta: 0,
+      riskLevel: 'LOW' as const,
+      requires: null,
+      conflicts: null,
+      notes: 'Required for RPM above 5500',
+    },
+    {
+      slug: 'billet-flywheel',
+      name: 'Billet Flywheel',
+      category: 'bottom-end',
+      description: 'Safety flywheel for high RPM',
+      hpGainMin: 0,
+      hpGainMax: 0,
+      rpmDelta: 0,
+      riskLevel: 'LOW' as const,
+      requires: null,
+      conflicts: null,
+      notes: 'Required for RPM above 5500',
+    },
+    {
+      slug: 'governor-delete',
+      name: 'Governor Delete',
+      category: 'bottom-end',
+      description: 'Remove governor for unlimited RPM',
+      hpGainMin: 0,
+      hpGainMax: 0,
+      rpmDelta: 0,
+      riskLevel: 'HIGH' as const,
+      requires: ['billet-rod', 'billet-flywheel'],
+      conflicts: null,
+      notes: 'DANGER: Only with proper safety mods',
+    },
+    {
+      slug: 'stage-2-cam',
+      name: 'Stage 2 Camshaft',
+      category: 'valvetrain',
+      description: 'Performance camshaft for more lift and duration',
+      hpGainMin: 2.0,
+      hpGainMax: 3.5,
+      rpmDelta: 500,
+      riskLevel: 'MED' as const,
+      requires: ['22lb-valve-springs'],
+      conflicts: null,
+    },
+    {
+      slug: 'high-compression-head',
+      name: 'High Compression Head',
+      category: 'top-end',
+      description: 'Modified head with higher compression',
+      hpGainMin: 1.5,
+      hpGainMax: 2.5,
+      rpmDelta: 0,
+      riskLevel: 'MED' as const,
+      requires: null,
+      conflicts: null,
+    },
+  ]
+
+  const createdUpgrades = []
+  for (const upgrade of upgrades) {
+    const created = await prisma.upgrade.create({
+      data: {
+        ...upgrade,
+        requires: upgrade.requires ? JSON.stringify(upgrade.requires) : undefined,
+        conflicts: upgrade.conflicts ? JSON.stringify(upgrade.conflicts) : undefined,
+      },
+    })
+    createdUpgrades.push(created)
+  }
+
+  // Link upgrades to engines (all upgrades work with Predator 212 variants)
+  const predator212EngineIds = [predator212Hemi.id, predator212NonHemi.id, predator212Ghost.id]
+  for (const engineId of predator212EngineIds) {
+    for (const upgrade of createdUpgrades) {
+      await prisma.engineUpgrade.create({
+        data: {
+          engineId,
+          upgradeId: upgrade.id,
+        },
+      })
+    }
+  }
+
+  console.log('✅ Created upgrades and engine-upgrade links')
+
+  // Create Tools
+  const tools = [
+    {
+      slug: 'torque-wrench',
+      name: 'Torque Wrench (10-150 ft-lb)',
+      description: 'Essential for proper bolt tightening',
+      affiliateUrl: 'https://amazon.com/dp/B001A0YV7W',
+      vendor: 'Amazon',
+      priceHint: '$25-50',
+    },
+    {
+      slug: 'feeler-gauge',
+      name: 'Feeler Gauge Set',
+      description: 'For setting valve clearance',
+      affiliateUrl: 'https://amazon.com/dp/B000NPPATS',
+      vendor: 'Amazon',
+      priceHint: '$8-15',
+    },
+    {
+      slug: 'valve-spring-compressor',
+      name: 'Valve Spring Compressor',
+      description: 'For removing/installing valve springs',
+      affiliateUrl: 'https://amazon.com/dp/B0002SRCQ8',
+      vendor: 'Amazon',
+      priceHint: '$15-30',
+    },
+    {
+      slug: 'piston-ring-compressor',
+      name: 'Piston Ring Compressor',
+      description: 'For installing pistons',
+      affiliateUrl: 'https://amazon.com/dp/B0002SRCQ9',
+      vendor: 'Amazon',
+      priceHint: '$10-20',
+    },
+    {
+      slug: 'flywheel-puller',
+      name: 'Flywheel Puller',
+      description: 'For removing flywheel',
+      affiliateUrl: 'https://amazon.com/dp/B001A0YV7X',
+      vendor: 'Amazon',
+      priceHint: '$15-25',
+    },
+    {
+      slug: 'gasket-set',
+      name: 'Engine Gasket Set',
+      description: 'Complete gasket set for rebuild',
+      affiliateUrl: 'https://amazon.com/dp/B001A0YV7Y',
+      vendor: 'Amazon',
+      priceHint: '$15-25',
+    },
+    {
+      slug: 'carburetor-jet-kit',
+      name: 'Carburetor Jet Kit',
+      description: 'Various jet sizes for tuning',
+      affiliateUrl: 'https://amazon.com/dp/B001A0YV7Z',
+      vendor: 'Amazon',
+      priceHint: '$10-20',
+    },
+    {
+      slug: 'compression-tester',
+      name: 'Compression Tester',
+      description: 'For checking engine compression',
+      affiliateUrl: 'https://amazon.com/dp/B001A0YV80',
+      vendor: 'Amazon',
+      priceHint: '$20-40',
+    },
+  ]
+
+  const createdTools = []
+  for (const tool of tools) {
+    const created = await prisma.tool.create({
+      data: tool,
+    })
+    createdTools.push(created)
+  }
+
+  // Link tools to upgrades
+  const toolMap: Record<string, string[]> = {
+    'stage-1-air-filter': ['torque-wrench'],
+    'mikuni-vm22': ['torque-wrench', 'carburetor-jet-kit'],
+    'header-exhaust': ['torque-wrench'],
+    '18lb-valve-springs': ['valve-spring-compressor', 'feeler-gauge'],
+    '22lb-valve-springs': ['valve-spring-compressor', 'feeler-gauge'],
+    'billet-rod': ['piston-ring-compressor', 'gasket-set'],
+    'billet-flywheel': ['flywheel-puller', 'torque-wrench'],
+    'governor-delete': ['flywheel-puller', 'torque-wrench', 'gasket-set'],
+    'stage-2-cam': ['valve-spring-compressor', 'feeler-gauge'],
+    'high-compression-head': ['torque-wrench', 'compression-tester', 'gasket-set'],
+  }
+
+  for (const upgrade of createdUpgrades) {
+    const requiredTools = toolMap[upgrade.slug] || []
+    for (const toolSlug of requiredTools) {
+      const tool = createdTools.find((t) => t.slug === toolSlug)
+      if (tool) {
+        await prisma.upgradeTool.create({
+          data: {
+            upgradeId: upgrade.id,
+            toolId: tool.id,
+            isRequired: true,
+          },
+        })
+      }
+    }
+  }
+
+  console.log('✅ Created tools and upgrade-tool links')
+
+  // Seed Store Products
+  console.log('🌱 Seeding store products...')
+  await prisma.product.deleteMany().catch(() => {})
+
+  // Product 1: Digital PDF
+  const product1 = await prisma.product.create({
+    data: {
+      slug: 'predator-212-stage-1-checklist',
+      name: 'Predator 212 Stage 1 Checklist (PDF)',
+      description:
+        'A comprehensive PDF checklist for performing a Stage 1 upgrade on your Predator 212 engine. Includes step-by-step instructions, torque specs, and safety warnings.',
+      type: 'DIGITAL',
+      priceCents: 999, // $9.99
+      currency: 'USD',
+      images: ['/images/products/predator-212-checklist.png'],
+      isActive: true,
+      digitalAssetPath: 'assets/sample/predator-212-stage-1-checklist.pdf',
+    },
+  })
+
+  // Product 2: Digital STL Pack
+  const product2 = await prisma.product.create({
+    data: {
+      slug: 'tool-tray-stl-pack',
+      name: 'Go-Kart Tool Tray STL Pack (Download)',
+      description:
+        '3D printable STL files for a custom tool tray designed to fit in your go-kart. Includes multiple sizes and mounting options. Perfect for organizing your tools on the track.',
+      type: 'DIGITAL',
+      priceCents: 1499, // $14.99
+      currency: 'USD',
+      images: ['/images/products/tool-tray-stl.png'],
+      isActive: true,
+      digitalAssetPath: 'assets/sample/tool-tray-stl-pack.zip',
+    },
+  })
+
+  // Product 3: Physical 3D Printed Item
+  const product3 = await prisma.product.create({
+    data: {
+      slug: 'carb-jet-organizer',
+      name: '3D Printed Carb Jet Organizer',
+      description:
+        'A precision 3D printed organizer for Mikuni VM22 carburetor jets. Keeps your jets organized and labeled. Made-to-order with high-quality PLA material. Perfect for tuners who work with multiple jet sizes.',
+      type: 'PHYSICAL',
+      priceCents: 2499, // $24.99
+      currency: 'USD',
+      images: ['/images/products/carb-jet-organizer.png'],
+      isActive: true,
+      weightOz: 2,
+    },
+  })
+
+  console.log('✅ Created store products')
+
+  // Seed Videos - 30 videos per engine
+  console.log('🌱 Seeding videos...')
+  
+  // Get engine IDs for video linking
+  const predator212HemiId = predator212Hemi.id
+  const predator212NonHemiId = predator212NonHemi.id
+  const predator212GhostId = predator212Ghost.id
+  const predator420Id = predator420.id
+  const predator670Id = predator670.id
+  
+  // Clear existing videos first
+  await prisma.video.deleteMany()
+  
+  // Global counter for unique video IDs
+  let videoIdCounter = 0
+  
+  // Helper function to generate videos for a specific engine
+  const generateEngineVideos = (
+    engineId: string,
+    engineName: string,
+    engineSlug: string
+  ) => {
+    const videos = []
+    
+    // Generate 30 unique video IDs (in production, these should be real YouTube IDs)
+    const generateVideoId = () => {
+      // Create a unique ID using a simple counter
+      // NOTE: These are PLACEHOLDERS - replace with real YouTube video IDs
+      // Format: 11 characters (YouTube video ID format)
+      const counter = videoIdCounter++
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+      let id = ''
+      // Simple sequential ID generation
+      let num = counter
+      for (let i = 0; i < 11; i++) {
+        id += chars[num % chars.length]
+        num = Math.floor(num / chars.length)
+      }
+      return id
+    }
+    
+    const videoTemplates = [
+      // Installation Videos (10)
+      { title: `${engineName} - Complete Installation Guide`, category: 'INSTALL' as const, tags: ['installation', 'setup', 'beginner'], upgradeIds: null },
+      { title: `${engineName} - Governor Removal Tutorial`, category: 'INSTALL' as const, tags: ['governor', 'removal', 'mod'], upgradeIds: ['governor-delete'] },
+      { title: `${engineName} - Billet Flywheel Installation`, category: 'INSTALL' as const, tags: ['flywheel', 'billet', 'safety'], upgradeIds: ['billet-flywheel'] },
+      { title: `${engineName} - Mikuni VM22 Carburetor Install`, category: 'INSTALL' as const, tags: ['carburetor', 'mikuni', 'upgrade'], upgradeIds: ['mikuni-vm22'] },
+      { title: `${engineName} - Header Exhaust Installation`, category: 'INSTALL' as const, tags: ['exhaust', 'header', 'performance'], upgradeIds: ['header-exhaust-pipe'] },
+      { title: `${engineName} - Air Filter Kit Installation`, category: 'INSTALL' as const, tags: ['air-filter', 'intake', 'upgrade'], upgradeIds: ['stage-1-air-filter-kit'] },
+      { title: `${engineName} - Valve Springs Installation`, category: 'INSTALL' as const, tags: ['valve-springs', 'valvetrain', 'install'], upgradeIds: ['22lb-valve-springs', '18lb-valve-springs'] },
+      { title: `${engineName} - Camshaft Installation Guide`, category: 'INSTALL' as const, tags: ['camshaft', 'performance', 'install'], upgradeIds: ['stage-2-camshaft'] },
+      { title: `${engineName} - Billet Connecting Rod Install`, category: 'INSTALL' as const, tags: ['connecting-rod', 'billet', 'safety'], upgradeIds: ['billet-connecting-rod'] },
+      { title: `${engineName} - Timing Key Installation`, category: 'INSTALL' as const, tags: ['timing', 'timing-key', 'flywheel'], upgradeIds: ['timing-key-2deg', 'timing-key-4deg'] },
+      
+      // Tuning Videos (8)
+      { title: `${engineName} - Complete Tuning Guide`, category: 'TUNING' as const, tags: ['tuning', 'performance', 'setup'], upgradeIds: null },
+      { title: `${engineName} - Carburetor Adjustment Tutorial`, category: 'TUNING' as const, tags: ['carburetor', 'adjustment', 'tuning'], upgradeIds: ['mikuni-vm22'] },
+      { title: `${engineName} - Valve Lash Adjustment`, category: 'TUNING' as const, tags: ['valves', 'valve-lash', 'adjustment'], upgradeIds: ['22lb-valve-springs'] },
+      { title: `${engineName} - Ignition Timing Setup`, category: 'TUNING' as const, tags: ['timing', 'ignition', 'tdc'], upgradeIds: ['timing-key-2deg', 'timing-key-4deg'] },
+      { title: `${engineName} - Jetting Guide for Performance`, category: 'TUNING' as const, tags: ['jetting', 'carburetor', 'tuning'], upgradeIds: ['mikuni-vm22'] },
+      { title: `${engineName} - RPM Tuning and Governor Setup`, category: 'TUNING' as const, tags: ['rpm', 'tuning', 'governor'], upgradeIds: null },
+      { title: `${engineName} - Compression Testing Guide`, category: 'TUNING' as const, tags: ['compression', 'testing', 'diagnostics'], upgradeIds: null },
+      { title: `${engineName} - Fuel System Tuning`, category: 'TUNING' as const, tags: ['fuel-system', 'tuning', 'performance'], upgradeIds: null },
+      
+      // Teardown/Rebuild Videos (6)
+      { title: `${engineName} - Complete Engine Disassembly`, category: 'TEARDOWN' as const, tags: ['teardown', 'disassembly', 'rebuild'], upgradeIds: null },
+      { title: `${engineName} - Piston Ring Replacement`, category: 'TEARDOWN' as const, tags: ['piston-rings', 'rebuild', 'teardown'], upgradeIds: null },
+      { title: `${engineName} - Cylinder Honing Procedure`, category: 'TEARDOWN' as const, tags: ['cylinder', 'honing', 'rebuild'], upgradeIds: null },
+      { title: `${engineName} - Complete Engine Rebuild`, category: 'TEARDOWN' as const, tags: ['rebuild', 'overhaul', 'restoration'], upgradeIds: null },
+      { title: `${engineName} - Crankshaft Inspection`, category: 'TEARDOWN' as const, tags: ['crankshaft', 'inspection', 'rebuild'], upgradeIds: null },
+      { title: `${engineName} - Engine Block Cleaning`, category: 'TEARDOWN' as const, tags: ['cleaning', 'preparation', 'rebuild'], upgradeIds: null },
+      
+      // Safety Videos (3)
+      { title: `${engineName} - Break-In Procedure`, category: 'SAFETY' as const, tags: ['break-in', 'safety', 'maintenance'], upgradeIds: null },
+      { title: `${engineName} - Safety Tips and Common Mistakes`, category: 'SAFETY' as const, tags: ['safety', 'mistakes', 'tips'], upgradeIds: null },
+      { title: `${engineName} - High RPM Safety Guidelines`, category: 'SAFETY' as const, tags: ['safety', 'rpm', 'high-performance'], upgradeIds: null },
+      
+      // Maintenance Videos (3)
+      { title: `${engineName} - Oil Change Tutorial`, category: 'INSTALL' as const, tags: ['oil', 'maintenance', 'change'], upgradeIds: null },
+      { title: `${engineName} - Spark Plug Replacement`, category: 'INSTALL' as const, tags: ['spark-plug', 'maintenance', 'replacement'], upgradeIds: null },
+      { title: `${engineName} - Air Filter Maintenance`, category: 'INSTALL' as const, tags: ['air-filter', 'maintenance', 'cleaning'], upgradeIds: null },
+    ]
+    
+    videoTemplates.forEach((template, index) => {
+      const videoId = generateVideoId() // Generate unique ID
+      videos.push({
+        youtubeId: videoId, // PLACEHOLDER - replace with real YouTube ID
+        title: template.title,
+        channelName: 'GoPowerSports',
+        durationSeconds: 600 + (index * 60), // Varies from 10-40 minutes
+        thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+        category: template.category,
+        tags: template.tags,
+        engineIds: [engineId],
+        upgradeIds: template.upgradeIds,
+        partIds: null,
+        guideIds: null,
+      })
+    })
+    
+    return videos
+  }
+  
+  // Generate 30 videos for each engine
+  // NOTE: Video IDs are placeholders - replace with real YouTube video IDs
+  const videos = [
+    // Generate videos for each engine (30 per engine = 150 total videos)
+    ...generateEngineVideos(predator212HemiId, 'Predator 212 Hemi', 'predator-212-hemi'),
+    ...generateEngineVideos(predator212NonHemiId, 'Predator 212 Non-Hemi', 'predator-212-non-hemi'),
+    ...generateEngineVideos(predator212GhostId, 'Predator 212 Ghost', 'predator-212-ghost'),
+    ...generateEngineVideos(predator420Id, 'Predator 420', 'predator-420'),
+    ...generateEngineVideos(predator670Id, 'Predator 670', 'predator-670'),
+  ]
+  
+  console.log(`📹 Generated ${videos.length} videos (${videos.length / 5} per engine)`)
+  
+  // IMPORTANT: The video IDs generated above are PLACEHOLDERS
+  // You need to replace them with real YouTube video IDs:
+  // 1. Search YouTube for videos matching each title
+  // 2. Copy the video ID from the URL (part after v=)
+  // 3. Replace the placeholder ID in the generated videos
+  // Example: https://www.youtube.com/watch?v=REAL_VIDEO_ID_HERE
+
+  for (const video of videos) {
+    await prisma.video.create({
+      data: {
+        youtubeId: video.youtubeId,
+        title: video.title,
+        channelName: video.channelName,
+        durationSeconds: video.durationSeconds,
+        thumbnailUrl: video.thumbnailUrl,
+        category: video.category,
+        tags: video.tags ? JSON.parse(JSON.stringify(video.tags)) : Prisma.JsonNull,
+        engineIds: video.engineIds ? JSON.parse(JSON.stringify(video.engineIds)) : Prisma.JsonNull,
+        upgradeIds: video.upgradeIds ? JSON.parse(JSON.stringify(video.upgradeIds)) : Prisma.JsonNull,
+        partIds: video.partIds ? JSON.parse(JSON.stringify(video.partIds)) : Prisma.JsonNull,
+        guideIds: video.guideIds ? JSON.parse(JSON.stringify(video.guideIds)) : Prisma.JsonNull,
+      },
+    })
+  }
+
+  console.log('✅ Created videos')
 
   console.log('✅ Seeding complete!')
 }

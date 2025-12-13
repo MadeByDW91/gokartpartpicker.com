@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import WhyThisPartTooltip from '@/components/WhyThisPartTooltip'
 
 async function getParts(category?: string, engineId?: string) {
   const where: any = {}
@@ -33,7 +34,20 @@ export default async function PartsList({ category, engineId }: { category?: str
   const parts = await getParts(category, engineId)
 
   if (parts.length === 0) {
-    return <div className="text-center py-12 text-garage-gray">No parts found matching your filters.</div>
+    return (
+      <div className="text-center py-12">
+        <p className="text-garage-gray dark:text-gray-400 mb-4">No parts found matching your filters.</p>
+        <p className="text-sm text-garage-gray dark:text-gray-500 mb-4">
+          Try adjusting your filters or browse all parts.
+        </p>
+        <Link
+          href="/parts"
+          className="inline-block bg-garage-orange text-white px-6 py-2 rounded-lg font-heading hover:bg-opacity-90 transition text-sm"
+        >
+          Clear Filters
+        </Link>
+      </div>
+    )
   }
 
   return (
@@ -44,10 +58,12 @@ export default async function PartsList({ category, engineId }: { category?: str
           : null
 
         return (
-          <div key={part.id} className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition">
-            <h2 className="text-xl font-heading mb-2 text-garage-dark">{part.name}</h2>
-            <p className="text-sm text-garage-gray mb-2 capitalize">{part.category.replace('_', ' ')}</p>
-            <p className="text-garage-gray mb-4 line-clamp-2 text-sm">{part.description}</p>
+          <div key={part.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition">
+            <WhyThisPartTooltip part={part}>
+              <h2 className="text-xl font-heading mb-2 text-garage-dark dark:text-gray-100 cursor-help">{part.name}</h2>
+            </WhyThisPartTooltip>
+            <p className="text-sm text-garage-gray dark:text-gray-400 mb-2 capitalize">{part.category.replace('_', ' ')}</p>
+            <p className="text-garage-gray dark:text-gray-400 mb-4 line-clamp-2 text-sm">{part.description}</p>
             {part.hpGainMin > 0 || part.hpGainMax > 0 ? (
               <p className="text-sm mb-2">
                 HP Gain: <span className="font-semibold">+{part.hpGainMin}-{part.hpGainMax}</span>
@@ -61,7 +77,7 @@ export default async function PartsList({ category, engineId }: { category?: str
             {minPrice ? (
               <p className="text-lg font-semibold text-garage-orange mb-4">From ${minPrice.toFixed(2)}</p>
             ) : (
-              <p className="text-garage-gray mb-4">No offers available</p>
+              <p className="text-garage-gray dark:text-gray-400 mb-4">No offers available</p>
             )}
             <Link
               href={`/parts/${part.slug}`}

@@ -69,6 +69,7 @@ A web application for building and customizing go-kart engines with the right pa
 │   ├── parts/             # Parts pages
 │   ├── guides/            # Guide pages
 │   ├── build/             # Build pages
+│   ├── learn/             # Learn section (ignition timing, etc.)
 │   └── search/            # Search page
 ├── components/            # React components
 ├── lib/                   # Utility functions
@@ -95,6 +96,11 @@ A web application for building and customizing go-kart engines with the right pa
 - ✅ Step-by-step installation guides
 - ✅ Search across engines, parts, and guides
 - ✅ Build summary with export placeholder
+- ✅ **Homepage v1** - Comprehensive homepage with hero, engine picker, example builds, tools, and account benefits
+- ✅ **SEO Optimized** - Proper metadata, JSON-LD schema, and internal linking
+- ✅ **Learn Section** - Educational content for ignition timing and engine modifications
+- ✅ **Ignition Timing Calculator** - Interactive calculator for timing key selection
+- ✅ **Advanced Timing Keys** - Support for 2°, 4°, and 6° timing keys with safety warnings
 
 ### Future Enhancements
 
@@ -109,12 +115,46 @@ A web application for building and customizing go-kart engines with the right pa
 
 See `prisma/schema.prisma` for the complete schema. Key models:
 
-- **Engine**: Base engines (Predator 212, 420, 670, etc.)
-- **Part**: Performance parts (intake, exhaust, cam, springs, etc.)
+- **Engine**: Base engines (Predator 212, 420, 670, etc.) - includes `stockTimingDegBtdc` field
+- **Part**: Performance parts (intake, exhaust, cam, springs, ignition/timing keys, etc.)
 - **Vendor**: Vendors (Amazon, GoPowerSports, etc.)
 - **VendorOffer**: Price listings for parts
 - **Guide**: Installation guides with steps
+- **Video**: Curated YouTube videos for installation, tuning, and safety
 - **TodoTemplate**: Build checklists
+
+## New Features Documentation
+
+### Ignition Timing System
+
+The ignition timing system allows users to:
+- Learn about timing basics, advanced timing keys, and safety
+- Use an interactive calculator to determine optimal timing
+- Add timing keys (2°, 4°, 6°) to builds with automatic safety warnings
+- See HP impact and risk levels for different timing configurations
+
+**Timing Keys:**
+- `timing-key-2deg`: Mild advance, safe for most builds
+- `timing-key-4deg`: Moderate advance, requires billet flywheel
+- `timing-key-6deg`: Aggressive advance, requires billet flywheel and billet rod
+
+### Learn Section
+
+The `/learn` section provides educational content:
+- `/learn` - Index of all topics
+- `/learn/ignition-timing` - Hub page for ignition timing
+- `/learn/ignition-timing/basics` - Understanding TDC/BTDC
+- `/learn/ignition-timing/flywheel-keys` - How timing keys work
+- `/learn/ignition-timing/advanced-timing` - Optimization guide
+- `/learn/ignition-timing/safety` - Critical safety information
+- `/learn/ignition-timing/calculator` - Interactive calculator
+
+### Editing Content
+
+- **Learn Pages**: Edit files in `app/learn/` directory
+- **Videos**: Add/update videos in `prisma/seed.ts` (videos section)
+- **Example Builds**: Update `EXAMPLE_BUILDS` array in `app/page.tsx`
+- **Popular Engines**: Update `POPULAR_ENGINE_SLUGS` in `app/page.tsx`
 
 ## License
 
