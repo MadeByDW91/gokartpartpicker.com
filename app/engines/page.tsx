@@ -1,13 +1,10 @@
 import Link from 'next/link'
+import { prisma } from '@/lib/prisma'
 
 async function getEngines() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/engines`, {
-    cache: 'no-store',
+  return await prisma.engine.findMany({
+    orderBy: { name: 'asc' },
   })
-  if (!res.ok) {
-    throw new Error('Failed to fetch engines')
-  }
-  return res.json()
 }
 
 export default async function EnginesPage() {

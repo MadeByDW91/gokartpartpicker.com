@@ -1,14 +1,36 @@
 import Link from 'next/link'
 import AddToBuildButton from '@/components/AddToBuildButton'
+import { prisma } from '@/lib/prisma'
+import { sortVendorOffers } from '@/lib/vendorSort'
 
 async function getPart(slug: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/parts/${slug}`, {
-    cache: 'no-store',
+  const part = await prisma.part.findUnique({
+    where: { slug },
+    include: {
+      vendorOffers: {
+        include: {
+          vendor: true,
+        },
+      },
+      compatibleEngines: {
+        include: {
+          engine: true,
+        },
+      },
+    },
   })
-  if (!res.ok) {
-    throw new Error('Failed to fetch part')
+
+  if (!part) {
+    throw new Error('Part not found')
   }
-  return res.json()
+
+  // Sort vendor offers (Amazon first, then by price)
+  const sortedOffers = sortVendorOffers(part.vendorOffers)
+
+  return {
+    ...part,
+    vendorOffers: sortedOffers,
+  }
 }
 
 export default async function PartDetailPage({ params }: { params: Promise<{ slug: string }> }) {

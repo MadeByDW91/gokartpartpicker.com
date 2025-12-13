@@ -1,14 +1,24 @@
 import Link from 'next/link'
 import AddToBuildButton from '@/components/AddToBuildButton'
+import { prisma } from '@/lib/prisma'
 
 async function getEngine(slug: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/engines/${slug}`, {
-    cache: 'no-store',
+  const engine = await prisma.engine.findUnique({
+    where: { slug },
+    include: {
+      compatibleParts: {
+        include: {
+          part: true,
+        },
+      },
+    },
   })
-  if (!res.ok) {
-    throw new Error('Failed to fetch engine')
+
+  if (!engine) {
+    throw new Error('Engine not found')
   }
-  return res.json()
+
+  return engine
 }
 
 export default async function EngineDetailPage({ params }: { params: Promise<{ slug: string }> }) {

@@ -1,14 +1,53 @@
 import Link from 'next/link'
 import AddGuidePartsToBuild from '@/components/AddGuidePartsToBuild'
+import { prisma } from '@/lib/prisma'
+import { sortVendorOffers } from '@/lib/vendorSort'
 
 async function getGuide(slug: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/guides/${slug}`, {
-    cache: 'no-store',
+  const guide = await prisma.guide.findUnique({
+    where: { slug },
+    include: {
+      steps: {
+        orderBy: { stepNumber: 'asc' },
+      },
+      engines: {
+        include: {
+          engine: true,
+        },
+      },
+      parts: {
+        include: {
+          part: {
+            include: {
+              vendorOffers: {
+                include: {
+                  vendor: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   })
-  if (!res.ok) {
-    throw new Error('Failed to fetch guide')
+
+  if (!guide) {
+    throw new Error('Guide not found')
   }
-  return res.json()
+
+  // Sort vendor offers for each part
+  const guideWithSortedOffers = {
+    ...guide,
+    parts: guide.parts.map((gp) => ({
+      ...gp,
+      part: {
+        ...gp.part,
+        vendorOffers: sortVendorOffers(gp.part.vendorOffers),
+      },
+    })),
+  }
+
+  return guideWithSortedOffers
 }
 
 export default async function GuideDetailPage({ params }: { params: Promise<{ slug: string }> }) {

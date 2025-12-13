@@ -1,13 +1,22 @@
 import Link from 'next/link'
+import { prisma } from '@/lib/prisma'
 
 async function getGuides() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/guides`, {
-    cache: 'no-store',
+  return await prisma.guide.findMany({
+    include: {
+      engines: {
+        include: {
+          engine: true,
+        },
+      },
+      parts: {
+        include: {
+          part: true,
+        },
+      },
+    },
+    orderBy: { title: 'asc' },
   })
-  if (!res.ok) {
-    throw new Error('Failed to fetch guides')
-  }
-  return res.json()
 }
 
 export default async function GuidesPage() {

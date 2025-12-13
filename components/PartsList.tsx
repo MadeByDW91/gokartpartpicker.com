@@ -1,17 +1,32 @@
 import Link from 'next/link'
+import { prisma } from '@/lib/prisma'
 
 async function getParts(category?: string, engineId?: string) {
-  const params = new URLSearchParams()
-  if (category) params.set('category', category)
-  if (engineId) params.set('engineId', engineId)
-  
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/parts?${params.toString()}`, {
-    cache: 'no-store',
-  })
-  if (!res.ok) {
-    throw new Error('Failed to fetch parts')
+  const where: any = {}
+
+  if (category) {
+    where.category = category
   }
-  return res.json()
+
+  if (engineId) {
+    where.compatibleEngines = {
+      some: {
+        engineId: engineId,
+      },
+    }
+  }
+
+  return await prisma.part.findMany({
+    where,
+    include: {
+      vendorOffers: {
+        include: {
+          vendor: true,
+        },
+      },
+    },
+    orderBy: { name: 'asc' },
+  })
 }
 
 export default async function PartsList({ category, engineId }: { category?: string; engineId?: string }) {
