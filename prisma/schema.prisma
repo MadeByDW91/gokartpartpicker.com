@@ -48,6 +48,7 @@ model Part {
   vendorOffers      VendorOffer[]
   guideParts        GuidePart[]
   todoTemplates     TodoTemplatePart[]
+  buildParts        BuildPart[]
 
   @@index([slug])
   @@index([category])
@@ -93,8 +94,9 @@ model VendorOffer {
   updatedAt    DateTime @updatedAt
 
   // Relations
-  part   Part   @relation(fields: [partId], references: [id], onDelete: Cascade)
-  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  part        Part        @relation(fields: [partId], references: [id], onDelete: Cascade)
+  vendor      Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  buildParts  BuildPart[]
 
   @@index([partId])
   @@index([vendorId])
