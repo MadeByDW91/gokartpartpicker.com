@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
+import VideoThumbnail from './VideoThumbnail'
 
 export type VideoCategory = 'INSTALL' | 'TEARDOWN' | 'TUNING' | 'SAFETY'
 
@@ -60,8 +60,10 @@ export default function VideoCarousel({
       ? videos
       : videos.filter((v) => v.category === selectedCategory)
 
-  const visibleVideos = showAll ? filteredVideos : filteredVideos.slice(0, maxVisible)
-  const hasMore = filteredVideos.length > maxVisible
+  // If maxVisible is very high (like 1000), show all videos by default
+  const shouldShowAll = maxVisible >= filteredVideos.length
+  const visibleVideos = showAll || shouldShowAll ? filteredVideos : filteredVideos.slice(0, maxVisible)
+  const hasMore = filteredVideos.length > maxVisible && !shouldShowAll
 
   if (videos.length === 0) {
     return null
@@ -70,7 +72,7 @@ export default function VideoCarousel({
   return (
     <div className="mt-12">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-heading font-bold text-garage-dark">{title}</h2>
+        <h2 className="text-3xl font-heading font-bold text-garage-dark dark:text-gray-100">{title}</h2>
         {showFilters && (
           <div className="flex gap-2">
             <button
@@ -102,8 +104,8 @@ export default function VideoCarousel({
 
       <div className="relative">
         <div
-          className={`flex gap-4 overflow-x-auto pb-4 scrollbar-hide ${
-            compact ? 'flex-wrap' : ''
+          className={`flex gap-4 pb-4 scrollbar-hide ${
+            compact ? 'flex-wrap' : 'overflow-x-auto'
           }`}
           style={{
             scrollbarWidth: 'none',
@@ -116,41 +118,27 @@ export default function VideoCarousel({
               href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
               target="_blank"
               rel="noopener noreferrer"
-              className={`flex-shrink-0 bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition ${
+              className={`flex-shrink-0 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition ${
                 compact ? 'w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.67rem)]' : 'w-80'
               }`}
             >
-              <div className="relative aspect-video bg-gray-100">
-                <img
-                  src={video.thumbnailUrl || `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`}
-                  alt={video.title}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  onError={(e) => {
-                    // Fallback to default thumbnail if image fails
-                    const target = e.target as HTMLImageElement
-                    target.src = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`
-                  }}
-                />
-                <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
-                  {formatDuration(video.durationSeconds)}
-                </div>
-                <div
-                  className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-semibold ${categoryColors[video.category]}`}
-                >
-                  {categoryLabels[video.category]}
-                </div>
-              </div>
+              <VideoThumbnail
+                youtubeId={video.youtubeId}
+                title={video.title}
+                durationSeconds={video.durationSeconds}
+                category={video.category}
+              />
               <div className="p-4">
-                <h3 className="font-heading font-semibold text-garage-dark mb-1 line-clamp-2">
+                <h3 className="font-heading font-semibold text-garage-dark dark:text-gray-100 mb-1 line-clamp-2">
                   {video.title}
                 </h3>
-                <p className="text-sm text-garage-gray">{video.channelName}</p>
+                <p className="text-sm text-garage-gray dark:text-gray-400">{video.channelName}</p>
                 {video.tags && video.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
                     {video.tags.slice(0, 3).map((tag, idx) => (
                       <span
                         key={idx}
-                        className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded"
+                        className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded"
                       >
                         {tag}
                       </span>
@@ -167,9 +155,20 @@ export default function VideoCarousel({
         <div className="text-center mt-6">
           <button
             onClick={() => setShowAll(true)}
-            className="px-6 py-2 bg-garage-orange text-white rounded-lg hover:bg-orange-600 transition font-semibold"
+            className="px-6 py-2 bg-garage-orange text-white rounded-lg hover:bg-orange-600 transition font-semibold shadow-md hover:shadow-lg"
           >
             Show More Videos ({filteredVideos.length - maxVisible} more)
+          </button>
+        </div>
+      )}
+
+      {showAll && hasMore && (
+        <div className="text-center mt-6">
+          <button
+            onClick={() => setShowAll(false)}
+            className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition font-semibold"
+          >
+            Show Less
           </button>
         </div>
       )}

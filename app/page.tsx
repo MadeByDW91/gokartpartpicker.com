@@ -371,10 +371,10 @@ export default async function HomePage() {
                 Featured Videos
               </h2>
               <Link
-                href="/guides"
+                href="/videos"
                 className="text-garage-orange font-semibold hover:underline"
               >
-                Watch More →
+                Browse All Videos →
               </Link>
             </div>
             <VideoCarousel videos={videos} compact maxVisible={4} />
