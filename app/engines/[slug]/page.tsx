@@ -11,8 +11,9 @@ async function getEngine(slug: string) {
   return res.json()
 }
 
-export default async function EngineDetailPage({ params }: { params: { slug: string } }) {
-  const engine = await getEngine(params.slug)
+export default async function EngineDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const engine = await getEngine(slug)
 
   return (
     <div className="container mx-auto px-4 py-8">

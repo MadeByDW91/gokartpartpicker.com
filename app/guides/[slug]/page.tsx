@@ -11,8 +11,9 @@ async function getGuide(slug: string) {
   return res.json()
 }
 
-export default async function GuideDetailPage({ params }: { params: { slug: string } }) {
-  const guide = await getGuide(params.slug)
+export default async function GuideDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const guide = await getGuide(slug)
 
   return (
     <div className="container mx-auto px-4 py-8">

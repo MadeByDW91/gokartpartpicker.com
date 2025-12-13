@@ -6,11 +6,12 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params
     const part = await prisma.part.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       include: {
         vendorOffers: {
           include: {

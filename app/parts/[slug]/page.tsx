@@ -11,8 +11,9 @@ async function getPart(slug: string) {
   return res.json()
 }
 
-export default async function PartDetailPage({ params }: { params: { slug: string } }) {
-  const part = await getPart(params.slug)
+export default async function PartDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const part = await getPart(slug)
 
   return (
     <div className="container mx-auto px-4 py-8">
