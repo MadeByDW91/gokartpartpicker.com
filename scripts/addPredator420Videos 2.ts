@@ -388,8 +388,8 @@ async function addPredator420Videos() {
           tags: video.tags ? JSON.parse(JSON.stringify(video.tags)) : null,
           engineIds: JSON.parse(JSON.stringify([engine.id])),
           upgradeIds: video.upgradeIds ? JSON.parse(JSON.stringify(video.upgradeIds)) : null,
-          partIds: undefined,
-          guideIds: undefined,
+          partIds: null,
+          guideIds: null,
         },
       })
       console.log(`   ✅ Added: ${video.title}\n`)

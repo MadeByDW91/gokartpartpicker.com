@@ -378,8 +378,8 @@ async function addEngineVideos() {
           tags: template.tags ? JSON.parse(JSON.stringify(template.tags)) : null,
           engineIds: JSON.parse(JSON.stringify([engine.id])),
           upgradeIds: template.upgradeIds ? JSON.parse(JSON.stringify(template.upgradeIds)) : null,
-          partIds: null,
-          guideIds: null,
+          partIds: undefined,
+          guideIds: undefined,
         },
       })
       console.log(`   ✅ Added: ${template.title}`)

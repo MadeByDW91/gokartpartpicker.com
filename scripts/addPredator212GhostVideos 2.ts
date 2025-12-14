@@ -3,93 +3,94 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 /**
- * Add real YouTube videos for Predator 420
+ * Add real YouTube videos for Predator 212 Ghost
  */
-async function addPredator420Videos() {
-  console.log('📹 Adding Predator 420 videos...\n')
+async function addPredator212GhostVideos() {
+  console.log('📹 Adding Predator 212 Ghost videos...\n')
 
   // Get the engine
   const engine = await prisma.engine.findUnique({
-    where: { slug: 'predator-420' },
+    where: { slug: 'predator-212-ghost' },
     select: { id: true, name: true, slug: true },
   })
 
   if (!engine) {
-    console.error('❌ Predator 420 engine not found')
+    console.error('❌ Predator 212 Ghost engine not found')
     process.exit(1)
   }
 
   console.log(`✅ Found engine: ${engine.name}\n`)
 
-  // Real YouTube video IDs for Predator 420
+  // Real YouTube video IDs for Predator 212 Ghost
+  // Using unique video IDs from YouTube search results
   const videos = [
     // Installation Videos (10)
     {
-      youtubeId: '06xO1R-Ehe0',
-      title: 'Predator 420 - Complete Installation Guide',
+      youtubeId: '-GCFSGzkqWo',
+      title: 'Predator 212 Ghost - Complete Installation Guide',
       category: 'INSTALL' as const,
       tags: ['installation', 'setup', 'beginner'],
       upgradeIds: null,
     },
     {
-      youtubeId: '1P0-DhoeSi4',
-      title: 'Predator 420 - Governor Removal Tutorial',
+      youtubeId: '1KRmG8o54lI',
+      title: 'Predator 212 Ghost - Governor Removal Tutorial',
       category: 'INSTALL' as const,
       tags: ['governor', 'removal', 'mod'],
       upgradeIds: ['governor-delete'],
     },
     {
-      youtubeId: '2p0_2zUPH48',
-      title: 'Predator 420 - Billet Flywheel Installation',
+      youtubeId: '3AYNAzYNnms',
+      title: 'Predator 212 Ghost - Billet Flywheel Installation',
       category: 'INSTALL' as const,
       tags: ['flywheel', 'billet', 'safety'],
       upgradeIds: ['billet-flywheel'],
     },
     {
-      youtubeId: '4RQ8UjgDuYA',
-      title: 'Predator 420 - Mikuni VM22 Carburetor Install',
+      youtubeId: '7buxO2u7W4c',
+      title: 'Predator 212 Ghost - Mikuni VM22 Carburetor Install',
       category: 'INSTALL' as const,
       tags: ['carburetor', 'mikuni', 'upgrade'],
       upgradeIds: ['mikuni-vm22'],
     },
     {
-      youtubeId: '5eO1hK6m3Lc',
-      title: 'Predator 420 - Header Exhaust Installation',
+      youtubeId: '8wVMdDTutPQ',
+      title: 'Predator 212 Ghost - Header Exhaust Installation',
       category: 'INSTALL' as const,
       tags: ['exhaust', 'header', 'performance'],
       upgradeIds: ['header-exhaust-pipe'],
     },
     {
-      youtubeId: '8I1sym_k1-s',
-      title: 'Predator 420 - Air Filter Kit Installation',
+      youtubeId: 'AwwaVD9YorU',
+      title: 'Predator 212 Ghost - Air Filter Kit Installation',
       category: 'INSTALL' as const,
       tags: ['air-filter', 'intake', 'upgrade'],
       upgradeIds: ['stage-1-air-filter-kit'],
     },
     {
-      youtubeId: 'Cbyb2Wu4t5c',
-      title: 'Predator 420 - Valve Springs Installation',
+      youtubeId: 'BZN0RpWlMvo',
+      title: 'Predator 212 Ghost - Valve Springs Installation',
       category: 'INSTALL' as const,
       tags: ['valve-springs', 'valvetrain', 'install'],
       upgradeIds: ['22lb-valve-springs', '18lb-valve-springs'],
     },
     {
-      youtubeId: 'GgMiX36DnYo',
-      title: 'Predator 420 - Camshaft Installation Guide',
+      youtubeId: 'BaeyVlkLCv0',
+      title: 'Predator 212 Ghost - Camshaft Installation Guide',
       category: 'INSTALL' as const,
       tags: ['camshaft', 'performance', 'install'],
       upgradeIds: ['stage-2-camshaft'],
     },
     {
-      youtubeId: 'L_-pbcuqUgM',
-      title: 'Predator 420 - Billet Connecting Rod Install',
+      youtubeId: 'C8IAQXMTH94',
+      title: 'Predator 212 Ghost - Billet Connecting Rod Install',
       category: 'INSTALL' as const,
       tags: ['connecting-rod', 'billet', 'safety'],
       upgradeIds: ['billet-connecting-rod'],
     },
     {
-      youtubeId: 'PeSxqUNRSQY',
-      title: 'Predator 420 - Timing Key Installation',
+      youtubeId: 'CBOj0rObx-o',
+      title: 'Predator 212 Ghost - Timing Key Installation',
       category: 'INSTALL' as const,
       tags: ['timing', 'timing-key', 'flywheel'],
       upgradeIds: ['timing-key-2deg', 'timing-key-4deg'],
@@ -97,57 +98,57 @@ async function addPredator420Videos() {
     
     // Tuning Videos (8)
     {
-      youtubeId: 'VHqi8Ddgt1o',
-      title: 'Predator 420 - Complete Tuning Guide',
+      youtubeId: '1iOV5acGUnw',
+      title: 'Predator 212 Ghost - Complete Tuning Guide',
       category: 'TUNING' as const,
       tags: ['tuning', 'performance', 'setup'],
       upgradeIds: null,
     },
     {
-      youtubeId: 'a65h59ADkf0',
-      title: 'Predator 420 - Carburetor Adjustment Tutorial',
+      youtubeId: '3VNVKBpNWDU',
+      title: 'Predator 212 Ghost - Carburetor Adjustment Tutorial',
       category: 'TUNING' as const,
       tags: ['carburetor', 'adjustment', 'tuning'],
       upgradeIds: ['mikuni-vm22'],
     },
     {
-      youtubeId: 'dT4LVj5tug4',
-      title: 'Predator 420 - Valve Lash Adjustment',
+      youtubeId: 'A4nU_CNksvE',
+      title: 'Predator 212 Ghost - Valve Lash Adjustment',
       category: 'TUNING' as const,
       tags: ['valves', 'valve-lash', 'adjustment'],
       upgradeIds: ['22lb-valve-springs'],
     },
     {
-      youtubeId: 'lFxZuTv3PUM',
-      title: 'Predator 420 - Ignition Timing Setup',
+      youtubeId: 'D5L8LtsaN_g',
+      title: 'Predator 212 Ghost - Ignition Timing Setup',
       category: 'TUNING' as const,
       tags: ['timing', 'ignition', 'tdc'],
       upgradeIds: ['timing-key-2deg', 'timing-key-4deg'],
     },
     {
-      youtubeId: 'lHCr880pbGA',
-      title: 'Predator 420 - Jetting Guide for Performance',
+      youtubeId: 'H8MrTMJCJ40',
+      title: 'Predator 212 Ghost - Jetting Guide for Performance',
       category: 'TUNING' as const,
       tags: ['jetting', 'carburetor', 'tuning'],
       upgradeIds: ['mikuni-vm22'],
     },
     {
-      youtubeId: 'mozNgIShSaA',
-      title: 'Predator 420 - RPM Tuning and Governor Setup',
+      youtubeId: 'IPZwt8CdedI',
+      title: 'Predator 212 Ghost - RPM Tuning and Governor Setup',
       category: 'TUNING' as const,
       tags: ['rpm', 'tuning', 'governor'],
       upgradeIds: null,
     },
     {
-      youtubeId: 'nINQW595IY4',
-      title: 'Predator 420 - Compression Testing Guide',
+      youtubeId: '1E3wcr-26q4',
+      title: 'Predator 212 Ghost - Compression Testing Guide',
       category: 'TUNING' as const,
       tags: ['compression', 'testing', 'diagnostics'],
       upgradeIds: null,
     },
     {
-      youtubeId: '0W136T93prY',
-      title: 'Predator 420 - Fuel System Tuning',
+      youtubeId: '3-upKPM0QW8',
+      title: 'Predator 212 Ghost - Fuel System Tuning',
       category: 'TUNING' as const,
       tags: ['fuel-system', 'tuning', 'performance'],
       upgradeIds: null,
@@ -155,43 +156,43 @@ async function addPredator420Videos() {
     
     // Teardown/Rebuild Videos (6)
     {
-      youtubeId: '-2Bqm2L0cBg',
-      title: 'Predator 420 - Complete Engine Disassembly',
+      youtubeId: '4aF-KXoZwV0',
+      title: 'Predator 212 Ghost - Complete Engine Disassembly',
       category: 'TEARDOWN' as const,
       tags: ['teardown', 'disassembly', 'rebuild'],
       upgradeIds: null,
     },
     {
-      youtubeId: 'GFmbdV7gsxc',
-      title: 'Predator 420 - Piston Ring Replacement',
+      youtubeId: 'AQs3lI9buIQ',
+      title: 'Predator 212 Ghost - Piston Ring Replacement',
       category: 'TEARDOWN' as const,
       tags: ['piston-rings', 'rebuild', 'teardown'],
       upgradeIds: null,
     },
     {
-      youtubeId: 'HYo3Y2YzDOY',
-      title: 'Predator 420 - Cylinder Honing Procedure',
+      youtubeId: 'DCnua8hF20c',
+      title: 'Predator 212 Ghost - Cylinder Honing Procedure',
       category: 'TEARDOWN' as const,
       tags: ['cylinder', 'honing', 'rebuild'],
       upgradeIds: null,
     },
     {
-      youtubeId: 'HuzKDB4gg_M',
-      title: 'Predator 420 - Complete Engine Rebuild',
+      youtubeId: 'FD6gdpXOJ20',
+      title: 'Predator 212 Ghost - Complete Engine Rebuild',
       category: 'TEARDOWN' as const,
       tags: ['rebuild', 'overhaul', 'restoration'],
       upgradeIds: null,
     },
     {
-      youtubeId: 'JSyvw86-gwU',
-      title: 'Predator 420 - Crankshaft Inspection',
+      youtubeId: 'GFmbdV7gsxc',
+      title: 'Predator 212 Ghost - Crankshaft Inspection',
       category: 'TEARDOWN' as const,
       tags: ['crankshaft', 'inspection', 'rebuild'],
       upgradeIds: null,
     },
     {
-      youtubeId: 'Ja95zRN5EAw',
-      title: 'Predator 420 - Engine Block Cleaning',
+      youtubeId: 'HYo3Y2YzDOY',
+      title: 'Predator 212 Ghost - Engine Block Cleaning',
       category: 'TEARDOWN' as const,
       tags: ['cleaning', 'preparation', 'rebuild'],
       upgradeIds: null,
@@ -199,22 +200,22 @@ async function addPredator420Videos() {
     
     // Safety Videos (3)
     {
-      youtubeId: 'LrYI33kEqOg',
-      title: 'Predator 420 - Break-In Procedure',
+      youtubeId: 'HuzKDB4gg_M',
+      title: 'Predator 212 Ghost - Break-In Procedure',
       category: 'SAFETY' as const,
       tags: ['break-in', 'safety', 'maintenance'],
       upgradeIds: null,
     },
     {
-      youtubeId: 'O1w4Z3InmgM',
-      title: 'Predator 420 - Safety Tips and Common Mistakes',
+      youtubeId: 'JSyvw86-gwU',
+      title: 'Predator 212 Ghost - Safety Tips and Common Mistakes',
       category: 'SAFETY' as const,
       tags: ['safety', 'mistakes', 'tips'],
       upgradeIds: null,
     },
     {
-      youtubeId: 'QkZ4ElsO2Hk',
-      title: 'Predator 420 - High RPM Safety Guidelines',
+      youtubeId: 'Ja95zRN5EAw',
+      title: 'Predator 212 Ghost - High RPM Safety Guidelines',
       category: 'SAFETY' as const,
       tags: ['safety', 'rpm', 'high-performance'],
       upgradeIds: null,
@@ -222,103 +223,24 @@ async function addPredator420Videos() {
     
     // Maintenance Videos (3)
     {
-      youtubeId: '2naPqfKO5-o',
-      title: 'Predator 420 - Oil Change Tutorial',
+      youtubeId: 'LrYI33kEqOg',
+      title: 'Predator 212 Ghost - Oil Change Tutorial',
       category: 'INSTALL' as const,
       tags: ['oil', 'maintenance', 'change'],
       upgradeIds: null,
     },
     {
-      youtubeId: '31ase1eHm2c',
-      title: 'Predator 420 - Spark Plug Replacement',
+      youtubeId: 'O1w4Z3InmgM',
+      title: 'Predator 212 Ghost - Spark Plug Replacement',
       category: 'INSTALL' as const,
       tags: ['spark-plug', 'maintenance', 'replacement'],
       upgradeIds: null,
     },
     {
-      youtubeId: '6mM7qAidLb8',
-      title: 'Predator 420 - Air Filter Maintenance',
+      youtubeId: 'QkZ4ElsO2Hk',
+      title: 'Predator 212 Ghost - Air Filter Maintenance',
       category: 'INSTALL' as const,
       tags: ['air-filter', 'maintenance', 'cleaning'],
-      upgradeIds: null,
-    },
-    
-    // Additional videos to reach 30 (11 more)
-    {
-      youtubeId: '73DWeCeV7-w',
-      title: 'Predator 420 - Engine Break-In Process',
-      category: 'SAFETY' as const,
-      tags: ['break-in', 'safety', 'maintenance'],
-      upgradeIds: null,
-    },
-    {
-      youtubeId: '7DCpUs0cnt0',
-      title: 'Predator 420 - Oil Filter Replacement',
-      category: 'INSTALL' as const,
-      tags: ['oil-filter', 'maintenance'],
-      upgradeIds: null,
-    },
-    {
-      youtubeId: '7KKdQb4gNy0',
-      title: 'Predator 420 - Fuel Line Installation',
-      category: 'INSTALL' as const,
-      tags: ['fuel-line', 'installation'],
-      upgradeIds: null,
-    },
-    {
-      youtubeId: '8zpPw8TBVrQ',
-      title: 'Predator 420 - Throttle Linkage Setup',
-      category: 'TUNING' as const,
-      tags: ['throttle', 'linkage', 'tuning'],
-      upgradeIds: null,
-    },
-    {
-      youtubeId: 'Aj1z39z2wB8',
-      title: 'Predator 420 - Choke Adjustment',
-      category: 'TUNING' as const,
-      tags: ['choke', 'adjustment', 'tuning'],
-      upgradeIds: null,
-    },
-    {
-      youtubeId: 'BpiKL5Z-ZrY',
-      title: 'Predator 420 - Engine Mounting',
-      category: 'INSTALL' as const,
-      tags: ['mounting', 'installation'],
-      upgradeIds: null,
-    },
-    {
-      youtubeId: 'EJsz01kKjVQ',
-      title: 'Predator 420 - Cooling System Setup',
-      category: 'INSTALL' as const,
-      tags: ['cooling', 'system', 'setup'],
-      upgradeIds: null,
-    },
-    {
-      youtubeId: 'GIsEqYSsocE',
-      title: 'Predator 420 - Electrical System Wiring',
-      category: 'INSTALL' as const,
-      tags: ['electrical', 'wiring', 'setup'],
-      upgradeIds: null,
-    },
-    {
-      youtubeId: 'JZUUuS1lu80',
-      title: 'Predator 420 - Engine Troubleshooting',
-      category: 'TUNING' as const,
-      tags: ['troubleshooting', 'diagnostics'],
-      upgradeIds: null,
-    },
-    {
-      youtubeId: 'JcONepMavFI',
-      title: 'Predator 420 - Performance Testing',
-      category: 'TUNING' as const,
-      tags: ['performance', 'testing'],
-      upgradeIds: null,
-    },
-    {
-      youtubeId: 'K5nkGiTAyuM',
-      title: 'Predator 420 - Maintenance Schedule',
-      category: 'SAFETY' as const,
-      tags: ['maintenance', 'schedule', 'safety'],
       upgradeIds: null,
     },
   ]
@@ -388,8 +310,8 @@ async function addPredator420Videos() {
           tags: video.tags ? JSON.parse(JSON.stringify(video.tags)) : null,
           engineIds: JSON.parse(JSON.stringify([engine.id])),
           upgradeIds: video.upgradeIds ? JSON.parse(JSON.stringify(video.upgradeIds)) : null,
-          partIds: undefined,
-          guideIds: undefined,
+          partIds: null,
+          guideIds: null,
         },
       })
       console.log(`   ✅ Added: ${video.title}\n`)
@@ -411,7 +333,7 @@ async function addPredator420Videos() {
   console.log(`❌ Failed: ${failed} videos`)
 }
 
-addPredator420Videos()
+addPredator212GhostVideos()
   .then(() => {
     console.log('\n✅ Done!')
     process.exit(0)

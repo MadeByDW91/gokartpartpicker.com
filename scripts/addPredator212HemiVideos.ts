@@ -311,8 +311,8 @@ async function addPredator212HemiVideos() {
           tags: video.tags ? JSON.parse(JSON.stringify(video.tags)) : null,
           engineIds: JSON.parse(JSON.stringify([engine.id])),
           upgradeIds: video.upgradeIds ? JSON.parse(JSON.stringify(video.upgradeIds)) : null,
-          partIds: null,
-          guideIds: null,
+          partIds: undefined,
+          guideIds: undefined,
         },
       })
       console.log(`   ✅ Added: ${video.title}\n`)
