@@ -1191,7 +1191,7 @@ async function main() {
     engineName: string,
     engineSlug: string
   ) => {
-    const videos = []
+    const videos: any[] = []
     
     // Generate 30 unique video IDs (in production, these should be real YouTube IDs)
     const generateVideoId = () => {
