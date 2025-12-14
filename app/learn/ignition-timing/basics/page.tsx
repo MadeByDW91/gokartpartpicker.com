@@ -38,7 +38,7 @@ export default async function IgnitionTimingBasicsPage() {
           cylinder. This is a critical reference point for timing measurements.
         </p>
         <p className="text-garage-gray mb-4">
-          When we say "20° BTDC," we mean the spark plug fires 20 degrees of crankshaft rotation
+          When we say &quot;20° BTDC,&quot; we mean the spark plug fires 20 degrees of crankshaft rotation
           before the piston reaches TDC. This gives the fuel-air mixture time to ignite and build
           pressure before the piston starts its power stroke.
         </p>
@@ -69,7 +69,7 @@ export default async function IgnitionTimingBasicsPage() {
         </h3>
         <p className="text-yellow-800">
           Never advance timing without proper safety components (billet flywheel, billet rod) if
-          you're running high RPMs. Always verify timing specifications with a timing light and
+          you&apos;re running high RPMs. Always verify timing specifications with a timing light and
           listen for detonation/knock.
         </p>
       </div>
