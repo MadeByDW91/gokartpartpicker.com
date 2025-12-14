@@ -95,9 +95,9 @@ async function addVideosInteractive() {
           category: category || 'INSTALL',
           tags: tags.length > 0 ? JSON.parse(JSON.stringify(tags)) : null,
           engineIds: JSON.parse(JSON.stringify([engine.id])),
-          upgradeIds: null,
-          partIds: null,
-          guideIds: null,
+          upgradeIds: undefined,
+          partIds: undefined,
+          guideIds: undefined,
         },
       })
       console.log(`✅ Added video: ${title || youtubeId.trim()}\n`)

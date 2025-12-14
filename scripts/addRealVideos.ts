@@ -37,8 +37,8 @@ async function addRealVideos() {
       tags: ['installation', 'setup', 'beginner'],
       engineIds: [predator212Hemi.id],
       upgradeIds: null,
-      partIds: null,
-      guideIds: null,
+      partIds: undefined,
+      guideIds: undefined,
     },
     {
       youtubeId: 'jNQXAC9IVRw', // Example - replace with real ID
@@ -49,8 +49,8 @@ async function addRealVideos() {
       tags: ['governor', 'removal', 'mod'],
       engineIds: [predator212Hemi.id],
       upgradeIds: ['governor-delete'],
-      partIds: null,
-      guideIds: null,
+      partIds: undefined,
+      guideIds: undefined,
     },
     // Add more real videos here...
   ]
