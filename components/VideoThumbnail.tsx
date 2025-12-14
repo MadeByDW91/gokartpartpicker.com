@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { isPlaceholderId } from '@/lib/videoVerification'
 
 interface VideoThumbnailProps {
   youtubeId: string
@@ -32,12 +33,24 @@ function formatDuration(seconds: number): string {
 export default function VideoThumbnail({ youtubeId, title, durationSeconds, category }: VideoThumbnailProps) {
   const [imageError, setImageError] = useState(false)
   const [triedFallback, setTriedFallback] = useState(false)
+  const [isValid, setIsValid] = useState<boolean | null>(null)
 
-  // Check if this is a placeholder ID (all same character or contains AAAAAAAAAA pattern)
-  const isPlaceholder = /^[A-Z0-9_-]{11}$/.test(youtubeId) && 
-    (youtubeId === youtubeId[0].repeat(11) || 
-     /A{10,}/.test(youtubeId) ||
-     youtubeId.includes('AAAAAAAAAA'))
+  // Check if this is a placeholder ID
+  const isPlaceholder = isPlaceholderId(youtubeId)
+
+  // Verify video on mount
+  useEffect(() => {
+    if (isPlaceholder) {
+      setIsValid(false)
+      return
+    }
+
+    // Try to verify the video by loading the thumbnail
+    const img = new Image()
+    img.onload = () => setIsValid(true)
+    img.onerror = () => setIsValid(false)
+    img.src = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`
+  }, [youtubeId, isPlaceholder])
 
   const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     const target = e.target as HTMLImageElement
@@ -59,8 +72,8 @@ export default function VideoThumbnail({ youtubeId, title, durationSeconds, cate
   }
 
   const getImageSrc = () => {
-    // If we know it's a placeholder or had an error, show placeholder immediately
-    if (isPlaceholder || imageError) {
+    // If we know it's a placeholder, invalid, or had an error, show placeholder immediately
+    if (isPlaceholder || imageError || isValid === false) {
       return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180"%3E%3Crect fill="%23d1d5db" width="320" height="180"/%3Ccircle cx="160" cy="90" r="30" fill="%23ef4444" opacity="0.9"/%3Cpath d="M150 80 L150 100 L170 90 Z" fill="white"/%3Ctext x="160" y="130" text-anchor="middle" fill="%236b7280" font-family="Arial, sans-serif" font-size="12"%3EVideo Preview%3C/text%3E%3C/svg%3E'
     }
     // Try maxresdefault first for better quality, fallback to hqdefault

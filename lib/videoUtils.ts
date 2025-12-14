@@ -1,5 +1,6 @@
 import { prisma } from './prisma'
 import { VideoCategory } from '@/components/VideoCarousel'
+import { isPlaceholderId } from './videoVerification'
 
 export interface VideoData {
   id: string
@@ -36,11 +37,21 @@ export async function getContextualVideos(options: {
   // For now, we'll fetch all videos and filter in memory (simple approach)
   // In production, you might want to use PostgreSQL JSON operators
 
+  // Build where clause for Prisma query
+  const whereClause: any = {}
+  
+  if (category) {
+    whereClause.category = category
+  }
+
   let allVideos = await prisma.video.findMany({
-    where: category ? { category } : undefined,
+    where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
     orderBy: { createdAt: 'desc' },
-    take: limit * 2, // Fetch more to filter
+    take: limit * 5, // Fetch more to filter
   })
+
+  // Filter out placeholder IDs
+  allVideos = allVideos.filter((video) => !isPlaceholderId(video.youtubeId))
 
   // If no context provided, return all videos
   const hasContext = engineId || engineSlug || upgradeId || upgradeSlug || partId || partSlug || guideId || guideSlug
@@ -87,10 +98,9 @@ export async function getContextualVideos(options: {
       return matches
     })
 
-    // If no specific matches, return videos by category or all videos
-    if (matchingVideos.length === 0) {
-      matchingVideos = allVideos.slice(0, limit)
-    }
+    // IMPORTANT: Only return videos that match the specific engine/upgrade/part/guide
+    // Do NOT fall back to all videos - this was causing wrong videos to show on engine pages
+    // If no matches found, return empty array (no videos for this context)
   }
 
   return matchingVideos.slice(0, limit).map((video) => ({

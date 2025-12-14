@@ -12,9 +12,21 @@ export const metadata: Metadata = {
 }
 
 async function getAllVideos() {
-  return await prisma.video.findMany({
+  // Only get videos that are likely valid (not placeholder IDs)
+  const allVideos = await prisma.video.findMany({
     orderBy: { createdAt: 'desc' },
     take: 200, // Limit to reasonable number
+  })
+
+  // Filter out obvious placeholder IDs
+  return allVideos.filter((video) => {
+    const youtubeId = video.youtubeId
+    // Filter out placeholder patterns
+    const isPlaceholder = /^[A-Z0-9_-]{11}$/.test(youtubeId) && 
+      (youtubeId === youtubeId[0].repeat(11) || 
+       /A{10,}/.test(youtubeId) ||
+       youtubeId.includes('AAAAAAAAAA'))
+    return !isPlaceholder
   })
 }
 

@@ -161,6 +161,52 @@ export default async function HomePage() {
               Browse Engines
             </Link>
           </div>
+
+          {/* How It Works - Moved here, right after Start Build button */}
+          <section className="mb-8 bg-white rounded-lg border border-gray-200 p-8 md:p-12">
+            <h2 className="text-3xl font-heading font-bold text-garage-dark mb-8 text-center">
+              How It Works
+            </h2>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-garage-orange rounded-full flex items-center justify-center text-white text-2xl font-heading font-bold mx-auto mb-4">
+                  1
+                </div>
+                <h3 className="text-xl font-heading font-semibold text-garage-dark mb-2">
+                  Choose Engine
+                </h3>
+                <p className="text-garage-gray">
+                  Select your base engine from Predator 212 variants, 420, or 670. See real torque
+                  specs and compatibility data.
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-garage-orange rounded-full flex items-center justify-center text-white text-2xl font-heading font-bold mx-auto mb-4">
+                  2
+                </div>
+                <h3 className="text-xl font-heading font-semibold text-garage-dark mb-2">
+                  Pick Upgrades
+                </h3>
+                <p className="text-garage-gray">
+                  Add performance parts with live compatibility checks. See HP gains, RPM limits, and
+                  safety warnings in real-time.
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-garage-orange rounded-full flex items-center justify-center text-white text-2xl font-heading font-bold mx-auto mb-4">
+                  3
+                </div>
+                <h3 className="text-xl font-heading font-semibold text-garage-dark mb-2">
+                  See Results
+                </h3>
+                <p className="text-garage-gray">
+                  Get estimated HP range, safe RPM limits, required tools, torque specs, and
+                  step-by-step install guides.
+                </p>
+              </div>
+            </div>
+          </section>
+
           {/* Calculator Preview Card */}
           <div className="max-w-md mx-auto bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
             <h3 className="text-lg font-heading font-semibold text-garage-dark mb-2">
@@ -219,51 +265,6 @@ export default async function HomePage() {
                 </div>
               </div>
             ))}
-          </div>
-        </section>
-
-        {/* 3. How It Works */}
-        <section className="mb-16 bg-white rounded-lg border border-gray-200 p-8 md:p-12">
-          <h2 className="text-3xl font-heading font-bold text-garage-dark mb-8 text-center">
-            How It Works
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-garage-orange rounded-full flex items-center justify-center text-white text-2xl font-heading font-bold mx-auto mb-4">
-                1
-              </div>
-              <h3 className="text-xl font-heading font-semibold text-garage-dark mb-2">
-                Choose Engine
-              </h3>
-              <p className="text-garage-gray">
-                Select your base engine from Predator 212 variants, 420, or 670. See real torque
-                specs and compatibility data.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-garage-orange rounded-full flex items-center justify-center text-white text-2xl font-heading font-bold mx-auto mb-4">
-                2
-              </div>
-              <h3 className="text-xl font-heading font-semibold text-garage-dark mb-2">
-                Pick Upgrades
-              </h3>
-              <p className="text-garage-gray">
-                Add performance parts with live compatibility checks. See HP gains, RPM limits, and
-                safety warnings in real-time.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-garage-orange rounded-full flex items-center justify-center text-white text-2xl font-heading font-bold mx-auto mb-4">
-                3
-              </div>
-              <h3 className="text-xl font-heading font-semibold text-garage-dark mb-2">
-                See Results
-              </h3>
-              <p className="text-garage-gray">
-                Get estimated HP range, safe RPM limits, required tools, torque specs, and
-                step-by-step install guides.
-              </p>
-            </div>
           </div>
         </section>
 
@@ -364,22 +365,34 @@ export default async function HomePage() {
         </section>
 
         {/* 6. Videos Teaser Strip */}
-        {videos.length > 0 && (
-          <section className="mb-16">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl font-heading font-bold text-garage-dark">
-                Featured Videos
-              </h2>
+        <section className="mb-16">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-heading font-bold text-garage-dark">
+              Featured Videos
+            </h2>
+            <Link
+              href="/videos"
+              className="text-garage-orange font-semibold hover:underline"
+            >
+              Browse All Videos →
+            </Link>
+          </div>
+          {videos.length > 0 ? (
+            <VideoCarousel videos={videos} compact maxVisible={4} />
+          ) : (
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-12 text-center">
+              <p className="text-garage-gray dark:text-gray-400 text-lg mb-4">
+                Videos coming soon! Check back for helpful installation and tuning guides.
+              </p>
               <Link
                 href="/videos"
-                className="text-garage-orange font-semibold hover:underline"
+                className="inline-block bg-garage-orange text-white px-6 py-2 rounded-lg font-heading hover:bg-opacity-90 transition"
               >
-                Browse All Videos →
+                Browse All Videos
               </Link>
             </div>
-            <VideoCarousel videos={videos} compact maxVisible={4} />
-          </section>
-        )}
+          )}
+        </section>
 
         {/* 7. Store Preview */}
         <section className="mb-16">

@@ -1272,45 +1272,35 @@ async function main() {
     return videos
   }
   
-  // Generate 30 videos for each engine
-  // NOTE: Video IDs are placeholders - replace with real YouTube video IDs
-  const videos = [
-    // Generate videos for each engine (30 per engine = 150 total videos)
-    ...generateEngineVideos(predator212HemiId, 'Predator 212 Hemi', 'predator-212-hemi'),
-    ...generateEngineVideos(predator212NonHemiId, 'Predator 212 Non-Hemi', 'predator-212-non-hemi'),
-    ...generateEngineVideos(predator212GhostId, 'Predator 212 Ghost', 'predator-212-ghost'),
-    ...generateEngineVideos(predator420Id, 'Predator 420', 'predator-420'),
-    ...generateEngineVideos(predator670Id, 'Predator 670', 'predator-670'),
-  ]
+  // IMPORTANT: Videos are NOT automatically generated anymore
+  // All placeholder videos have been removed to prevent showing invalid content
+  // 
+  // To add real videos:
+  // 1. Use the script: npx tsx scripts/addRealVideos.ts
+  // 2. Or use the API: POST /api/videos/verify/all to verify existing videos
+  // 3. Or manually add videos through Prisma Studio or the database
+  //
+  // Video format:
+  // - youtubeId: Real 11-character YouTube video ID
+  // - title: Video title
+  // - channelName: Channel name
+  // - durationSeconds: Video duration in seconds
+  // - category: INSTALL | TUNING | TEARDOWN | SAFETY
+  // - tags: Array of tag strings
+  // - engineIds: Array of engine IDs this video relates to
+  // - upgradeIds: Array of upgrade slugs this video relates to
   
-  console.log(`📹 Generated ${videos.length} videos (${videos.length / 5} per engine)`)
+  console.log('📹 Video seeding skipped - use scripts/addRealVideos.ts to add real videos')
+  console.log('   All placeholder videos have been removed from the database')
   
-  // IMPORTANT: The video IDs generated above are PLACEHOLDERS
-  // You need to replace them with real YouTube video IDs:
-  // 1. Search YouTube for videos matching each title
-  // 2. Copy the video ID from the URL (part after v=)
-  // 3. Replace the placeholder ID in the generated videos
-  // Example: https://www.youtube.com/watch?v=REAL_VIDEO_ID_HERE
-
-  for (const video of videos) {
-    await prisma.video.create({
-      data: {
-        youtubeId: video.youtubeId,
-        title: video.title,
-        channelName: video.channelName,
-        durationSeconds: video.durationSeconds,
-        thumbnailUrl: video.thumbnailUrl,
-        category: video.category,
-        tags: video.tags ? JSON.parse(JSON.stringify(video.tags)) : Prisma.JsonNull,
-        engineIds: video.engineIds ? JSON.parse(JSON.stringify(video.engineIds)) : Prisma.JsonNull,
-        upgradeIds: video.upgradeIds ? JSON.parse(JSON.stringify(video.upgradeIds)) : Prisma.JsonNull,
-        partIds: video.partIds ? JSON.parse(JSON.stringify(video.partIds)) : Prisma.JsonNull,
-        guideIds: video.guideIds ? JSON.parse(JSON.stringify(video.guideIds)) : Prisma.JsonNull,
-      },
-    })
-  }
-
-  console.log('✅ Created videos')
+  // DISABLED: Placeholder video generation
+  // const videos = [
+  //   ...generateEngineVideos(predator212HemiId, 'Predator 212 Hemi', 'predator-212-hemi'),
+  //   ...generateEngineVideos(predator212NonHemiId, 'Predator 212 Non-Hemi', 'predator-212-non-hemi'),
+  //   ...generateEngineVideos(predator212GhostId, 'Predator 212 Ghost', 'predator-212-ghost'),
+  //   ...generateEngineVideos(predator420Id, 'Predator 420', 'predator-420'),
+  //   ...generateEngineVideos(predator670Id, 'Predator 670', 'predator-670'),
+  // ]
 
   console.log('✅ Seeding complete!')
 }
