@@ -1302,6 +1302,341 @@ async function main() {
   //   ...generateEngineVideos(predator670Id, 'Predator 670', 'predator-670'),
   // ]
 
+  // Seed Axle Parts
+  console.log('🌱 Seeding axle parts...')
+
+  // Clear existing axle parts
+  await prisma.axleCompatibilityRule.deleteMany()
+  await prisma.axlePart.deleteMany()
+
+  // Create axle parts for 1" live axle
+  const axleParts = [
+    // Bearings
+    {
+      slug: 'pillow-block-bearing-1in',
+      name: '1" Pillow Block Bearing',
+      description: 'Pillow block bearing with 1" bore, perfect for live axles. Includes mounting bracket.',
+      category: 'BEARING' as const,
+      specs: {
+        boreDiameter: 1,
+        keywayWidth: 0.25,
+        mountingStyle: 'Pillow Block',
+      },
+      affiliateUrl: 'https://example.com/pillow-block-1in',
+      compatibilityRules: [
+        {
+          axleType: 'LIVE' as const,
+          minAxleDiameter: 0.99,
+          maxAxleDiameter: 1.01,
+          keywayWidth: 0.25,
+          status: 'FITS' as const,
+          notes: null,
+        },
+      ],
+    },
+    {
+      slug: 'flanged-bearing-1in',
+      name: '1" Flanged Bearing',
+      description: 'Flanged bearing with 1" bore. Mounts directly to frame with flange.',
+      category: 'BEARING' as const,
+      specs: {
+        boreDiameter: 1,
+        keywayWidth: 0.25,
+        mountingStyle: 'Flanged',
+      },
+      affiliateUrl: 'https://example.com/flanged-bearing-1in',
+      compatibilityRules: [
+        {
+          axleType: 'LIVE' as const,
+          minAxleDiameter: 0.99,
+          maxAxleDiameter: 1.01,
+          keywayWidth: 0.25,
+          status: 'FITS' as const,
+          notes: null,
+        },
+      ],
+    },
+    {
+      slug: 'pillow-block-bearing-075in',
+      name: '3/4" Pillow Block Bearing',
+      description: 'Pillow block bearing with 3/4" bore. Not compatible with 1" axle.',
+      category: 'BEARING' as const,
+      specs: {
+        boreDiameter: 0.75,
+        keywayWidth: 0.1875,
+        mountingStyle: 'Pillow Block',
+      },
+      affiliateUrl: null,
+      compatibilityRules: [
+        {
+          axleType: 'LIVE' as const,
+          minAxleDiameter: 0.74,
+          maxAxleDiameter: 0.76,
+          keywayWidth: 0.1875,
+          status: 'NOT_COMPATIBLE' as const,
+          notes: 'Bore diameter (3/4") does not match 1" axle. Requires different axle or bushing.',
+        },
+      ],
+    },
+    // Sprockets
+    {
+      slug: 'sprocket-1in-35-chain',
+      name: '1" Bore #35 Chain Sprocket',
+      description: 'Steel sprocket with 1" bore and #35 chain compatibility. 10 tooth.',
+      category: 'SPROCKET' as const,
+      specs: {
+        boreDiameter: 1,
+        keywayWidth: 0.25,
+        chainSize: '#35',
+        toothCount: 10,
+      },
+      affiliateUrl: 'https://example.com/sprocket-1in-35',
+      compatibilityRules: [
+        {
+          axleType: 'LIVE' as const,
+          minAxleDiameter: 0.99,
+          maxAxleDiameter: 1.01,
+          keywayWidth: 0.25,
+          status: 'FITS' as const,
+          notes: null,
+        },
+      ],
+    },
+    {
+      slug: 'sprocket-1in-41-chain',
+      name: '1" Bore #41 Chain Sprocket',
+      description: 'Steel sprocket with 1" bore and #41 chain compatibility. 12 tooth.',
+      category: 'SPROCKET' as const,
+      specs: {
+        boreDiameter: 1,
+        keywayWidth: 0.25,
+        chainSize: '#41',
+        toothCount: 12,
+      },
+      affiliateUrl: 'https://example.com/sprocket-1in-41',
+      compatibilityRules: [
+        {
+          axleType: 'LIVE' as const,
+          minAxleDiameter: 0.99,
+          maxAxleDiameter: 1.01,
+          keywayWidth: 0.25,
+          status: 'FITS' as const,
+          notes: null,
+        },
+      ],
+    },
+    {
+      slug: 'sprocket-1in-35-chain-close',
+      name: '1.05" Bore #35 Chain Sprocket',
+      description: 'Sprocket with slightly larger bore. May require shimming for 1" axle.',
+      category: 'SPROCKET' as const,
+      specs: {
+        boreDiameter: 1.05,
+        keywayWidth: 0.25,
+        chainSize: '#35',
+        toothCount: 10,
+      },
+      affiliateUrl: 'https://example.com/sprocket-105in-35',
+      compatibilityRules: [
+        {
+          axleType: 'LIVE' as const,
+          minAxleDiameter: 1.04,
+          maxAxleDiameter: 1.06,
+          keywayWidth: 0.25,
+          status: 'FITS_WITH_NOTES' as const,
+          notes: 'Bore is slightly larger (1.05" vs 1"). May require shimming or bushing for proper fit.',
+        },
+      ],
+    },
+    // Hubs
+    {
+      slug: 'wheel-hub-1in',
+      name: '1" Wheel Hub',
+      description: 'Wheel hub with 1" bore. Compatible with 4-bolt wheel pattern.',
+      category: 'HUB' as const,
+      specs: {
+        boreDiameter: 1,
+        keywayWidth: 0.25,
+        boltPattern: '4x4"',
+        hubType: 'Wheel',
+      },
+      affiliateUrl: 'https://example.com/wheel-hub-1in',
+      compatibilityRules: [
+        {
+          axleType: 'LIVE' as const,
+          minAxleDiameter: 0.99,
+          maxAxleDiameter: 1.01,
+          keywayWidth: 0.25,
+          status: 'FITS' as const,
+          notes: null,
+        },
+      ],
+    },
+    {
+      slug: 'sprocket-hub-1in',
+      name: '1" Sprocket Hub',
+      description: 'Hub adapter for mounting sprockets to 1" axle.',
+      category: 'HUB' as const,
+      specs: {
+        boreDiameter: 1,
+        keywayWidth: 0.25,
+        hubType: 'Sprocket',
+      },
+      affiliateUrl: 'https://example.com/sprocket-hub-1in',
+      compatibilityRules: [
+        {
+          axleType: 'LIVE' as const,
+          minAxleDiameter: 0.99,
+          maxAxleDiameter: 1.01,
+          keywayWidth: 0.25,
+          status: 'FITS' as const,
+          notes: null,
+        },
+      ],
+    },
+    {
+      slug: 'brake-hub-1in',
+      name: '1" Brake Hub',
+      description: 'Hub for mounting brake rotor to 1" axle.',
+      category: 'HUB' as const,
+      specs: {
+        boreDiameter: 1,
+        keywayWidth: 0.25,
+        hubType: 'Brake',
+      },
+      affiliateUrl: 'https://example.com/brake-hub-1in',
+      compatibilityRules: [
+        {
+          axleType: 'LIVE' as const,
+          minAxleDiameter: 0.99,
+          maxAxleDiameter: 1.01,
+          keywayWidth: 0.25,
+          status: 'FITS' as const,
+          notes: null,
+        },
+      ],
+    },
+    // Brake Rotors
+    {
+      slug: 'brake-rotor-6in',
+      name: '6" Brake Rotor',
+      description: '6" diameter brake rotor. Requires brake hub for mounting.',
+      category: 'BRAKE_ROTOR' as const,
+      specs: {
+        diameter: 6,
+        boltPattern: '4x4"',
+        thickness: 0.25,
+      },
+      affiliateUrl: 'https://example.com/brake-rotor-6in',
+      compatibilityRules: [
+        {
+          axleType: 'LIVE' as const,
+          status: 'FITS_WITH_NOTES' as const,
+          notes: 'Requires compatible brake hub. Verify hub bolt pattern matches (4x4").',
+        },
+      ],
+    },
+    // Brake Calipers
+    {
+      slug: 'brake-caliper-mechanical',
+      name: 'Mechanical Brake Caliper',
+      description: 'Mechanical brake caliper for 6" rotors. Includes mounting bracket.',
+      category: 'BRAKE_CALIPER' as const,
+      specs: {
+        rotorSize: '6"',
+        type: 'Mechanical',
+      },
+      affiliateUrl: 'https://example.com/brake-caliper-mech',
+      compatibilityRules: [
+        {
+          axleType: 'LIVE' as const,
+          status: 'FITS_WITH_NOTES' as const,
+          notes: 'Requires compatible brake rotor and proper mounting bracket. Verify frame mounting points.',
+        },
+      ],
+    },
+    // Wheels
+    {
+      slug: 'wheel-10x5-4bolt',
+      name: '10x5" Wheel - 4 Bolt Pattern',
+      description: '10" diameter, 5" wide wheel with 4-bolt pattern. Compatible with 1" wheel hub.',
+      category: 'WHEEL' as const,
+      specs: {
+        diameter: 10,
+        width: 5,
+        boltPattern: '4x4"',
+      },
+      affiliateUrl: 'https://example.com/wheel-10x5',
+      compatibilityRules: [
+        {
+          axleType: 'LIVE' as const,
+          status: 'FITS_WITH_NOTES' as const,
+          notes: 'Requires compatible wheel hub with matching bolt pattern (4x4").',
+        },
+      ],
+    },
+    // Hardware
+    {
+      slug: 'key-stock-025x025',
+      name: '1/4" x 1/4" Key Stock',
+      description: 'Steel key stock for 1/4" keyway. Cut to length as needed.',
+      category: 'HARDWARE' as const,
+      specs: {
+        width: 0.25,
+        height: 0.25,
+        material: 'Steel',
+      },
+      affiliateUrl: 'https://example.com/key-stock-025',
+      compatibilityRules: [
+        {
+          axleType: 'LIVE' as const,
+          keywayWidth: 0.25,
+          status: 'FITS' as const,
+          notes: 'Standard 1/4" key stock. Cut to length based on hub/sprocket requirements.',
+        },
+      ],
+    },
+    {
+      slug: 'shaft-collar-1in',
+      name: '1" Shaft Collar',
+      description: 'Shaft collar for 1" diameter axle. Used for spacing and positioning.',
+      category: 'HARDWARE' as const,
+      specs: {
+        boreDiameter: 1,
+        type: 'Set Screw',
+      },
+      affiliateUrl: 'https://example.com/shaft-collar-1in',
+      compatibilityRules: [
+        {
+          axleType: 'LIVE' as const,
+          minAxleDiameter: 0.99,
+          maxAxleDiameter: 1.01,
+          status: 'FITS' as const,
+          notes: null,
+        },
+      ],
+    },
+  ]
+
+  for (const partData of axleParts) {
+    const { compatibilityRules, ...partFields } = partData
+    const part = await prisma.axlePart.create({
+      data: partFields,
+    })
+
+    // Create compatibility rules
+    for (const ruleData of compatibilityRules) {
+      await prisma.axleCompatibilityRule.create({
+        data: {
+          ...ruleData,
+          axlePartId: part.id,
+        },
+      })
+    }
+  }
+
+  console.log(`✅ Created ${axleParts.length} axle parts with compatibility rules`)
+
   console.log('✅ Seeding complete!')
 }
 

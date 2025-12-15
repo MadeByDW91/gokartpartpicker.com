@@ -550,3 +550,66 @@ model Video {
   @@index([youtubeId])
 }
 
+// Axle Compatibility Models
+
+enum AxleType {
+  LIVE
+  DEAD
+}
+
+enum AxlePartCategory {
+  BEARING
+  SPROCKET
+  HUB
+  BRAKE_ROTOR
+  BRAKE_CALIPER
+  WHEEL
+  HARDWARE
+}
+
+enum CompatibilityStatus {
+  FITS
+  FITS_WITH_NOTES
+  NOT_COMPATIBLE
+}
+
+model AxlePart {
+  id          String            @id @default(cuid())
+  slug        String            @unique
+  name        String
+  description String?           @db.Text
+  category    AxlePartCategory
+  specs       Json              // Store boreDiameter, keywayWidth, boltPattern, chainSize, etc.
+  affiliateUrl String?           @db.Text
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // Relations
+  compatibilityRules AxleCompatibilityRule[]
+
+  @@index([slug])
+  @@index([category])
+  @@index([isActive])
+}
+
+model AxleCompatibilityRule {
+  id                String              @id @default(cuid())
+  axlePartId        String
+  axleType          AxleType
+  minAxleDiameter   Float?              // in inches
+  maxAxleDiameter   Float?              // in inches
+  keywayWidth       Float?              // in inches
+  status            CompatibilityStatus
+  notes             String?             @db.Text
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  // Relations
+  axlePart AxlePart @relation(fields: [axlePartId], references: [id], onDelete: Cascade)
+
+  @@index([axlePartId])
+  @@index([axleType])
+  @@index([status])
+}
+
