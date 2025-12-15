@@ -133,9 +133,10 @@ export default function SmartSearch({ onClose }: SmartSearchProps) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition flex items-center gap-2"
+        className="px-3 sm:px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition flex items-center gap-2 min-h-[44px]"
+        aria-label="Search"
       >
-        <span>🔍</span>
+        <span className="text-lg sm:text-xl">🔍</span>
         <span className="hidden sm:inline">Search</span>
         <span className="hidden sm:inline text-xs text-gray-400">/</span>
       </button>

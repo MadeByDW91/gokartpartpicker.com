@@ -30,14 +30,17 @@ export default function AuthNav() {
 
   if (session?.user) {
     return (
-      <div className="flex gap-4 items-center">
-        <Link href="/my-builds" className="hover:text-garage-orange text-sm">
-          My Builds
+      <div className="flex gap-2 sm:gap-4 items-center">
+        <Link href="/my-builds" className="hover:text-garage-orange text-xs sm:text-sm whitespace-nowrap">
+          <span className="hidden sm:inline">My Builds</span>
+          <span className="sm:hidden">Builds</span>
         </Link>
-        <span className="text-sm text-gray-400">{session.user.email}</span>
+        <span className="text-xs sm:text-sm text-gray-400 hidden sm:inline truncate max-w-[120px]">
+          {session.user.email}
+        </span>
         <button
           onClick={() => signOut({ callbackUrl: '/' })}
-          className="text-sm hover:text-garage-orange"
+          className="text-xs sm:text-sm hover:text-garage-orange whitespace-nowrap"
         >
           Log Out
         </button>
@@ -46,13 +49,16 @@ export default function AuthNav() {
   }
 
   return (
-    <div className="flex gap-4">
-      <Link href="/login" className="hover:text-garage-orange text-sm">
+    <div className="flex gap-2 sm:gap-4">
+      <Link
+        href="/login"
+        className="bg-garage-orange text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm hover:bg-opacity-90 transition whitespace-nowrap"
+      >
         Log In
       </Link>
       <Link
         href="/signup"
-        className="bg-garage-orange text-white px-4 py-2 rounded-lg text-sm hover:bg-opacity-90 transition"
+        className="bg-garage-orange text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm hover:bg-opacity-90 transition whitespace-nowrap"
       >
         Sign Up
       </Link>

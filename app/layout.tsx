@@ -5,9 +5,9 @@ import Link from 'next/link'
 import SessionProvider from '@/components/SessionProvider'
 import AuthNav from '@/components/AuthNav'
 import ThemeProvider from '@/components/ThemeProvider'
-import ThemeToggle from '@/components/ThemeToggle'
 import SmartSearch from '@/components/SmartSearch'
 import Logo from '@/components/Logo'
+import MobileNav from '@/components/MobileNav'
 
 const oswald = Oswald({
   subsets: ['latin'],
@@ -24,6 +24,17 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'GoKart Part Picker',
   description: 'Build and customize your go-kart engine with the right parts',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
+  themeColor: '#1a1a1a',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+  },
 }
 
 export default function RootLayout({
@@ -43,15 +54,15 @@ export default function RootLayout({
                   <div className="relative z-20 -mt-8 -mb-8">
                     <Logo priority width={560} height={224} />
                   </div>
-                  <div className="flex gap-4 items-center relative z-10 ml-auto">
+                  <div className="flex gap-2 sm:gap-4 items-center relative z-10 ml-auto">
                     <AuthNav />
-                    <ThemeToggle />
+                    <MobileNav />
                   </div>
                 </div>
               </div>
               
-              {/* Bottom Bar: Main Navigation */}
-              <nav className="bg-garage-dark dark:bg-gray-900 px-4 py-3">
+              {/* Bottom Bar: Main Navigation (Desktop Only) */}
+              <nav className="hidden lg:block bg-garage-dark dark:bg-gray-900 px-4 py-3">
                 <div className="container mx-auto flex justify-between items-center">
                   <div className="flex gap-6 items-center">
                     <Link href="/build" className="flex items-center gap-2 hover:text-garage-orange transition">

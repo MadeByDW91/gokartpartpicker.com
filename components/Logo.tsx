@@ -33,7 +33,7 @@ export default function Logo({ className = '', width = 200, height = 80, priorit
         width={width}
         height={height}
         priority={priority}
-        className="h-auto w-auto object-contain"
+        className="h-auto w-auto object-contain max-w-[280px] sm:max-w-[420px] lg:max-w-none"
         style={{ imageRendering: 'auto', maxHeight: `${height}px` }}
         onError={() => setImageError(true)}
       />
