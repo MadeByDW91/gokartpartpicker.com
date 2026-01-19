@@ -10,22 +10,23 @@ Your deployment shows **404_NOT_FOUND** because Vercel is looking in the root di
 1. Go to: https://vercel.com
 2. Click on your project: **gokartpartpicker-com**
 3. Click **"Settings"** (top navigation)
-4. Click **"General"** in the left sidebar
 
-### Step 2: Fix Root Directory ⚠️ CRITICAL
+### Step 2: Find Root Directory ⚠️ CRITICAL
 
-1. Scroll down to find **"Root Directory"**
-2. Click **"Edit"** button
-3. **Change from:** `/` (or empty)
-4. **Change to:** `frontend`
-5. Click **"Save"**
+**The Root Directory is in "Build & Development Settings", NOT General!**
 
-### Step 3: Update Build Settings
+1. In the LEFT SIDEBAR, click **"Build & Development Settings"**
+2. Scroll down to find **"Root Directory"** section
+3. Click **"Edit"** button
+4. **Change from:** `/` (or empty)
+5. **Change to:** `frontend`
+6. Click **"Save"**
 
-While still in Settings:
+### Step 3: Verify Other Build Settings
 
-1. Click **"Build & Development Settings"** in left sidebar
-2. Verify these settings:
+While still in Build & Development Settings:
+
+1. Verify these settings:
    - **Framework Preset:** `Next.js`
    - **Root Directory:** `frontend` ✅
    - **Build Command:** `npm run build` (or leave default)
