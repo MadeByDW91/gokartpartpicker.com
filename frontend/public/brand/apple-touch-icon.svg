@@ -1,0 +1,13 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Solid olive background for iOS -->
+  <rect width="180" height="180" fill="#1a1e15"/>
+  
+  <!-- Badge shape centered -->
+  <g transform="translate(90, 85)">
+    <path d="M-50 -45 C-50 -50 -46 -54 -41 -54 L41 -54 C46 -54 50 -50 50 -45 L50 35 C50 40 46 44 41 44 L15 44 L0 58 L-15 44 L-41 44 C-46 44 -50 40 -50 35 Z" 
+          fill="#2d3226" stroke="#c96a24" stroke-width="4"/>
+    
+    <!-- "GK" lettermark -->
+    <text x="0" y="8" font-family="Impact, sans-serif" font-size="42" font-weight="700" fill="#f5f0e6" text-anchor="middle" letter-spacing="2">GK</text>
+  </g>
+</svg>

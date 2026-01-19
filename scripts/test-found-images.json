@@ -1,0 +1,40 @@
+[
+  {
+    "product_id": "test-harbor-1",
+    "product_type": "engine",
+    "product_name": "Predator 6.5 HP (212cc) OHV Horizontal-Shaft Gas Engine",
+    "image_url": null,
+    "source": null,
+    "confidence": 0,
+    "metadata": {},
+    "errors": [
+      "Could not find image on Harbor Freight product page",
+      "Manual search required for Predator engines on Harbor Freight",
+      "Image not found automatically - requires manual review"
+    ]
+  },
+  {
+    "product_id": "test-amazon-1",
+    "product_type": "part",
+    "product_name": "Go Kart Racing Sprocket - Aluminum 2-piece for #35 Chain",
+    "image_url": "https://m.media-amazon.com/images/I/71330J6V5HL._AC_SX679_.jpg",
+    "source": "amazon",
+    "confidence": 0.85,
+    "metadata": {
+      "notes": "Extracted from Amazon product page"
+    },
+    "errors": []
+  },
+  {
+    "product_id": "test-no-url",
+    "product_type": "part",
+    "product_name": "Test Product Without URL",
+    "image_url": null,
+    "source": null,
+    "confidence": 0,
+    "metadata": {},
+    "errors": [
+      "Image not found automatically - requires manual review"
+    ]
+  }
+]

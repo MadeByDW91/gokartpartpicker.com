@@ -1,0 +1,32 @@
+<svg width="300" height="200" viewBox="0 0 300 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Toolbox body -->
+  <g transform="translate(150, 100)">
+    <!-- Main box -->
+    <rect x="-60" y="-10" width="120" height="60" rx="4" stroke="#f5f0e6" stroke-width="2" fill="none"/>
+    <!-- Lid -->
+    <path d="M-60 -10 L-65 -25 L65 -25 L60 -10" stroke="#f5f0e6" stroke-width="2" fill="none"/>
+    <!-- Handle -->
+    <path d="M-20 -25 L-20 -35 L20 -35 L20 -25" stroke="#f5f0e6" stroke-width="2" fill="none"/>
+    <!-- Latch -->
+    <rect x="-8" y="15" width="16" height="8" rx="2" stroke="#c96a24" stroke-width="2" fill="none"/>
+    
+    <!-- Wrench sticking out (accent) -->
+    <g transform="translate(40, -40) rotate(30)">
+      <rect x="-4" y="-25" width="8" height="40" rx="2" stroke="#c96a24" stroke-width="2" fill="none"/>
+      <circle cx="0" cy="-30" r="8" stroke="#c96a24" stroke-width="2" fill="none"/>
+      <circle cx="0" cy="-30" r="3" stroke="#c96a24" stroke-width="2" fill="none"/>
+    </g>
+  </g>
+  
+  <!-- Dotted "add" indicators -->
+  <g stroke="#5d634d" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.5">
+    <line x1="80" y1="140" x2="100" y2="140"/>
+    <line x1="200" y1="140" x2="220" y2="140"/>
+  </g>
+  
+  <!-- Plus sign hint -->
+  <g transform="translate(150, 165)" stroke="#5d634d" stroke-width="2" opacity="0.4">
+    <line x1="-8" y1="0" x2="8" y2="0"/>
+    <line x1="0" y1="-8" x2="0" y2="8"/>
+  </g>
+</svg>

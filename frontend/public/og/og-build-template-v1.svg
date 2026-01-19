@@ -1,0 +1,51 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dark olive background -->
+  <rect width="1200" height="630" fill="#1a1e15"/>
+  
+  <!-- Subtle grid pattern -->
+  <defs>
+    <pattern id="build-grid" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#2d3226" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="url(#build-grid)" opacity="0.2"/>
+  
+  <!-- Left section - darker for text overlay -->
+  <rect x="0" y="0" width="450" height="630" fill="#1a1e15"/>
+  
+  <!-- Orange vertical divider -->
+  <rect x="420" y="60" width="3" height="510" rx="1.5" fill="#c96a24"/>
+  
+  <!-- Right section content area marker -->
+  <rect x="480" y="100" width="660" height="430" rx="8" stroke="#3d4233" stroke-width="1" stroke-dasharray="8 8" fill="none" opacity="0.4"/>
+  
+  <!-- Left section content -->
+  <g transform="translate(60, 120)">
+    <!-- Small logo badge -->
+    <g transform="translate(0, 0)">
+      <path d="M0 -20 C0 -24 3 -27 7 -27 L53 -27 C57 -27 60 -24 60 -20 L60 20 C60 24 57 27 53 27 L35 27 L30 35 L25 27 L7 27 C3 27 0 24 0 20 Z" 
+            fill="#2d3226" stroke="#c96a24" stroke-width="2"/>
+      <text x="30" y="6" font-family="Impact, sans-serif" font-size="18" font-weight="700" fill="#f5f0e6" text-anchor="middle">GK</text>
+    </g>
+    
+    <!-- Build title placeholder -->
+    <text x="0" y="100" font-family="Impact, sans-serif" font-size="32" font-weight="700" fill="#f5f0e6" letter-spacing="1">[BUILD NAME]</text>
+    
+    <!-- Engine info placeholder -->
+    <text x="0" y="150" font-family="system-ui, sans-serif" font-size="18" font-weight="400" fill="#c96a24">[ENGINE]</text>
+    
+    <!-- Parts count placeholder -->
+    <text x="0" y="190" font-family="system-ui, sans-serif" font-size="16" font-weight="400" fill="#d9cba8">[X] Parts • $[TOTAL]</text>
+    
+    <!-- Compatibility badge placeholder -->
+    <rect x="0" y="230" width="140" height="36" rx="4" fill="#2d3226" stroke="#4a7c59" stroke-width="2"/>
+    <text x="70" y="254" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#4a7c59" text-anchor="middle">✓ COMPATIBLE</text>
+  </g>
+  
+  <!-- Right side instruction text -->
+  <text x="810" y="320" font-family="system-ui, sans-serif" font-size="14" font-weight="400" fill="#5d634d" text-anchor="middle" opacity="0.6">[Dynamic content area]</text>
+  
+  <!-- Footer -->
+  <rect x="0" y="570" width="1200" height="60" fill="#0d0f0a"/>
+  <text x="60" y="608" font-family="system-ui, sans-serif" font-size="14" font-weight="400" fill="#5d634d">gokartpartpicker.com</text>
+</svg>

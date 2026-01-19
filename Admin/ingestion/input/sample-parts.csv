@@ -1,0 +1,15 @@
+name,brand,category,description,price,sku
+Predator 212 Hemi Performance Engine,Predator,engines/complete-engines,212cc OHV Hemi head engine with upgraded internals,399.99,PRED-212-HEMI
+Billet Connecting Rod - Predator 212,ARC Racing,engines/connecting-rods,4340 billet steel connecting rod for Predator 212 Hemi and Non-Hemi,129.99,ARC-ROD-212
+Mikuni VM22 Carburetor 26mm,Mikuni,carburetors/complete-carburetors,26mm round slide carburetor with adjustable jet,89.99,MIK-VM22-26
+#35 Chain 106 Links,Generic,chains-sprockets/chains,Standard #35 roller chain 106 links,12.99,CHAIN-35-106
+12 Tooth Clutch Sprocket #35,Max-Torque,chains-sprockets/clutch-sprockets,12T sprocket for centrifugal clutch 3/4" bore,8.99,SPR-12T-35
+66 Tooth Axle Sprocket #35,BMI Karts,chains-sprockets/axle-sprockets,66T rear sprocket 1" bore split hub,24.99,SPR-66T-AXLE
+TAV2 30 Series Torque Converter,Comet,torque-converters/driver-units,30 series asymmetric driver 3/4" bore,149.99,TAV2-DRIVER-30
+Centrifugal Clutch 3/4" Bore 12T #35,Hilliard,clutches/centrifugal-clutches,Heavy duty clutch 3500 RPM engagement,54.99,CLUTCH-HD-12T
+70mm Forged Piston +0.5mm,Wiseco,engines/pistons,Forged aluminum piston 70mm bore with rings,79.99,PIST-70-05
+Dyno 260 Camshaft,Dyno Cams,engines/camshafts,260 duration .320 lift performance cam,149.99,CAM-260-DYNO
+22" RLV Exhaust Header,RLV,exhaust/headers,Tuned exhaust header 1" inlet 22" length,69.99,RLV-HDR-22
+95 Main Jet Mikuni,Mikuni,carburetors/jets,Size 95 main jet for Mikuni VM series,3.99,JET-95-MIK
+Stage 2 Kit Predator 212 Hemi,BSP,engines/complete-engines,Complete stage 2 performance kit,599.99,BSP-STG2-212
+PWK 28mm Racing Carburetor,Nibbi,carburetors/complete-carburetors,28mm flatslide racing carburetor,65.99,PWK28-NIB

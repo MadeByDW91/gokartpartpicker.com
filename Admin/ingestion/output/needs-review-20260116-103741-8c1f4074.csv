@@ -1,0 +1,11 @@
+row,name,brand,category,status,reasons,suggested_fixes
+1,"Predator 212 Hemi Performance Engine","Predator","engines/complete-engines",invalid,"",""
+2,"Billet Connecting Rod - Predator 212","ARC Racing","engines/connecting-rods",invalid,"",""
+5,"12 Tooth Clutch Sprocket #35","Max-Torque","chains-sprockets/clutch-sprockets",needs_review,"","Check if 4.0 is correct, maximum is 1.0"
+6,"66 Tooth Axle Sprocket #35","BMI Karts","chains-sprockets/axle-sprockets",needs_review,"",""
+7,"Tav2 30 Series Torque Converter","Comet","torque-converters/driver-units",needs_review,"","Check if 4.0 is correct, maximum is 1.5"
+8,"Centrifugal Clutch 3/4"" Bore 12t #35","Hilliard","clutches/centrifugal-clutches",needs_review,"","Check if 4.0 is correct, maximum is 1.5; Verify this is correct"
+9,"70mm Forged Piston +0.5mm","Wiseco","engines/pistons",needs_review,"",""
+11,"22"" Rlv Exhaust Header","RLV","exhaust/headers",invalid,"",""
+12,"95 Main Jet Mikuni","Mikuni","carburetors/jets",invalid,"",""
+13,"Stage 2 Kit Predator 212 Hemi","BSP","engines/complete-engines",invalid,"",""

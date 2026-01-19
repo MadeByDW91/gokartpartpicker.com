@@ -1,0 +1,1269 @@
+{
+  "batch_id": "20260116-103741-8c1f4074",
+  "timestamp": "2026-01-16T10:37:41.383439",
+  "mode": "dry-run",
+  "source_file": "input/sample-parts.csv",
+  "statistics": {
+    "total": 14,
+    "ready": 4,
+    "needs_review": 5,
+    "invalid": 5,
+    "duplicate": 0
+  },
+  "summary": {},
+  "records": [
+    {
+      "original_data": {
+        "name": "Predator 212 Hemi Performance Engine",
+        "brand": "Predator",
+        "category": "engines/complete-engines",
+        "description": "212cc OHV Hemi head engine with upgraded internals",
+        "price": "399.99",
+        "sku": "PRED-212-HEMI"
+      },
+      "normalized_data": {
+        "name": {
+          "normalized": "Predator 212 Hemi Performance Engine",
+          "slug": "predator-212-hemi-performance-engine",
+          "original": "Predator 212 Hemi Performance Engine",
+          "changes": []
+        },
+        "brand": {
+          "canonical": "Predator",
+          "slug": "predator",
+          "matched": true,
+          "needs_review": false,
+          "original": "Predator",
+          "match_type": "exact"
+        },
+        "category": {
+          "slug": "engines/complete-engines",
+          "confidence": 1.0,
+          "suggested": false
+        },
+        "sku": "PRED-212-HEMI",
+        "description": "212cc OHV Hemi head engine with upgraded internals",
+        "price": "399.99"
+      },
+      "extracted_specs": {
+        "metadata": {
+          "displacement_cc": 212,
+          "variant": "Hemi"
+        },
+        "engine_family": "Predator 212 Hemi",
+        "engine_family_confidence": 0.9,
+        "extractions": [
+          {
+            "field": "displacement_cc",
+            "value": 212,
+            "confidence": 0.9,
+            "source": "engine_family_inference",
+            "raw_match": "Predator 212 Hemi"
+          },
+          {
+            "field": "variant",
+            "value": "Hemi",
+            "confidence": 0.9,
+            "source": "engine_family_inference",
+            "raw_match": "Predator 212 Hemi"
+          }
+        ],
+        "needs_review": false,
+        "review_reasons": []
+      },
+      "validation_result": {
+        "is_valid": false,
+        "needs_review": true,
+        "error_count": 2,
+        "warning_count": 0,
+        "issues": [
+          {
+            "field": "valve_config",
+            "message": "Required field 'valve_config' is missing",
+            "severity": "error",
+            "current_value": null,
+            "expected": "Value of type enum",
+            "suggestion": null
+          },
+          {
+            "field": "shaft_diameter_in",
+            "message": "Required field 'shaft_diameter_in' is missing",
+            "severity": "error",
+            "current_value": null,
+            "expected": "Value of type decimal",
+            "suggestion": null
+          }
+        ],
+        "validated_metadata": {
+          "displacement_cc": 212,
+          "variant": "Hemi"
+        }
+      },
+      "status": "invalid",
+      "review_reasons": [],
+      "row_number": 1,
+      "source_file": "input/sample-parts.csv"
+    },
+    {
+      "original_data": {
+        "name": "Billet Connecting Rod - Predator 212",
+        "brand": "ARC Racing",
+        "category": "engines/connecting-rods",
+        "description": "4340 billet steel connecting rod for Predator 212 Hemi and Non-Hemi",
+        "price": "129.99",
+        "sku": "ARC-ROD-212"
+      },
+      "normalized_data": {
+        "name": {
+          "normalized": "Billet Connecting Rod - Predator 212",
+          "slug": "billet-connecting-rod-predator-212",
+          "original": "Billet Connecting Rod - Predator 212",
+          "changes": []
+        },
+        "brand": {
+          "canonical": "ARC Racing",
+          "slug": "arc-racing",
+          "matched": true,
+          "needs_review": false,
+          "original": "ARC Racing",
+          "match_type": "exact"
+        },
+        "category": {
+          "slug": "engines/connecting-rods",
+          "confidence": 0.5,
+          "suggested": false
+        },
+        "sku": "ARC-ROD-212",
+        "description": "4340 billet steel connecting rod for Predator 212 Hemi and Non-Hemi",
+        "price": "129.99"
+      },
+      "extracted_specs": {
+        "metadata": {
+          "displacement_cc": 212,
+          "variant": "Hemi",
+          "chain_size": "#40",
+          "pitch_in": 0.5
+        },
+        "engine_family": "Predator 212 Hemi",
+        "engine_family_confidence": 0.9,
+        "extractions": [
+          {
+            "field": "displacement_cc",
+            "value": 212,
+            "confidence": 0.9,
+            "source": "engine_family_inference",
+            "raw_match": "Predator 212 Hemi"
+          },
+          {
+            "field": "variant",
+            "value": "Hemi",
+            "confidence": 0.9,
+            "source": "engine_family_inference",
+            "raw_match": "Predator 212 Hemi"
+          },
+          {
+            "field": "chain_size",
+            "value": "#40",
+            "confidence": 0.95,
+            "source": "name",
+            "raw_match": "40"
+          },
+          {
+            "field": "pitch_in",
+            "value": 0.5,
+            "confidence": 0.95,
+            "source": "derived",
+            "raw_match": "derived from #40"
+          }
+        ],
+        "needs_review": false,
+        "review_reasons": []
+      },
+      "validation_result": {
+        "is_valid": false,
+        "needs_review": true,
+        "error_count": 1,
+        "warning_count": 0,
+        "issues": [
+          {
+            "field": "category",
+            "message": "Unknown category: engines/connecting-rods",
+            "severity": "error",
+            "current_value": "engines/connecting-rods",
+            "expected": null,
+            "suggestion": null
+          }
+        ],
+        "validated_metadata": {
+          "displacement_cc": 212,
+          "variant": "Hemi",
+          "chain_size": "#40",
+          "pitch_in": 0.5
+        }
+      },
+      "status": "invalid",
+      "review_reasons": [],
+      "row_number": 2,
+      "source_file": "input/sample-parts.csv"
+    },
+    {
+      "original_data": {
+        "name": "Mikuni VM22 Carburetor 26mm",
+        "brand": "Mikuni",
+        "category": "carburetors/complete-carburetors",
+        "description": "26mm round slide carburetor with adjustable jet",
+        "price": "89.99",
+        "sku": "MIK-VM22-26"
+      },
+      "normalized_data": {
+        "name": {
+          "normalized": "Mikuni Vm22 Carburetor 26mm",
+          "slug": "mikuni-vm22-carburetor-26mm",
+          "original": "Mikuni VM22 Carburetor 26mm",
+          "changes": []
+        },
+        "brand": {
+          "canonical": "Mikuni",
+          "slug": "mikuni",
+          "matched": true,
+          "needs_review": false,
+          "original": "Mikuni",
+          "match_type": "exact"
+        },
+        "category": {
+          "slug": "carburetors/complete-carburetors",
+          "confidence": 1.0,
+          "suggested": false
+        },
+        "sku": "MIK-VM22-26",
+        "description": "26mm round slide carburetor with adjustable jet",
+        "price": "89.99"
+      },
+      "extracted_specs": {
+        "metadata": {
+          "carburetor_model": "Mikuni VM22",
+          "throat_diameter_mm": 26
+        },
+        "engine_family": null,
+        "engine_family_confidence": 0.0,
+        "extractions": [
+          {
+            "field": "carburetor_model",
+            "value": "Mikuni VM22",
+            "confidence": 0.9,
+            "source": "name",
+            "raw_match": "Mikuni VM22"
+          },
+          {
+            "field": "throat_diameter_mm",
+            "value": 26,
+            "confidence": 0.85,
+            "source": "name",
+            "raw_match": "26mm"
+          }
+        ],
+        "needs_review": false,
+        "review_reasons": []
+      },
+      "validation_result": {
+        "is_valid": true,
+        "needs_review": false,
+        "error_count": 0,
+        "warning_count": 0,
+        "issues": [],
+        "validated_metadata": {
+          "carburetor_model": "Mikuni VM22",
+          "throat_diameter_mm": 26
+        }
+      },
+      "status": "ready",
+      "review_reasons": [],
+      "row_number": 3,
+      "source_file": "input/sample-parts.csv"
+    },
+    {
+      "original_data": {
+        "name": "#35 Chain 106 Links",
+        "brand": "Generic",
+        "category": "chains-sprockets/chains",
+        "description": "Standard #35 roller chain 106 links",
+        "price": "12.99",
+        "sku": "CHAIN-35-106"
+      },
+      "normalized_data": {
+        "name": {
+          "normalized": "#35 Chain 106 Links",
+          "slug": "35-chain-106-links",
+          "original": "#35 Chain 106 Links",
+          "changes": []
+        },
+        "brand": {
+          "canonical": "Clone (Generic)",
+          "slug": "clone-generic",
+          "matched": true,
+          "needs_review": false,
+          "original": "Generic",
+          "match_type": "exact"
+        },
+        "category": {
+          "slug": "chains-sprockets/chains",
+          "confidence": 1.0,
+          "suggested": false
+        },
+        "sku": "CHAIN-35-106",
+        "description": "Standard #35 roller chain 106 links",
+        "price": "12.99"
+      },
+      "extracted_specs": {
+        "metadata": {
+          "chain_size": "#35",
+          "pitch_in": 0.375,
+          "links": 106
+        },
+        "engine_family": null,
+        "engine_family_confidence": 0.0,
+        "extractions": [
+          {
+            "field": "chain_size",
+            "value": "#35",
+            "confidence": 0.95,
+            "source": "name",
+            "raw_match": "#35"
+          },
+          {
+            "field": "pitch_in",
+            "value": 0.375,
+            "confidence": 0.95,
+            "source": "derived",
+            "raw_match": "derived from #35"
+          },
+          {
+            "field": "links",
+            "value": 106,
+            "confidence": 0.9,
+            "source": "name",
+            "raw_match": "106 Links"
+          }
+        ],
+        "needs_review": false,
+        "review_reasons": []
+      },
+      "validation_result": {
+        "is_valid": true,
+        "needs_review": false,
+        "error_count": 0,
+        "warning_count": 0,
+        "issues": [],
+        "validated_metadata": {
+          "chain_size": "#35",
+          "pitch_in": 0.375,
+          "links": 106
+        }
+      },
+      "status": "ready",
+      "review_reasons": [],
+      "row_number": 4,
+      "source_file": "input/sample-parts.csv"
+    },
+    {
+      "original_data": {
+        "name": "12 Tooth Clutch Sprocket #35",
+        "brand": "Max-Torque",
+        "category": "chains-sprockets/clutch-sprockets",
+        "description": "12T sprocket for centrifugal clutch 3/4\" bore",
+        "price": "8.99",
+        "sku": "SPR-12T-35"
+      },
+      "normalized_data": {
+        "name": {
+          "normalized": "12 Tooth Clutch Sprocket #35",
+          "slug": "12-tooth-clutch-sprocket-35",
+          "original": "12 Tooth Clutch Sprocket #35",
+          "changes": []
+        },
+        "brand": {
+          "canonical": "Max-Torque",
+          "slug": "max-torque",
+          "matched": true,
+          "needs_review": false,
+          "original": "Max-Torque",
+          "match_type": "exact"
+        },
+        "category": {
+          "slug": "chains-sprockets/clutch-sprockets",
+          "confidence": 1.0,
+          "suggested": false
+        },
+        "sku": "SPR-12T-35",
+        "description": "12T sprocket for centrifugal clutch 3/4\" bore",
+        "price": "8.99"
+      },
+      "extracted_specs": {
+        "metadata": {
+          "chain_size": "#35",
+          "pitch_in": 0.375,
+          "bore_in": 4.0,
+          "teeth": 12
+        },
+        "engine_family": null,
+        "engine_family_confidence": 0.0,
+        "extractions": [
+          {
+            "field": "chain_size",
+            "value": "#35",
+            "confidence": 0.95,
+            "source": "name",
+            "raw_match": "#35"
+          },
+          {
+            "field": "pitch_in",
+            "value": 0.375,
+            "confidence": 0.95,
+            "source": "derived",
+            "raw_match": "derived from #35"
+          },
+          {
+            "field": "bore_in",
+            "value": 4.0,
+            "confidence": 0.85,
+            "source": "name",
+            "raw_match": "4\" bore"
+          },
+          {
+            "field": "teeth",
+            "value": 12,
+            "confidence": 0.9,
+            "source": "name",
+            "raw_match": "12 Tooth"
+          }
+        ],
+        "needs_review": false,
+        "review_reasons": []
+      },
+      "validation_result": {
+        "is_valid": true,
+        "needs_review": true,
+        "error_count": 0,
+        "warning_count": 2,
+        "issues": [
+          {
+            "field": "pitch_in",
+            "message": "Unrecognized field 'pitch_in' for category 'chains-sprockets/clutch-sprockets'",
+            "severity": "warning",
+            "current_value": 0.375,
+            "expected": null,
+            "suggestion": null
+          },
+          {
+            "field": "bore_in",
+            "message": "Value above maximum for 'bore_in'",
+            "severity": "warning",
+            "current_value": 4.0,
+            "expected": "<= 1.0",
+            "suggestion": "Check if 4.0 is correct, maximum is 1.0"
+          }
+        ],
+        "validated_metadata": {
+          "chain_size": "#35",
+          "pitch_in": 0.375,
+          "bore_in": 4.0,
+          "teeth": 12
+        }
+      },
+      "status": "needs_review",
+      "review_reasons": [],
+      "row_number": 5,
+      "source_file": "input/sample-parts.csv"
+    },
+    {
+      "original_data": {
+        "name": "66 Tooth Axle Sprocket #35",
+        "brand": "BMI Karts",
+        "category": "chains-sprockets/axle-sprockets",
+        "description": "66T rear sprocket 1\" bore split hub",
+        "price": "24.99",
+        "sku": "SPR-66T-AXLE"
+      },
+      "normalized_data": {
+        "name": {
+          "normalized": "66 Tooth Axle Sprocket #35",
+          "slug": "66-tooth-axle-sprocket-35",
+          "original": "66 Tooth Axle Sprocket #35",
+          "changes": []
+        },
+        "brand": {
+          "canonical": "BMI Karts",
+          "slug": "bmi-karts",
+          "matched": true,
+          "needs_review": false,
+          "original": "BMI Karts",
+          "match_type": "exact"
+        },
+        "category": {
+          "slug": "chains-sprockets/axle-sprockets",
+          "confidence": 1.0,
+          "suggested": false
+        },
+        "sku": "SPR-66T-AXLE",
+        "description": "66T rear sprocket 1\" bore split hub",
+        "price": "24.99"
+      },
+      "extracted_specs": {
+        "metadata": {
+          "chain_size": "#35",
+          "pitch_in": 0.375,
+          "bore_in": 1.0,
+          "teeth": 66
+        },
+        "engine_family": null,
+        "engine_family_confidence": 0.0,
+        "extractions": [
+          {
+            "field": "chain_size",
+            "value": "#35",
+            "confidence": 0.95,
+            "source": "name",
+            "raw_match": "#35"
+          },
+          {
+            "field": "pitch_in",
+            "value": 0.375,
+            "confidence": 0.95,
+            "source": "derived",
+            "raw_match": "derived from #35"
+          },
+          {
+            "field": "bore_in",
+            "value": 1.0,
+            "confidence": 0.85,
+            "source": "name",
+            "raw_match": "1\" bore"
+          },
+          {
+            "field": "teeth",
+            "value": 66,
+            "confidence": 0.9,
+            "source": "name",
+            "raw_match": "66 Tooth"
+          }
+        ],
+        "needs_review": false,
+        "review_reasons": []
+      },
+      "validation_result": {
+        "is_valid": true,
+        "needs_review": true,
+        "error_count": 0,
+        "warning_count": 1,
+        "issues": [
+          {
+            "field": "pitch_in",
+            "message": "Unrecognized field 'pitch_in' for category 'chains-sprockets/axle-sprockets'",
+            "severity": "warning",
+            "current_value": 0.375,
+            "expected": null,
+            "suggestion": null
+          }
+        ],
+        "validated_metadata": {
+          "chain_size": "#35",
+          "pitch_in": 0.375,
+          "bore_in": 1.0,
+          "teeth": 66
+        }
+      },
+      "status": "needs_review",
+      "review_reasons": [],
+      "row_number": 6,
+      "source_file": "input/sample-parts.csv"
+    },
+    {
+      "original_data": {
+        "name": "TAV2 30 Series Torque Converter",
+        "brand": "Comet",
+        "category": "torque-converters/driver-units",
+        "description": "30 series asymmetric driver 3/4\" bore",
+        "price": "149.99",
+        "sku": "TAV2-DRIVER-30"
+      },
+      "normalized_data": {
+        "name": {
+          "normalized": "Tav2 30 Series Torque Converter",
+          "slug": "tav2-30-series-torque-converter",
+          "original": "TAV2 30 Series Torque Converter",
+          "changes": []
+        },
+        "brand": {
+          "canonical": "Comet",
+          "slug": "comet",
+          "matched": true,
+          "needs_review": false,
+          "original": "Comet",
+          "match_type": "exact"
+        },
+        "category": {
+          "slug": "torque-converters/driver-units",
+          "confidence": 1.0,
+          "suggested": false
+        },
+        "sku": "TAV2-DRIVER-30",
+        "description": "30 series asymmetric driver 3/4\" bore",
+        "price": "149.99"
+      },
+      "extracted_specs": {
+        "metadata": {
+          "series": "TAV2",
+          "bore_in": 4.0
+        },
+        "engine_family": null,
+        "engine_family_confidence": 0.0,
+        "extractions": [
+          {
+            "field": "series",
+            "value": "TAV2",
+            "confidence": 0.9,
+            "source": "name",
+            "raw_match": "TAV2"
+          },
+          {
+            "field": "bore_in",
+            "value": 4.0,
+            "confidence": 0.85,
+            "source": "name",
+            "raw_match": "4\" bore"
+          }
+        ],
+        "needs_review": false,
+        "review_reasons": []
+      },
+      "validation_result": {
+        "is_valid": true,
+        "needs_review": true,
+        "error_count": 0,
+        "warning_count": 1,
+        "issues": [
+          {
+            "field": "bore_in",
+            "message": "Value above maximum for 'bore_in'",
+            "severity": "warning",
+            "current_value": 4.0,
+            "expected": "<= 1.5",
+            "suggestion": "Check if 4.0 is correct, maximum is 1.5"
+          }
+        ],
+        "validated_metadata": {
+          "series": "TAV2",
+          "bore_in": 4.0
+        }
+      },
+      "status": "needs_review",
+      "review_reasons": [],
+      "row_number": 7,
+      "source_file": "input/sample-parts.csv"
+    },
+    {
+      "original_data": {
+        "name": "Centrifugal Clutch 3/4\" Bore 12T #35",
+        "brand": "Hilliard",
+        "category": "clutches/centrifugal-clutches",
+        "description": "Heavy duty clutch 3500 RPM engagement",
+        "price": "54.99",
+        "sku": "CLUTCH-HD-12T"
+      },
+      "normalized_data": {
+        "name": {
+          "normalized": "Centrifugal Clutch 3/4\" Bore 12t #35",
+          "slug": "centrifugal-clutch-34-bore-12t-35",
+          "original": "Centrifugal Clutch 3/4\" Bore 12T #35",
+          "changes": []
+        },
+        "brand": {
+          "canonical": "Hilliard",
+          "slug": "hilliard",
+          "matched": true,
+          "needs_review": false,
+          "original": "Hilliard",
+          "match_type": "exact"
+        },
+        "category": {
+          "slug": "clutches/centrifugal-clutches",
+          "confidence": 1.0,
+          "suggested": false
+        },
+        "sku": "CLUTCH-HD-12T",
+        "description": "Heavy duty clutch 3500 RPM engagement",
+        "price": "54.99"
+      },
+      "extracted_specs": {
+        "metadata": {
+          "chain_size": "#35",
+          "pitch_in": 0.375,
+          "bore_in": 4.0,
+          "teeth": 12,
+          "engagement_rpm": 3500
+        },
+        "engine_family": null,
+        "engine_family_confidence": 0.0,
+        "extractions": [
+          {
+            "field": "chain_size",
+            "value": "#35",
+            "confidence": 0.95,
+            "source": "name",
+            "raw_match": "#35"
+          },
+          {
+            "field": "pitch_in",
+            "value": 0.375,
+            "confidence": 0.95,
+            "source": "derived",
+            "raw_match": "derived from #35"
+          },
+          {
+            "field": "bore_in",
+            "value": 4.0,
+            "confidence": 0.85,
+            "source": "name",
+            "raw_match": "4\" Bore"
+          },
+          {
+            "field": "teeth",
+            "value": 12,
+            "confidence": 0.9,
+            "source": "name",
+            "raw_match": "12T"
+          },
+          {
+            "field": "engagement_rpm",
+            "value": 3500,
+            "confidence": 0.85,
+            "source": "name",
+            "raw_match": "3500 RPM engage"
+          }
+        ],
+        "needs_review": false,
+        "review_reasons": []
+      },
+      "validation_result": {
+        "is_valid": true,
+        "needs_review": true,
+        "error_count": 0,
+        "warning_count": 3,
+        "issues": [
+          {
+            "field": "pitch_in",
+            "message": "Unrecognized field 'pitch_in' for category 'clutches/centrifugal-clutches'",
+            "severity": "warning",
+            "current_value": 0.375,
+            "expected": null,
+            "suggestion": null
+          },
+          {
+            "field": "bore_in",
+            "message": "Value above maximum for 'bore_in'",
+            "severity": "warning",
+            "current_value": 4.0,
+            "expected": "<= 1.5",
+            "suggestion": "Check if 4.0 is correct, maximum is 1.5"
+          },
+          {
+            "field": "bore_in",
+            "message": "Uncommon value for 'bore_in'",
+            "severity": "info",
+            "current_value": 4.0,
+            "expected": "Common values: [0.625, 0.75, 0.787, 1.0, 1.125]",
+            "suggestion": "Verify this is correct"
+          },
+          {
+            "field": "teeth",
+            "message": "Unrecognized field 'teeth' for category 'clutches/centrifugal-clutches'",
+            "severity": "warning",
+            "current_value": 12,
+            "expected": null,
+            "suggestion": null
+          }
+        ],
+        "validated_metadata": {
+          "chain_size": "#35",
+          "pitch_in": 0.375,
+          "bore_in": 4.0,
+          "teeth": 12,
+          "engagement_rpm": 3500
+        }
+      },
+      "status": "needs_review",
+      "review_reasons": [],
+      "row_number": 8,
+      "source_file": "input/sample-parts.csv"
+    },
+    {
+      "original_data": {
+        "name": "70mm Forged Piston +0.5mm",
+        "brand": "Wiseco",
+        "category": "engines/pistons",
+        "description": "Forged aluminum piston 70mm bore with rings",
+        "price": "79.99",
+        "sku": "PIST-70-05"
+      },
+      "normalized_data": {
+        "name": {
+          "normalized": "70mm Forged Piston +0.5mm",
+          "slug": "70mm-forged-piston-05mm",
+          "original": "70mm Forged Piston +0.5mm",
+          "changes": []
+        },
+        "brand": {
+          "canonical": "Wiseco",
+          "slug": "wiseco",
+          "matched": true,
+          "needs_review": false,
+          "original": "Wiseco",
+          "match_type": "exact"
+        },
+        "category": {
+          "slug": "engines/pistons",
+          "confidence": 1.0,
+          "suggested": false
+        },
+        "sku": "PIST-70-05",
+        "description": "Forged aluminum piston 70mm bore with rings",
+        "price": "79.99"
+      },
+      "extracted_specs": {
+        "metadata": {
+          "bore_mm": 70.0,
+          "throat_diameter_mm": 70,
+          "bore_in": 2.756
+        },
+        "engine_family": null,
+        "engine_family_confidence": 0.0,
+        "extractions": [
+          {
+            "field": "bore_mm",
+            "value": 70.0,
+            "confidence": 0.85,
+            "source": "name",
+            "raw_match": "70mm bore"
+          },
+          {
+            "field": "throat_diameter_mm",
+            "value": 70,
+            "confidence": 0.85,
+            "source": "name",
+            "raw_match": "70mm"
+          },
+          {
+            "field": "bore_in",
+            "value": 2.756,
+            "confidence": 0.85,
+            "source": "name",
+            "raw_match": "70mm bore"
+          }
+        ],
+        "needs_review": false,
+        "review_reasons": []
+      },
+      "validation_result": {
+        "is_valid": true,
+        "needs_review": true,
+        "error_count": 0,
+        "warning_count": 2,
+        "issues": [
+          {
+            "field": "throat_diameter_mm",
+            "message": "Unrecognized field 'throat_diameter_mm' for category 'engines/pistons'",
+            "severity": "warning",
+            "current_value": 70,
+            "expected": null,
+            "suggestion": null
+          },
+          {
+            "field": "bore_in",
+            "message": "Unrecognized field 'bore_in' for category 'engines/pistons'",
+            "severity": "warning",
+            "current_value": 2.756,
+            "expected": null,
+            "suggestion": null
+          }
+        ],
+        "validated_metadata": {
+          "bore_mm": 70.0,
+          "throat_diameter_mm": 70,
+          "bore_in": 2.756
+        }
+      },
+      "status": "needs_review",
+      "review_reasons": [],
+      "row_number": 9,
+      "source_file": "input/sample-parts.csv"
+    },
+    {
+      "original_data": {
+        "name": "Dyno 260 Camshaft",
+        "brand": "Dyno Cams",
+        "category": "engines/camshafts",
+        "description": "260 duration .320 lift performance cam",
+        "price": "149.99",
+        "sku": "CAM-260-DYNO"
+      },
+      "normalized_data": {
+        "name": {
+          "normalized": "Dyno 260 Camshaft",
+          "slug": "dyno-260-camshaft",
+          "original": "Dyno 260 Camshaft",
+          "changes": []
+        },
+        "brand": {
+          "canonical": "Dyno Cams",
+          "slug": "dyno-cams",
+          "matched": true,
+          "needs_review": false,
+          "original": "Dyno Cams",
+          "match_type": "exact"
+        },
+        "category": {
+          "slug": "engines/camshafts",
+          "confidence": 1.0,
+          "suggested": false
+        },
+        "sku": "CAM-260-DYNO",
+        "description": "260 duration .320 lift performance cam",
+        "price": "149.99"
+      },
+      "extracted_specs": {
+        "metadata": {
+          "duration_int_deg": 260.0,
+          "lift_int_in": 0.32
+        },
+        "engine_family": null,
+        "engine_family_confidence": 0.0,
+        "extractions": [
+          {
+            "field": "duration_int_deg",
+            "value": 260.0,
+            "confidence": 0.8,
+            "source": "name",
+            "raw_match": "260 duration"
+          },
+          {
+            "field": "lift_int_in",
+            "value": 0.32,
+            "confidence": 0.8,
+            "source": "name",
+            "raw_match": ".320 lift"
+          }
+        ],
+        "needs_review": false,
+        "review_reasons": []
+      },
+      "validation_result": {
+        "is_valid": true,
+        "needs_review": false,
+        "error_count": 0,
+        "warning_count": 0,
+        "issues": [],
+        "validated_metadata": {
+          "duration_int_deg": 260.0,
+          "lift_int_in": 0.32
+        }
+      },
+      "status": "ready",
+      "review_reasons": [],
+      "row_number": 10,
+      "source_file": "input/sample-parts.csv"
+    },
+    {
+      "original_data": {
+        "name": "22\" RLV Exhaust Header",
+        "brand": "RLV",
+        "category": "exhaust/headers",
+        "description": "Tuned exhaust header 1\" inlet 22\" length",
+        "price": "69.99",
+        "sku": "RLV-HDR-22"
+      },
+      "normalized_data": {
+        "name": {
+          "normalized": "22\" Rlv Exhaust Header",
+          "slug": "22-rlv-exhaust-header",
+          "original": "22\" RLV Exhaust Header",
+          "changes": []
+        },
+        "brand": {
+          "canonical": "RLV",
+          "slug": "rlv",
+          "matched": true,
+          "needs_review": false,
+          "original": "RLV",
+          "match_type": "exact"
+        },
+        "category": {
+          "slug": "exhaust/headers",
+          "confidence": 1.0,
+          "suggested": false
+        },
+        "sku": "RLV-HDR-22",
+        "description": "Tuned exhaust header 1\" inlet 22\" length",
+        "price": "69.99"
+      },
+      "extracted_specs": {
+        "metadata": {},
+        "engine_family": null,
+        "engine_family_confidence": 0.0,
+        "extractions": [],
+        "needs_review": false,
+        "review_reasons": []
+      },
+      "validation_result": {
+        "is_valid": false,
+        "needs_review": true,
+        "error_count": 1,
+        "warning_count": 0,
+        "issues": [
+          {
+            "field": "inlet_diameter_in",
+            "message": "Required field 'inlet_diameter_in' is missing",
+            "severity": "error",
+            "current_value": null,
+            "expected": "Value of type decimal",
+            "suggestion": null
+          }
+        ],
+        "validated_metadata": {}
+      },
+      "status": "invalid",
+      "review_reasons": [],
+      "row_number": 11,
+      "source_file": "input/sample-parts.csv"
+    },
+    {
+      "original_data": {
+        "name": "95 Main Jet Mikuni",
+        "brand": "Mikuni",
+        "category": "carburetors/jets",
+        "description": "Size 95 main jet for Mikuni VM series",
+        "price": "3.99",
+        "sku": "JET-95-MIK"
+      },
+      "normalized_data": {
+        "name": {
+          "normalized": "95 Main Jet Mikuni",
+          "slug": "95-main-jet-mikuni",
+          "original": "95 Main Jet Mikuni",
+          "changes": []
+        },
+        "brand": {
+          "canonical": "Mikuni",
+          "slug": "mikuni",
+          "matched": true,
+          "needs_review": false,
+          "original": "Mikuni",
+          "match_type": "exact"
+        },
+        "category": {
+          "slug": "carburetors/jets",
+          "confidence": 1.0,
+          "suggested": false
+        },
+        "sku": "JET-95-MIK",
+        "description": "Size 95 main jet for Mikuni VM series",
+        "price": "3.99"
+      },
+      "extracted_specs": {
+        "metadata": {},
+        "engine_family": null,
+        "engine_family_confidence": 0.0,
+        "extractions": [],
+        "needs_review": false,
+        "review_reasons": []
+      },
+      "validation_result": {
+        "is_valid": false,
+        "needs_review": true,
+        "error_count": 1,
+        "warning_count": 0,
+        "issues": [
+          {
+            "field": "jet_size",
+            "message": "Required field 'jet_size' is missing",
+            "severity": "error",
+            "current_value": null,
+            "expected": "Value of type decimal",
+            "suggestion": null
+          }
+        ],
+        "validated_metadata": {}
+      },
+      "status": "invalid",
+      "review_reasons": [],
+      "row_number": 12,
+      "source_file": "input/sample-parts.csv"
+    },
+    {
+      "original_data": {
+        "name": "Stage 2 Kit Predator 212 Hemi",
+        "brand": "BSP",
+        "category": "engines/complete-engines",
+        "description": "Complete stage 2 performance kit",
+        "price": "599.99",
+        "sku": "BSP-STG2-212"
+      },
+      "normalized_data": {
+        "name": {
+          "normalized": "Stage 2 Kit Predator 212 Hemi",
+          "slug": "stage-2-kit-predator-212-hemi",
+          "original": "Stage 2 Kit Predator 212 Hemi",
+          "changes": []
+        },
+        "brand": {
+          "canonical": "BSP",
+          "slug": "bsp",
+          "matched": true,
+          "needs_review": false,
+          "original": "BSP",
+          "match_type": "exact"
+        },
+        "category": {
+          "slug": "engines/complete-engines",
+          "confidence": 1.0,
+          "suggested": false
+        },
+        "sku": "BSP-STG2-212",
+        "description": "Complete stage 2 performance kit",
+        "price": "599.99"
+      },
+      "extracted_specs": {
+        "metadata": {
+          "displacement_cc": 212,
+          "variant": "Hemi"
+        },
+        "engine_family": "Predator 212 Hemi",
+        "engine_family_confidence": 0.9,
+        "extractions": [
+          {
+            "field": "displacement_cc",
+            "value": 212,
+            "confidence": 0.9,
+            "source": "engine_family_inference",
+            "raw_match": "Predator 212 Hemi"
+          },
+          {
+            "field": "variant",
+            "value": "Hemi",
+            "confidence": 0.9,
+            "source": "engine_family_inference",
+            "raw_match": "Predator 212 Hemi"
+          }
+        ],
+        "needs_review": false,
+        "review_reasons": []
+      },
+      "validation_result": {
+        "is_valid": false,
+        "needs_review": true,
+        "error_count": 2,
+        "warning_count": 0,
+        "issues": [
+          {
+            "field": "valve_config",
+            "message": "Required field 'valve_config' is missing",
+            "severity": "error",
+            "current_value": null,
+            "expected": "Value of type enum",
+            "suggestion": null
+          },
+          {
+            "field": "shaft_diameter_in",
+            "message": "Required field 'shaft_diameter_in' is missing",
+            "severity": "error",
+            "current_value": null,
+            "expected": "Value of type decimal",
+            "suggestion": null
+          }
+        ],
+        "validated_metadata": {
+          "displacement_cc": 212,
+          "variant": "Hemi"
+        }
+      },
+      "status": "invalid",
+      "review_reasons": [],
+      "row_number": 13,
+      "source_file": "input/sample-parts.csv"
+    },
+    {
+      "original_data": {
+        "name": "PWK 28mm Racing Carburetor",
+        "brand": "Nibbi",
+        "category": "carburetors/complete-carburetors",
+        "description": "28mm flatslide racing carburetor",
+        "price": "65.99",
+        "sku": "PWK28-NIB"
+      },
+      "normalized_data": {
+        "name": {
+          "normalized": "Pwk 28mm Racing Carburetor",
+          "slug": "pwk-28mm-racing-carburetor",
+          "original": "PWK 28mm Racing Carburetor",
+          "changes": []
+        },
+        "brand": {
+          "canonical": "Nibbi",
+          "slug": "nibbi",
+          "matched": true,
+          "needs_review": false,
+          "original": "Nibbi",
+          "match_type": "exact"
+        },
+        "category": {
+          "slug": "carburetors/complete-carburetors",
+          "confidence": 1.0,
+          "suggested": false
+        },
+        "sku": "PWK28-NIB",
+        "description": "28mm flatslide racing carburetor",
+        "price": "65.99"
+      },
+      "extracted_specs": {
+        "metadata": {
+          "carburetor_model": "PWK28",
+          "throat_diameter_mm": 28
+        },
+        "engine_family": null,
+        "engine_family_confidence": 0.0,
+        "extractions": [
+          {
+            "field": "carburetor_model",
+            "value": "PWK28",
+            "confidence": 0.9,
+            "source": "name",
+            "raw_match": "PWK 28"
+          },
+          {
+            "field": "throat_diameter_mm",
+            "value": 28,
+            "confidence": 0.85,
+            "source": "name",
+            "raw_match": "28mm"
+          }
+        ],
+        "needs_review": false,
+        "review_reasons": []
+      },
+      "validation_result": {
+        "is_valid": true,
+        "needs_review": false,
+        "error_count": 0,
+        "warning_count": 0,
+        "issues": [],
+        "validated_metadata": {
+          "carburetor_model": "PWK28",
+          "throat_diameter_mm": 28
+        }
+      },
+      "status": "ready",
+      "review_reasons": [],
+      "row_number": 14,
+      "source_file": "input/sample-parts.csv"
+    }
+  ]
+}

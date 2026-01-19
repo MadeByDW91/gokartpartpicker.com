@@ -1,0 +1,8 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Badge shape at favicon size -->
+  <path d="M2 4 C2 2.5 3 1.5 4.5 1.5 L27.5 1.5 C29 1.5 30 2.5 30 4 L30 24 C30 25.5 29 26.5 27.5 26.5 L19 26.5 L16 30.5 L13 26.5 L4.5 26.5 C3 26.5 2 25.5 2 24 Z" 
+        fill="#2d3226" stroke="#c96a24" stroke-width="1.5"/>
+  
+  <!-- "GK" lettermark -->
+  <text x="16" y="19" font-family="Impact, sans-serif" font-size="12" font-weight="700" fill="#f5f0e6" text-anchor="middle" letter-spacing="0.5">GK</text>
+</svg>

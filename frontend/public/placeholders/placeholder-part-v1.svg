@@ -1,0 +1,30 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background grid pattern -->
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#3d4233" stroke-width="0.5" opacity="0.3"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="400" fill="url(#grid)"/>
+  
+  <!-- Generic sprocket/gear shape -->
+  <g transform="translate(200, 200)">
+    <circle r="60" stroke="#f5f0e6" stroke-width="2" fill="none" opacity="0.4"/>
+    <circle r="25" stroke="#f5f0e6" stroke-width="2" fill="none" opacity="0.4"/>
+    <!-- Teeth -->
+    <g stroke="#f5f0e6" stroke-width="2" opacity="0.4">
+      <line x1="0" y1="-60" x2="0" y2="-75"/>
+      <line x1="42.4" y1="-42.4" x2="53" y2="-53"/>
+      <line x1="60" y1="0" x2="75" y2="0"/>
+      <line x1="42.4" y1="42.4" x2="53" y2="53"/>
+      <line x1="0" y1="60" x2="0" y2="75"/>
+      <line x1="-42.4" y1="42.4" x2="-53" y2="53"/>
+      <line x1="-60" y1="0" x2="-75" y2="0"/>
+      <line x1="-42.4" y1="-42.4" x2="-53" y2="-53"/>
+    </g>
+  </g>
+  
+  <!-- "No Image" indicator -->
+  <rect x="150" y="310" width="100" height="30" rx="4" fill="#2d3226"/>
+  <text x="200" y="330" font-family="system-ui, sans-serif" font-size="11" fill="#5d634d" text-anchor="middle">NO IMAGE</text>
+</svg>

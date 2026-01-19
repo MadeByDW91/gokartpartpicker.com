@@ -1,0 +1,117 @@
+================================================================================
+DRY RUN INGESTION REPORT
+================================================================================
+
+Batch ID:    20260116-103741-8c1f4074
+Timestamp:   2026-01-16T10:37:41.383439
+Source:      input/sample-parts.csv
+Mode:        dry-run
+
+--------------------------------------------------------------------------------
+SUMMARY
+--------------------------------------------------------------------------------
+
+Total Records:    14
+Ready to Commit:  4
+Needs Review:     5
+Invalid:          5
+Duplicates:       0
+
+--------------------------------------------------------------------------------
+BY CATEGORY
+--------------------------------------------------------------------------------
+
+  engines/complete-engines: 2
+  carburetors/complete-carburetors: 2
+  engines/connecting-rods: 1
+  chains-sprockets/chains: 1
+  chains-sprockets/clutch-sprockets: 1
+  chains-sprockets/axle-sprockets: 1
+  torque-converters/driver-units: 1
+  clutches/centrifugal-clutches: 1
+  engines/pistons: 1
+  engines/camshafts: 1
+  exhaust/headers: 1
+  carburetors/jets: 1
+
+--------------------------------------------------------------------------------
+BY BRAND
+--------------------------------------------------------------------------------
+
+  Mikuni: 2
+  Predator: 1
+  ARC Racing: 1
+  Clone (Generic): 1
+  Max-Torque: 1
+  BMI Karts: 1
+  Comet: 1
+  Hilliard: 1
+  Wiseco: 1
+  Dyno Cams: 1
+  RLV: 1
+  BSP: 1
+  Nibbi: 1
+
+--------------------------------------------------------------------------------
+ITEMS NEEDING REVIEW
+--------------------------------------------------------------------------------
+
+  Row 5: 12 Tooth Clutch Sprocket #35
+    Reasons: Unknown reason
+
+  Row 6: 66 Tooth Axle Sprocket #35
+    Reasons: Unknown reason
+
+  Row 7: Tav2 30 Series Torque Converter
+    Reasons: Unknown reason
+
+  Row 8: Centrifugal Clutch 3/4" Bore 12t #35
+    Reasons: Unknown reason
+
+  Row 9: 70mm Forged Piston +0.5mm
+    Reasons: Unknown reason
+
+--------------------------------------------------------------------------------
+INVALID ITEMS
+--------------------------------------------------------------------------------
+
+  Row 1: Predator 212 Hemi Performance Engine
+    - Required field 'valve_config' is missing
+    - Required field 'shaft_diameter_in' is missing
+
+  Row 2: Billet Connecting Rod - Predator 212
+    - Unknown category: engines/connecting-rods
+
+  Row 11: 22" RLV Exhaust Header
+    - Required field 'inlet_diameter_in' is missing
+
+  Row 12: 95 Main Jet Mikuni
+    - Required field 'jet_size' is missing
+
+  Row 13: Stage 2 Kit Predator 212 Hemi
+    - Required field 'valve_config' is missing
+    - Required field 'shaft_diameter_in' is missing
+
+--------------------------------------------------------------------------------
+READY TO COMMIT (showing first 10 of 4)
+--------------------------------------------------------------------------------
+
+  • Mikuni Vm22 Carburetor 26mm
+    Brand: Mikuni | Category: carburetors/complete-carburetors
+    Specs: carburetor_model=Mikuni VM22, throat_diameter_mm=26
+
+  • #35 Chain 106 Links
+    Brand: Clone (Generic) | Category: chains-sprockets/chains
+    Specs: chain_size=#35, pitch_in=0.375, links=106
+
+  • Dyno 260 Camshaft
+    Brand: Dyno Cams | Category: engines/camshafts
+    Specs: duration_int_deg=260.0, lift_int_in=0.32
+
+  • Pwk 28mm Racing Carburetor
+    Brand: Nibbi | Category: carburetors/complete-carburetors
+    Specs: carburetor_model=PWK28, throat_diameter_mm=28
+
+================================================================================
+END OF REPORT
+================================================================================

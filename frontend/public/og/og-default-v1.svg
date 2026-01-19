@@ -1,0 +1,44 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dark olive background -->
+  <rect width="1200" height="630" fill="#1a1e15"/>
+  
+  <!-- Subtle grid pattern -->
+  <defs>
+    <pattern id="og-grid" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#2d3226" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="url(#og-grid)" opacity="0.3"/>
+  
+  <!-- Vignette effect -->
+  <defs>
+    <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#1a1e15" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#0d0f0a" stop-opacity="0.8"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#vignette)"/>
+  
+  <!-- Orange accent glow -->
+  <ellipse cx="600" cy="250" rx="300" ry="150" fill="#c96a24" opacity="0.05"/>
+  
+  <!-- Badge/Logo shape centered -->
+  <g transform="translate(600, 240)">
+    <path d="M-120 -90 C-120 -100 -110 -110 -100 -110 L100 -110 C110 -110 120 -100 120 -90 L120 70 C120 80 110 90 100 90 L30 90 L0 120 L-30 90 L-100 90 C-110 90 -120 80 -120 70 Z" 
+          fill="#2d3226" stroke="#c96a24" stroke-width="4"/>
+    
+    <!-- Logo text inside badge -->
+    <text x="0" y="-20" font-family="Impact, sans-serif" font-size="48" font-weight="700" fill="#f5f0e6" text-anchor="middle" letter-spacing="2">GOKART</text>
+    <text x="0" y="35" font-family="Impact, sans-serif" font-size="36" font-weight="700" fill="#c96a24" text-anchor="middle" letter-spacing="2">PARTPICKER</text>
+    <text x="0" y="70" font-family="Impact, sans-serif" font-size="18" font-weight="400" fill="#c96a24" text-anchor="middle" letter-spacing="1">.COM</text>
+  </g>
+  
+  <!-- Tagline -->
+  <text x="600" y="420" font-family="system-ui, sans-serif" font-size="28" font-weight="400" fill="#d9cba8" text-anchor="middle" letter-spacing="1">Build Your Ultimate Go-Kart</text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="460" font-family="system-ui, sans-serif" font-size="18" font-weight="400" fill="#5d634d" text-anchor="middle">Compatibility Checker • Parts Catalog • Build Planner</text>
+  
+  <!-- Bottom accent line -->
+  <rect x="400" y="520" width="400" height="3" rx="1.5" fill="#c96a24" opacity="0.6"/>
+</svg>

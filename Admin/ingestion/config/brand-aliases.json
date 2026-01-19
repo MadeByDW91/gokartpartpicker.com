@@ -1,0 +1,354 @@
+{
+  "$schema": "brand-aliases-schema",
+  "version": "1.0.0",
+  "description": "Brand name normalization mappings for go-kart parts",
+  
+  "brands": {
+    "predator": {
+      "canonical": "Predator",
+      "slug": "predator",
+      "aliases": [
+        "predator",
+        "harbor freight predator",
+        "hf predator",
+        "pred",
+        "preditor",
+        "prederator"
+      ],
+      "country": "USA",
+      "parent_company": "Harbor Freight"
+    },
+    
+    "honda": {
+      "canonical": "Honda",
+      "slug": "honda",
+      "aliases": [
+        "honda",
+        "honda motor",
+        "honda gx",
+        "gx honda"
+      ],
+      "country": "Japan"
+    },
+    
+    "briggs-stratton": {
+      "canonical": "Briggs & Stratton",
+      "slug": "briggs-stratton",
+      "aliases": [
+        "briggs & stratton",
+        "briggs and stratton",
+        "briggs stratton",
+        "briggs",
+        "b&s",
+        "b & s",
+        "bs"
+      ],
+      "country": "USA"
+    },
+    
+    "tillotson": {
+      "canonical": "Tillotson",
+      "slug": "tillotson",
+      "aliases": [
+        "tillotson",
+        "tillotson racing",
+        "tilotson",
+        "tillitson"
+      ],
+      "country": "Ireland"
+    },
+    
+    "mikuni": {
+      "canonical": "Mikuni",
+      "slug": "mikuni",
+      "aliases": [
+        "mikuni",
+        "mikuni carburetor",
+        "mikuni carb",
+        "vm mikuni",
+        "tm mikuni"
+      ],
+      "country": "Japan"
+    },
+    
+    "walbro": {
+      "canonical": "Walbro",
+      "slug": "walbro",
+      "aliases": [
+        "walbro",
+        "walbro carburetor",
+        "walbro carb"
+      ],
+      "country": "USA"
+    },
+    
+    "comet": {
+      "canonical": "Comet",
+      "slug": "comet",
+      "aliases": [
+        "comet",
+        "comet industries",
+        "comet clutch",
+        "comet torque converter"
+      ],
+      "country": "USA"
+    },
+    
+    "hilliard": {
+      "canonical": "Hilliard",
+      "slug": "hilliard",
+      "aliases": [
+        "hilliard",
+        "hilliard corporation",
+        "hilliard clutch",
+        "hillard"
+      ],
+      "country": "USA"
+    },
+    
+    "max-torque": {
+      "canonical": "Max-Torque",
+      "slug": "max-torque",
+      "aliases": [
+        "max-torque",
+        "max torque",
+        "maxtorque",
+        "mt",
+        "max-t"
+      ],
+      "country": "USA"
+    },
+    
+    "rlv": {
+      "canonical": "RLV",
+      "slug": "rlv",
+      "aliases": [
+        "rlv",
+        "r.l.v.",
+        "rlv exhaust",
+        "rlv tuned"
+      ],
+      "country": "USA"
+    },
+    
+    "arc": {
+      "canonical": "ARC Racing",
+      "slug": "arc-racing",
+      "aliases": [
+        "arc racing",
+        "arc",
+        "a.r.c.",
+        "arc billet",
+        "arc rod"
+      ],
+      "country": "USA"
+    },
+    
+    "pmp": {
+      "canonical": "PMP",
+      "slug": "pmp",
+      "aliases": [
+        "pmp",
+        "p.m.p.",
+        "pmp racing"
+      ],
+      "country": "USA"
+    },
+    
+    "ducar": {
+      "canonical": "DuCar",
+      "slug": "ducar",
+      "aliases": [
+        "ducar",
+        "du car",
+        "ducar engine"
+      ],
+      "country": "China"
+    },
+    
+    "bsp": {
+      "canonical": "BSP",
+      "slug": "bsp",
+      "aliases": [
+        "bsp",
+        "b.s.p.",
+        "big show performance"
+      ],
+      "country": "USA"
+    },
+    
+    "dyno-cams": {
+      "canonical": "Dyno Cams",
+      "slug": "dyno-cams",
+      "aliases": [
+        "dyno cams",
+        "dyno-cams",
+        "dynocams",
+        "dyno cam"
+      ],
+      "country": "USA"
+    },
+    
+    "gopowersports": {
+      "canonical": "GoPowerSports",
+      "slug": "gopowersports",
+      "aliases": [
+        "gopowersports",
+        "go power sports",
+        "gps",
+        "go powersports"
+      ],
+      "country": "USA"
+    },
+    
+    "omb-warehouse": {
+      "canonical": "OMB Warehouse",
+      "slug": "omb-warehouse",
+      "aliases": [
+        "omb warehouse",
+        "omb",
+        "old mini bikes"
+      ],
+      "country": "USA"
+    },
+    
+    "vmchinese": {
+      "canonical": "VMC Chinese Parts",
+      "slug": "vmc-chinese-parts",
+      "aliases": [
+        "vmc chinese parts",
+        "vmc",
+        "vmchinese",
+        "vmc chinese"
+      ],
+      "country": "USA"
+    },
+    
+    "keihin": {
+      "canonical": "Keihin",
+      "slug": "keihin",
+      "aliases": [
+        "keihin",
+        "keihin carb",
+        "keihin carburetor",
+        "pwk",
+        "pe keihin"
+      ],
+      "country": "Japan"
+    },
+    
+    "wiseco": {
+      "canonical": "Wiseco",
+      "slug": "wiseco",
+      "aliases": [
+        "wiseco",
+        "wiseco piston",
+        "wiseco racing"
+      ],
+      "country": "USA"
+    },
+    
+    "bmi": {
+      "canonical": "BMI Karts",
+      "slug": "bmi-karts",
+      "aliases": [
+        "bmi karts",
+        "bmi",
+        "b.m.i."
+      ],
+      "country": "USA"
+    },
+    
+    "rk": {
+      "canonical": "RK Chain",
+      "slug": "rk-chain",
+      "aliases": [
+        "rk chain",
+        "rk",
+        "rk takasago"
+      ],
+      "country": "Japan"
+    },
+    
+    "did": {
+      "canonical": "DID Chain",
+      "slug": "did-chain",
+      "aliases": [
+        "did chain",
+        "did",
+        "d.i.d.",
+        "daido"
+      ],
+      "country": "Japan"
+    },
+    
+    "clone": {
+      "canonical": "Clone (Generic)",
+      "slug": "clone-generic",
+      "aliases": [
+        "clone",
+        "china clone",
+        "chinese clone",
+        "harbor freight clone",
+        "hf clone",
+        "196cc clone",
+        "212cc clone",
+        "generic",
+        "no-name",
+        "unbranded"
+      ],
+      "country": "China",
+      "notes": "Catch-all for unbranded Chinese clone engines/parts"
+    },
+
+    "nibbi": {
+      "canonical": "Nibbi",
+      "slug": "nibbi",
+      "aliases": [
+        "nibbi",
+        "nibbi racing",
+        "nibbi carburetor"
+      ],
+      "country": "China"
+    },
+
+    "pwk": {
+      "canonical": "PWK (Generic)",
+      "slug": "pwk-generic",
+      "aliases": [
+        "pwk",
+        "pwk carb",
+        "pwk carburetor",
+        "oko",
+        "oko pwk"
+      ],
+      "country": "China",
+      "notes": "Generic PWK-style carburetors"
+    },
+
+    "stage-1": {
+      "canonical": "Stage 1",
+      "slug": "stage-1",
+      "aliases": [
+        "stage 1",
+        "stage1",
+        "s1"
+      ],
+      "country": "USA"
+    }
+  },
+
+  "matching_rules": {
+    "case_insensitive": true,
+    "strip_punctuation": true,
+    "strip_extra_whitespace": true,
+    "fuzzy_threshold": 0.85,
+    "fallback": "unknown"
+  },
+
+  "unknown_brand": {
+    "canonical": "Unknown",
+    "slug": "unknown",
+    "needs_review": true
+  }
+}

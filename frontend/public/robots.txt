@@ -1,0 +1,13 @@
+# GoKartPartPicker - robots.txt
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+
+# Sitemap
+Sitemap: https://gokartpartpicker.com/sitemap.xml
+
+# Crawl-delay (optional, be respectful)
+Crawl-delay: 1

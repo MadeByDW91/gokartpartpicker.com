@@ -1,0 +1,555 @@
+{
+  "$schema": "extraction-patterns-schema",
+  "version": "1.0.0",
+  "description": "Regex patterns for extracting specifications from part names and descriptions",
+
+  "engine_families": {
+    "description": "Patterns to detect engine family from text",
+    "patterns": [
+      {
+        "family": "Predator 212 Hemi",
+        "patterns": [
+          "predator\\s*212\\s*hemi",
+          "pred\\s*212\\s*hemi",
+          "212\\s*hemi\\s*pred",
+          "hemi\\s*predator\\s*212",
+          "212cc\\s*hemi"
+        ],
+        "displacement_cc": 212,
+        "variant": "Hemi"
+      },
+      {
+        "family": "Predator 212 Non-Hemi",
+        "patterns": [
+          "predator\\s*212\\s*non[\\-\\s]*hemi",
+          "pred\\s*212\\s*non[\\-\\s]*hemi",
+          "212\\s*non[\\-\\s]*hemi",
+          "predator\\s*212(?!.*hemi)"
+        ],
+        "displacement_cc": 212,
+        "variant": "Non-Hemi"
+      },
+      {
+        "family": "Predator 224",
+        "patterns": [
+          "predator\\s*224",
+          "pred\\s*224",
+          "224cc\\s*pred"
+        ],
+        "displacement_cc": 224
+      },
+      {
+        "family": "Predator 301",
+        "patterns": [
+          "predator\\s*301",
+          "pred\\s*301",
+          "301cc\\s*pred"
+        ],
+        "displacement_cc": 301
+      },
+      {
+        "family": "Predator 420",
+        "patterns": [
+          "predator\\s*420",
+          "pred\\s*420",
+          "420cc\\s*pred"
+        ],
+        "displacement_cc": 420
+      },
+      {
+        "family": "Honda GX160",
+        "patterns": [
+          "honda\\s*gx\\s*160",
+          "gx160",
+          "gx\\s*160"
+        ],
+        "displacement_cc": 163
+      },
+      {
+        "family": "Honda GX200",
+        "patterns": [
+          "honda\\s*gx\\s*200",
+          "gx200",
+          "gx\\s*200"
+        ],
+        "displacement_cc": 196
+      },
+      {
+        "family": "Honda GX270",
+        "patterns": [
+          "honda\\s*gx\\s*270",
+          "gx270",
+          "gx\\s*270"
+        ],
+        "displacement_cc": 270
+      },
+      {
+        "family": "Honda GX390",
+        "patterns": [
+          "honda\\s*gx\\s*390",
+          "gx390",
+          "gx\\s*390"
+        ],
+        "displacement_cc": 389
+      },
+      {
+        "family": "Briggs Animal",
+        "patterns": [
+          "briggs\\s*animal",
+          "b&s\\s*animal",
+          "animal\\s*engine"
+        ],
+        "displacement_cc": 206
+      },
+      {
+        "family": "Briggs LO206",
+        "patterns": [
+          "lo206",
+          "lo\\s*206",
+          "briggs\\s*lo\\s*206",
+          "briggs\\s*206"
+        ],
+        "displacement_cc": 206
+      },
+      {
+        "family": "Briggs World Formula",
+        "patterns": [
+          "world\\s*formula",
+          "briggs\\s*world\\s*formula",
+          "wf\\s*briggs"
+        ],
+        "displacement_cc": 206
+      },
+      {
+        "family": "Tillotson 212",
+        "patterns": [
+          "tillotson\\s*212",
+          "tilly\\s*212"
+        ],
+        "displacement_cc": 212
+      },
+      {
+        "family": "Tillotson 225RS",
+        "patterns": [
+          "tillotson\\s*225",
+          "225\\s*rs",
+          "225rs"
+        ],
+        "displacement_cc": 225
+      },
+      {
+        "family": "Clone 196/212",
+        "patterns": [
+          "196cc\\s*clone",
+          "212cc\\s*clone",
+          "china\\s*clone",
+          "gy6\\s*clone"
+        ],
+        "displacement_cc": 212
+      },
+      {
+        "family": "DuCar 212",
+        "patterns": [
+          "ducar\\s*212",
+          "ducar\\s*196"
+        ],
+        "displacement_cc": 212
+      }
+    ]
+  },
+
+  "bore_sizes": {
+    "description": "Extract bore diameter from text",
+    "patterns": [
+      {
+        "pattern": "(\\d+(?:\\.\\d+)?)\\s*mm\\s*bore",
+        "capture_group": 1,
+        "unit": "mm",
+        "field": "bore_mm"
+      },
+      {
+        "pattern": "bore[:\\s]*(\\d+(?:\\.\\d+)?)\\s*mm",
+        "capture_group": 1,
+        "unit": "mm",
+        "field": "bore_mm"
+      },
+      {
+        "pattern": "(\\d+(?:\\.\\d+)?)\\s*mm\\s*piston",
+        "capture_group": 1,
+        "unit": "mm",
+        "field": "bore_mm"
+      },
+      {
+        "pattern": "\\+?(\\d+(?:\\.\\d+)?)\\s*(?:mm)?\\s*over(?:size)?",
+        "capture_group": 1,
+        "unit": "mm",
+        "field": "oversize_mm"
+      }
+    ],
+    "common_values": {
+      "68": {"engines": ["Clone 196cc"]},
+      "70": {"engines": ["Predator 212", "Honda GX200", "Clone 212cc"]},
+      "73": {"engines": ["Predator 224"]},
+      "77": {"engines": ["Predator 301", "Honda GX270"]},
+      "88": {"engines": ["Honda GX390", "Predator 420"]}
+    }
+  },
+
+  "chain_sizes": {
+    "description": "Extract chain size from text",
+    "patterns": [
+      {
+        "pattern": "#?35\\b",
+        "value": "#35",
+        "pitch_in": 0.375
+      },
+      {
+        "pattern": "#?40\\b",
+        "value": "#40",
+        "pitch_in": 0.5
+      },
+      {
+        "pattern": "#?41\\b",
+        "value": "#41",
+        "pitch_in": 0.5
+      },
+      {
+        "pattern": "#?420\\b",
+        "value": "#420",
+        "pitch_in": 0.5
+      },
+      {
+        "pattern": "#?428\\b",
+        "value": "#428",
+        "pitch_in": 0.5
+      },
+      {
+        "pattern": "#?520\\b",
+        "value": "#520",
+        "pitch_in": 0.625
+      },
+      {
+        "pattern": "#?530\\b",
+        "value": "#530",
+        "pitch_in": 0.625
+      }
+    ]
+  },
+
+  "carburetor_models": {
+    "description": "Extract carburetor model from text",
+    "patterns": [
+      {
+        "pattern": "mikuni\\s*(vm|tm)\\s*(\\d+)",
+        "template": "Mikuni {1}{2}",
+        "brand": "Mikuni"
+      },
+      {
+        "pattern": "(pwk|pe)\\s*(\\d+)",
+        "template": "PWK{2}",
+        "brand": "Keihin"
+      },
+      {
+        "pattern": "pz\\s*(\\d+)",
+        "template": "PZ{1}",
+        "brand": "Clone"
+      },
+      {
+        "pattern": "walbro\\s*(wyl|wya|wyj|wt)",
+        "template": "Walbro {1}",
+        "brand": "Walbro"
+      },
+      {
+        "pattern": "tillotson\\s*(hl|hc|hr)",
+        "template": "Tillotson {1}",
+        "brand": "Tillotson"
+      },
+      {
+        "pattern": "huayi\\s*(\\d+)?",
+        "template": "Huayi",
+        "brand": "Clone"
+      }
+    ],
+    "throat_diameter_extraction": {
+      "pattern": "(\\d+)\\s*mm",
+      "capture_group": 1,
+      "field": "throat_diameter_mm"
+    }
+  },
+
+  "torque_converter_series": {
+    "description": "Extract torque converter series from text",
+    "patterns": [
+      {
+        "pattern": "tav\\s*2",
+        "series": "TAV2"
+      },
+      {
+        "pattern": "tav\\s*30",
+        "series": "TAV30"
+      },
+      {
+        "pattern": "comet\\s*20\\b",
+        "series": "Comet 20"
+      },
+      {
+        "pattern": "comet\\s*30\\b",
+        "series": "Comet 30"
+      },
+      {
+        "pattern": "comet\\s*40\\b",
+        "series": "Comet 40"
+      },
+      {
+        "pattern": "comet\\s*44\\b",
+        "series": "Comet 44"
+      },
+      {
+        "pattern": "comet\\s*94c",
+        "series": "Comet 94C"
+      },
+      {
+        "pattern": "203589",
+        "series": "Comet 30",
+        "belt_number": "203589"
+      },
+      {
+        "pattern": "203591",
+        "series": "Comet 40",
+        "belt_number": "203591"
+      },
+      {
+        "pattern": "juggernaut",
+        "series": "Juggernaut"
+      }
+    ]
+  },
+
+  "shaft_specs": {
+    "description": "Extract shaft diameter and keyway",
+    "bore_patterns": [
+      {
+        "pattern": "(\\d+(?:\\.\\d+)?)[\"']?\\s*(?:inch)?\\s*(?:bore|shaft)",
+        "capture_group": 1,
+        "unit": "inches",
+        "field": "bore_in"
+      },
+      {
+        "pattern": "(\\d+)/(\\d+)[\"']?\\s*(?:inch)?\\s*(?:bore|shaft)",
+        "type": "fraction",
+        "field": "bore_in"
+      },
+      {
+        "pattern": "(\\d+(?:\\.\\d+)?)\\s*mm\\s*(?:bore|shaft)",
+        "capture_group": 1,
+        "unit": "mm",
+        "field": "bore_mm",
+        "convert_to_inches": true
+      }
+    ],
+    "keyway_patterns": [
+      {
+        "pattern": "3/16[\"']?\\s*key",
+        "value": "3/16\""
+      },
+      {
+        "pattern": "1/4[\"']?\\s*key",
+        "value": "1/4\""
+      },
+      {
+        "pattern": "5\\s*mm\\s*key",
+        "value": "5mm"
+      },
+      {
+        "pattern": "6\\s*mm\\s*key",
+        "value": "6mm"
+      }
+    ],
+    "common_bore_values": {
+      "0.625": "5/8\"",
+      "0.75": "3/4\"",
+      "0.787": "20mm",
+      "1.0": "1\"",
+      "1.125": "1-1/8\""
+    }
+  },
+
+  "sprocket_specs": {
+    "description": "Extract sprocket specifications",
+    "teeth_patterns": [
+      {
+        "pattern": "(\\d+)\\s*(?:tooth|teeth|t)\\b",
+        "capture_group": 1,
+        "field": "teeth"
+      },
+      {
+        "pattern": "(\\d+)t\\b",
+        "capture_group": 1,
+        "field": "teeth"
+      }
+    ]
+  },
+
+  "clutch_specs": {
+    "description": "Extract clutch specifications",
+    "engagement_patterns": [
+      {
+        "pattern": "(\\d+)\\s*rpm\\s*engage",
+        "capture_group": 1,
+        "field": "engagement_rpm"
+      },
+      {
+        "pattern": "engage(?:s|ment)?\\s*(?:at)?\\s*(\\d+)\\s*rpm",
+        "capture_group": 1,
+        "field": "engagement_rpm"
+      }
+    ],
+    "shoes_patterns": [
+      {
+        "pattern": "(2|3|4)\\s*shoe",
+        "capture_group": 1,
+        "field": "shoes_count"
+      }
+    ]
+  },
+
+  "displacement_cc": {
+    "description": "Extract engine displacement",
+    "patterns": [
+      {
+        "pattern": "(\\d+)\\s*cc",
+        "capture_group": 1,
+        "field": "displacement_cc"
+      },
+      {
+        "pattern": "(\\d+(?:\\.\\d+)?)\\s*ci(?:d)?",
+        "capture_group": 1,
+        "field": "displacement_ci",
+        "convert_to_cc": true,
+        "multiplier": 16.387
+      }
+    ]
+  },
+
+  "link_count": {
+    "description": "Extract chain link count",
+    "patterns": [
+      {
+        "pattern": "(\\d+)\\s*(?:link|links)\\b",
+        "capture_group": 1,
+        "field": "links"
+      }
+    ]
+  },
+
+  "jet_sizes": {
+    "description": "Extract jet sizes",
+    "patterns": [
+      {
+        "pattern": "main\\s*(?:jet)?[:\\s]*(\\d+(?:\\.\\d+)?)",
+        "capture_group": 1,
+        "field": "main_jet"
+      },
+      {
+        "pattern": "pilot\\s*(?:jet)?[:\\s]*(\\d+(?:\\.\\d+)?)",
+        "capture_group": 1,
+        "field": "pilot_jet"
+      },
+      {
+        "pattern": "slow\\s*(?:jet)?[:\\s]*(\\d+(?:\\.\\d+)?)",
+        "capture_group": 1,
+        "field": "pilot_jet"
+      },
+      {
+        "pattern": "(\\d+(?:\\.\\d+)?)\\s*(?:main|pilot|slow)\\s*jet",
+        "capture_group": 1,
+        "context_dependent": true
+      }
+    ]
+  },
+
+  "camshaft_specs": {
+    "description": "Extract camshaft specifications",
+    "patterns": [
+      {
+        "pattern": "(\\d+)\\s*(?:deg(?:ree)?s?)?\\s*duration",
+        "capture_group": 1,
+        "field": "duration_int_deg"
+      },
+      {
+        "pattern": "\\.(\\d{3})[\"']?\\s*lift",
+        "capture_group": 1,
+        "field": "lift_int_in",
+        "prefix": "0."
+      },
+      {
+        "pattern": "(\\d+)\\s*(?:deg)?\\s*lobe\\s*sep",
+        "capture_group": 1,
+        "field": "lobe_separation"
+      }
+    ]
+  },
+
+  "dimension_patterns": {
+    "description": "Generic dimension extraction",
+    "patterns": [
+      {
+        "pattern": "(\\d+(?:\\.\\d+)?)\\s*[\"']\\s*(?:x|by)\\s*(\\d+(?:\\.\\d+)?)\\s*[\"']",
+        "type": "dimensions",
+        "unit": "inches"
+      },
+      {
+        "pattern": "(\\d+(?:\\.\\d+)?)\\s*mm\\s*(?:x|by)\\s*(\\d+(?:\\.\\d+)?)\\s*mm",
+        "type": "dimensions",
+        "unit": "mm"
+      }
+    ]
+  },
+
+  "stage_kit_detection": {
+    "description": "Detect stage kit level",
+    "patterns": [
+      {
+        "pattern": "stage\\s*1",
+        "value": "Stage 1"
+      },
+      {
+        "pattern": "stage\\s*2",
+        "value": "Stage 2"
+      },
+      {
+        "pattern": "stage\\s*3",
+        "value": "Stage 3"
+      },
+      {
+        "pattern": "stage\\s*4",
+        "value": "Stage 4"
+      }
+    ]
+  },
+
+  "unit_conversions": {
+    "mm_to_inches": 0.0393701,
+    "inches_to_mm": 25.4,
+    "cc_to_ci": 0.0610237,
+    "ci_to_cc": 16.387
+  },
+
+  "fraction_conversions": {
+    "1/4": 0.25,
+    "5/16": 0.3125,
+    "3/8": 0.375,
+    "7/16": 0.4375,
+    "1/2": 0.5,
+    "9/16": 0.5625,
+    "5/8": 0.625,
+    "11/16": 0.6875,
+    "3/4": 0.75,
+    "13/16": 0.8125,
+    "7/8": 0.875,
+    "15/16": 0.9375,
+    "1": 1.0,
+    "1-1/8": 1.125,
+    "1-1/4": 1.25
+  }
+}

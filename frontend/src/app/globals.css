@@ -1,0 +1,556 @@
+@import "tailwindcss";
+
+/* =====================================================
+   GoKartPartPicker Design System
+   Inspired by vintage motorsport, industrial, retro aesthetic
+   ===================================================== */
+
+:root {
+  /* Core Brand Colors - extracted from logo */
+  --olive-900: #1a1e15;
+  --olive-800: #2d3226;
+  --olive-700: #3d4233;
+  --olive-600: #4d5340;
+  --olive-500: #5d634d;
+  
+  --orange-500: #c96a24;
+  --orange-400: #d4803c;
+  --orange-300: #e09654;
+  --orange-600: #a85a1e;
+  
+  --cream-100: #f5f0e6;
+  --cream-200: #e8dcc4;
+  --cream-300: #d9cba8;
+  --cream-400: #c4b58e;
+  
+  /* Semantic Colors */
+  --background: var(--olive-900);
+  --background-secondary: var(--olive-800);
+  --background-card: var(--olive-700);
+  --foreground: var(--cream-100);
+  --foreground-muted: var(--cream-300);
+  
+  --accent: var(--orange-500);
+  --accent-hover: var(--orange-400);
+  --accent-muted: var(--orange-600);
+  
+  --border: var(--olive-600);
+  --border-accent: var(--orange-500);
+  
+  /* Status Colors */
+  --success: #4a7c59;
+  --warning: #d4803c;
+  --error: #a63d40;
+  --info: #5a7d9a;
+  
+  /* Compatibility Badge Colors */
+  --compat-ok: #4a7c59;
+  --compat-warn: #d4803c;
+  --compat-error: #a63d40;
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+  
+  /* Border Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 20px rgba(201, 106, 36, 0.3);
+}
+
+@theme inline {
+  --color-olive-900: var(--olive-900);
+  --color-olive-800: var(--olive-800);
+  --color-olive-700: var(--olive-700);
+  --color-olive-600: var(--olive-600);
+  --color-olive-500: var(--olive-500);
+  
+  --color-orange-500: var(--orange-500);
+  --color-orange-400: var(--orange-400);
+  --color-orange-300: var(--orange-300);
+  --color-orange-600: var(--orange-600);
+  
+  --color-cream-100: var(--cream-100);
+  --color-cream-200: var(--cream-200);
+  --color-cream-300: var(--cream-300);
+  --color-cream-400: var(--cream-400);
+  
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+  
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-info: var(--info);
+  
+  --font-display: 'Bebas Neue', 'Impact', sans-serif;
+  --font-body: 'DM Sans', 'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* Base Styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--olive-900);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--olive-600);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--orange-500);
+}
+
+/* Typography Utilities */
+.text-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.text-body {
+  font-family: var(--font-body);
+}
+
+/* Glow Effects */
+.glow-orange {
+  box-shadow: var(--shadow-glow);
+}
+
+.glow-orange-text {
+  text-shadow: 0 0 20px rgba(201, 106, 36, 0.5);
+}
+
+/* Noise Texture Overlay */
+.texture-noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Grid Pattern Background */
+.bg-grid {
+  background-image: 
+    linear-gradient(var(--olive-700) 1px, transparent 1px),
+    linear-gradient(90deg, var(--olive-700) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Racing Stripe */
+.racing-stripe {
+  position: relative;
+}
+
+.racing-stripe::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--orange-500),
+    var(--orange-500) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+}
+
+/* Card Styles */
+.card {
+  background: var(--background-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  border-color: var(--orange-500);
+  box-shadow: var(--shadow-md);
+}
+
+.card-accent {
+  border-color: var(--orange-500);
+  box-shadow: var(--shadow-glow);
+}
+
+/* Button Base */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+}
+
+.btn-primary {
+  background: var(--orange-500);
+  color: var(--cream-100);
+  border: 2px solid var(--orange-500);
+}
+
+.btn-primary:hover {
+  background: var(--orange-400);
+  border-color: var(--orange-400);
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--cream-100);
+  border: 2px solid var(--cream-200);
+}
+
+.btn-secondary:hover {
+  border-color: var(--orange-500);
+  color: var(--orange-400);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--cream-200);
+  border: none;
+  padding: 0.5rem 1rem;
+}
+
+.btn-ghost:hover {
+  color: var(--orange-400);
+}
+
+/* Input Styles */
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--olive-800);
+  border: 2px solid var(--olive-600);
+  border-radius: var(--radius-md);
+  color: var(--cream-100);
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--orange-500);
+}
+
+.input::placeholder {
+  color: var(--cream-400);
+}
+
+/* Badge Styles */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 9999px;
+}
+
+.badge-success {
+  background: rgba(74, 124, 89, 0.2);
+  color: #6fa87e;
+  border: 1px solid rgba(74, 124, 89, 0.4);
+}
+
+.badge-warning {
+  background: rgba(212, 128, 60, 0.2);
+  color: #e09654;
+  border: 1px solid rgba(212, 128, 60, 0.4);
+}
+
+.badge-error {
+  background: rgba(166, 61, 64, 0.2);
+  color: #c46366;
+  border: 1px solid rgba(166, 61, 64, 0.4);
+}
+
+.badge-info {
+  background: rgba(90, 125, 154, 0.2);
+  color: #7a9db9;
+  border: 1px solid rgba(90, 125, 154, 0.4);
+}
+
+/* Compatibility Warning Banner */
+.compat-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border-left: 4px solid;
+}
+
+.compat-warning-error {
+  background: rgba(166, 61, 64, 0.1);
+  border-color: var(--error);
+}
+
+.compat-warning-warn {
+  background: rgba(212, 128, 60, 0.1);
+  border-color: var(--warning);
+}
+
+.compat-warning-info {
+  background: rgba(90, 125, 154, 0.1);
+  border-color: var(--info);
+}
+
+/* Skeleton Loading */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--olive-700) 0%,
+    var(--olive-600) 50%,
+    var(--olive-700) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Price Tag */
+.price-tag {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--orange-400);
+}
+
+.price-tag::before {
+  content: '$';
+  font-size: 1rem;
+  vertical-align: super;
+}
+
+/* Spec List */
+.spec-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.spec-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed var(--olive-600);
+}
+
+.spec-label {
+  color: var(--cream-400);
+  font-size: 0.875rem;
+}
+
+.spec-value {
+  color: var(--cream-100);
+  font-weight: 600;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(201, 106, 36, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(201, 106, 36, 0.5);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+/* Staggered children animation */
+.stagger-children > * {
+  animation: fadeIn 0.4s ease-out backwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 150ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 250ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 350ms; }
+
+/* =====================================================
+   Print Styles for Shopping List
+   ===================================================== */
+
+@media print {
+  /* Hide navigation, buttons, and non-essential UI */
+  /* Note: Tailwind's print:hidden class is handled by Tailwind itself */
+  body > div:not(.shopping-list-container),
+  button,
+  .bg-olive-800 {
+    display: none !important;
+  }
+  
+  /* Shopping list styles */
+  .shopping-list {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .shopping-list h1 {
+    color: #000 !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .shopping-list .category-section {
+    page-break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+  
+  .shopping-list .category-section h2 {
+    color: #000 !important;
+    border-bottom: 2px solid #000 !important;
+  }
+  
+  /* Checkboxes for printing */
+  input[type="checkbox"] {
+    appearance: checkbox !important;
+    -webkit-appearance: checkbox !important;
+    width: 16px !important;
+    height: 16px !important;
+    border: 1px solid #000 !important;
+    background: #fff !important;
+  }
+  
+  /* Links in print */
+  a[href^="http"]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.75rem;
+    color: #666;
+  }
+  
+  /* Colors for print (black and white) */
+  .text-cream-100,
+  .text-cream-200,
+  .text-cream-300,
+  .text-cream-400 {
+    color: #000 !important;
+  }
+  
+  .text-orange-400,
+  .text-orange-500 {
+    color: #000 !important;
+    font-weight: bold;
+  }
+  
+  .bg-olive-800,
+  .bg-olive-700,
+  .bg-olive-900 {
+    background: #fff !important;
+  }
+  
+  .border-olive-600,
+  .border-olive-700 {
+    border-color: #000 !important;
+  }
+  
+  /* Page break control */
+  .shopping-list-item {
+    page-break-inside: avoid;
+  }
+}
+
+/* Utility Classes */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}

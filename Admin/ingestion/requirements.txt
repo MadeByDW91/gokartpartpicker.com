@@ -1,0 +1,22 @@
+# Data Ingestion Agent Dependencies
+# Python 3.8+ required
+
+# No external dependencies required - uses Python standard library only:
+# - json (parsing)
+# - csv (parsing)
+# - re (regex)
+# - pathlib (file paths)
+# - dataclasses (data structures)
+# - difflib (fuzzy matching)
+# - argparse (CLI)
+# - uuid (ID generation)
+# - datetime (timestamps)
+# - typing (type hints)
+# - enum (enumerations)
+# - unicodedata (text normalization)
+# - io (StringIO)
+# - sys (stdin/stdout)
+
+# Optional dependencies for enhanced features:
+# rapidfuzz>=3.0.0  # Faster fuzzy matching (fallback to difflib if not installed)
+# orjson>=3.0.0     # Faster JSON parsing (fallback to json if not installed)

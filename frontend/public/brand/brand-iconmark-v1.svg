@@ -1,0 +1,8 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Badge shape inspired by main logo -->
+  <path d="M4 8 C4 5 6 3 9 3 L55 3 C58 3 60 5 60 8 L60 48 C60 51 58 53 55 53 L38 53 L32 61 L26 53 L9 53 C6 53 4 51 4 48 Z" 
+        fill="#2d3226" stroke="#c96a24" stroke-width="3"/>
+  
+  <!-- Simplified "GK" lettermark -->
+  <text x="32" y="38" font-family="'Bebas Neue', Impact, sans-serif" font-size="24" font-weight="700" fill="#f5f0e6" text-anchor="middle" letter-spacing="1">GK</text>
+</svg>

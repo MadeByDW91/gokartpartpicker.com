@@ -1,0 +1,33 @@
+<svg width="300" height="200" viewBox="0 0 300 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Magnifying glass -->
+  <g transform="translate(150, 90)">
+    <!-- Glass circle -->
+    <circle cx="0" cy="0" r="40" stroke="#f5f0e6" stroke-width="2.5" fill="none"/>
+    <!-- Handle -->
+    <line x1="28" y1="28" x2="55" y2="55" stroke="#f5f0e6" stroke-width="3" stroke-linecap="round"/>
+    
+    <!-- X mark inside (no results) -->
+    <g stroke="#c96a24" stroke-width="2.5" stroke-linecap="round">
+      <line x1="-15" y1="-15" x2="15" y2="15"/>
+      <line x1="15" y1="-15" x2="-15" y2="15"/>
+    </g>
+  </g>
+  
+  <!-- Scattered small part shapes (faded) -->
+  <g opacity="0.2" stroke="#5d634d" stroke-width="1.5" fill="none">
+    <!-- Small gear -->
+    <circle cx="70" cy="60" r="8"/>
+    <circle cx="70" cy="60" r="3"/>
+    <!-- Small bolt -->
+    <circle cx="230" cy="70" r="6"/>
+    <rect x="227" y="76" width="6" height="12" rx="1"/>
+    <!-- Chain link -->
+    <ellipse cx="85" cy="145" rx="10" ry="6"/>
+    <ellipse cx="215" cy="140" rx="10" ry="6"/>
+  </g>
+  
+  <!-- "Nothing found" line indicator -->
+  <g transform="translate(150, 165)" stroke="#5d634d" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.4">
+    <line x1="-40" y1="0" x2="40" y2="0"/>
+  </g>
+</svg>

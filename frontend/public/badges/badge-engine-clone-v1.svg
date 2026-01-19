@@ -1,0 +1,5 @@
+<svg width="80" height="24" viewBox="0 0 80 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="1" y="1" width="78" height="22" rx="4" fill="#2d3226" stroke="#4d5340" stroke-width="1"/>
+  <rect x="0" y="0" width="4" height="24" rx="2" fill="#f5f0e6"/>
+  <text x="44" y="16" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#f5f0e6" text-anchor="middle" letter-spacing="0.5">CLONE</text>
+</svg>
