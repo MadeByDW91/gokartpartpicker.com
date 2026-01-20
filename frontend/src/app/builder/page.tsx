@@ -20,6 +20,7 @@ import { EngineCard } from '@/components/EngineCard';
 import { PartCard } from '@/components/PartCard';
 import { CompatibilityWarningList } from '@/components/CompatibilityWarning';
 import { RecommendationsPanel } from '@/components/builder/RecommendationsPanel';
+import { TemplateSelector } from '@/components/builder/TemplateSelector';
 import { BuilderTable, PartSelectionModal } from '@/components/lazy';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -350,11 +351,7 @@ function BuilderPageContent() {
             </div>
             
             <div className="hidden md:flex items-center gap-2 flex-shrink-0">
-              <Link href="/templates">
-                <Button variant="secondary" size="sm" icon={<Sparkles className="w-4 h-4" />}>
-                  Templates
-                </Button>
-              </Link>
+              <TemplateSelector />
                {(selectedEngine || selectedParts.size > 0) && (
                  <>
                    <Button variant="ghost" size="sm" onClick={clearBuild} icon={<Trash2 className="w-4 h-4" />}>
@@ -395,10 +392,7 @@ function BuilderPageContent() {
             
             {/* Mobile Actions */}
             <div className="md:hidden flex items-center gap-2 flex-shrink-0">
-              <Link href="/templates">
-                <Button variant="ghost" size="sm" icon={<Sparkles className="w-4 h-4" />} className="min-h-[44px] min-w-[44px] touch-manipulation" aria-label="Templates">
-                </Button>
-              </Link>
+              <TemplateSelector />
               {(selectedEngine || selectedParts.size > 0) && (
                 <>
                   <Button variant="ghost" size="sm" onClick={clearBuild} icon={<Trash2 className="w-4 h-4" />} className="min-h-[44px] min-w-[44px] touch-manipulation" aria-label="Clear build">

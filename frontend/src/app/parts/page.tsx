@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Pagination } from '@/components/ui/Pagination';
+import { TemplateQuickAccess } from '@/components/parts/TemplateQuickAccess';
 import { usePagination } from '@/hooks/use-pagination';
 import { Package, Search, SlidersHorizontal, X, Grid, List, Filter, Loader2 } from 'lucide-react';
 import { PART_CATEGORIES, type PartCategory, type PartFilters, type Part } from '@/types/database';
@@ -364,6 +365,9 @@ function PartsPageContent() {
                 </aside>
               </div>
             )}
+            
+            {/* Template Quick Access */}
+            <TemplateQuickAccess />
             
             {/* Results */}
             {/* Results Count & Selected Parts */}
