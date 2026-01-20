@@ -49,6 +49,12 @@ export async function getEngines(
     
     const supabase = await createClient();
     
+    // Check if Supabase is properly configured
+    if (!supabase || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      console.error('[getEngines] Supabase not configured');
+      return error('Database connection not configured. Please check environment variables.');
+    }
+    
     // Build query - only active engines are visible
     let query = supabase
       .from('engines')

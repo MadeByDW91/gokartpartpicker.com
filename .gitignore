@@ -48,3 +48,6 @@ supabase/.temp/
 # Misc
 *.log
 .cache/
+
+# Local deployment docs (may contain redacted secrets; do not re-add real keys)
+.md/
