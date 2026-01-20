@@ -50,16 +50,16 @@ export default function TemplatesPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Filter: compact pill row */}
+        {/* Filter: compact pills */}
         <div className="flex flex-wrap items-center gap-2 mb-8">
-          <span className="text-sm text-cream-400 mr-1">Show:</span>
+          <span className="text-xs text-cream-500 mr-1">Show:</span>
           <button
             onClick={() => setSelectedGoal(undefined)}
             className={cn(
               'px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
               selectedGoal === undefined
                 ? 'bg-orange-500 text-cream-100'
-                : 'bg-olive-700 text-cream-400 hover:bg-olive-600 hover:text-cream-300 border border-olive-600'
+                : 'bg-olive-700/70 text-cream-400 hover:bg-olive-600 hover:text-cream-300'
             )}
           >
             All
@@ -74,7 +74,7 @@ export default function TemplatesPage() {
                 onClick={() => setSelectedGoal(goal)}
                 className={cn(
                   'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
-                  isActive ? 'bg-orange-500 text-cream-100' : 'bg-olive-700 text-cream-400 hover:bg-olive-600 hover:text-cream-300 border border-olive-600'
+                  isActive ? 'bg-orange-500 text-cream-100' : 'bg-olive-700/70 text-cream-400 hover:bg-olive-600 hover:text-cream-300'
                 )}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -97,12 +97,13 @@ export default function TemplatesPage() {
         {isLoading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i}>
-                <CardContent className="p-6">
-                  <Skeleton className="h-6 w-4/5 mb-2" />
-                  <Skeleton className="h-3 w-16 mb-4" />
-                  <Skeleton className="h-4 w-2/5 mb-5" />
-                  <div className="h-px bg-olive-600/60 mb-5" />
+              <Card key={i} className="overflow-hidden">
+                <Skeleton className="h-28 w-full rounded-t-lg shrink-0" />
+                <CardContent className="p-5">
+                  <Skeleton className="h-4 w-2/5 mb-1" />
+                  <Skeleton className="h-5 w-3/5 mb-2" />
+                  <Skeleton className="h-4 w-1/3 mb-4" />
+                  <div className="h-px bg-olive-600/60 mb-4" />
                   <Skeleton className="h-10 w-full" />
                 </CardContent>
               </Card>
