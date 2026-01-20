@@ -72,9 +72,9 @@ Based on the codebase, the following agents are currently active:
 - `frontend/src/components/PartCard.tsx` (A3)
 - `frontend/src/components/EngineCard.tsx` (A3)
 
-**Potential Issues:**
-- ⚠️ Need to verify all 26 part categories are in TypeScript types
-- ⚠️ Need to verify all engine fields match database schema
+**Verified:**
+- ✅ All 26 part categories match: `part_category` enum in `20260116000001_initial_schema.sql` = `PART_CATEGORIES` in `frontend/src/types/database.ts` (clutch, torque_converter, chain, sprocket, axle, wheel, tire, brake, throttle, frame, carburetor, exhaust, air_filter, camshaft, valve_spring, flywheel, ignition, connecting_rod, piston, crankshaft, oil_system, header, fuel_system, gasket, hardware, other)
+- ⚠️ Engine fields: some DB columns (e.g. `model`, `variant`, `shaft_keyway`, `oil_capacity_oz`) may not be in `Engine` type—acceptable if unused by UI
 
 **Verification:**
 ```typescript
@@ -244,19 +244,13 @@ SELECT COUNT(*) FROM compatibility_rules;
 
 ---
 
-### Issue 2: Compatibility Engine Not Integrated
-**Severity:** High  
-**Agents:** A6 (Compatibility) ↔ A3 (UI) ↔ A4 (Backend)
+### ~~Issue 2: Compatibility Engine~~
+**Former severity:** High  
+**Status:** ✅ **RESOLVED (2026-01-17)**
 
-**Problem:**
-- Compatibility rules designed but may not be implemented
-- Frontend may not use compatibility engine
-- Builder may not check compatibility
-
-**Fix:**
-- Verify `compatibility_rules` table exists
-- Check if compatibility checking is implemented in builder
-- Integrate compatibility engine if missing
+- `compatibility_rules` table exists with RLS and audit trigger
+- `use-compatibility.ts` implements rules engine; builder and `BuilderTable` use `useCompatibilityRules` + `checkCompatibility`
+- Admin and server actions provide compatibility CRUD
 
 ---
 
