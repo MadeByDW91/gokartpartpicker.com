@@ -307,13 +307,23 @@ export function Header() {
         />
         
         {/* Mobile Menu - Slide Animation */}
-        <div 
-          className={cn(
-            'md:hidden fixed inset-x-0 top-14 sm:top-16 bottom-0 bg-olive-900 border-t border-olive-700 overflow-y-auto overscroll-contain transition-transform duration-300 ease-in-out z-40 safe-area-bottom',
-            mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-          )}
-          style={{ display: mobileMenuOpen ? 'block' : 'none' }}
-        >
+        {mobileMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <div 
+              className="md:hidden fixed inset-0 top-14 sm:top-16 bg-black/50 backdrop-blur-sm z-30 transition-opacity duration-300"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+            />
+            
+            {/* Menu Panel */}
+            <div 
+              className={cn(
+                'md:hidden fixed inset-x-0 top-14 sm:top-16 bottom-0 bg-olive-900 border-t border-olive-700 overflow-y-auto overscroll-contain z-40 safe-area-bottom',
+                'transition-transform duration-300 ease-in-out',
+                mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+              )}
+            >
           <div className="max-w-7xl mx-auto px-4 py-6">
             {/* Navigation Links */}
             <nav className="space-y-2 mb-6">
@@ -403,15 +413,8 @@ export function Header() {
               </div>
             )}
           </div>
-        </div>
-
-        {/* Mobile Menu Backdrop */}
-        {mobileMenuOpen && (
-          <div 
-            className="md:hidden fixed inset-0 top-14 sm:top-16 bg-black/50 backdrop-blur-sm z-30"
-            onClick={() => setMobileMenuOpen(false)}
-            aria-hidden="true"
-          />
+            </div>
+          </>
         )}
       </nav>
     </header>

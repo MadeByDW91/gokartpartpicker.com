@@ -6,18 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { formatPrice, getCategoryLabel } from '@/lib/utils';
 import type { BuildTemplate } from '@/types/database';
 import { useParts } from '@/hooks/use-parts';
-import { 
-  X, 
-  Zap, 
-  DollarSign, 
-  Package, 
-  TrendingUp,
-  Rocket,
-  Wallet,
-  GraduationCap,
-  Trophy,
-  Baby
-} from 'lucide-react';
+import { X, DollarSign, Package, Rocket, Zap, Wallet, GraduationCap, Trophy, Baby } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -89,63 +78,32 @@ export function TemplatePreview({ template, onClose, onApply }: TemplatePreviewP
         </CardHeader>
 
         <CardContent className="space-y-6 pt-6">
-          {/* Engine */}
+          {/* Engine + estimated performance in one block */}
           {engine && (
             <div>
               <h3 className="text-lg font-semibold text-cream-100 mb-3">Engine</h3>
               <div className="flex items-center gap-4 p-4 bg-olive-800 rounded-lg">
                 {engine.image_url && (
                   <div className="relative w-20 h-20 bg-olive-700 rounded-lg overflow-hidden flex-shrink-0">
-                    <Image
-                      src={engine.image_url}
-                      alt={engine.name}
-                      fill
-                      className="object-cover"
-                    />
+                    <Image src={engine.image_url} alt={engine.name} fill className="object-cover" />
                   </div>
                 )}
-                <div className="flex-1">
-                  <h4 className="text-lg font-bold text-cream-100">
-                    {engine.brand} {engine.name}
-                  </h4>
-                  <div className="flex items-center gap-4 mt-1 text-sm text-cream-400">
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-lg font-bold text-cream-100">{engine.brand} {engine.name}</h4>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-cream-400">
                     <span>{engine.horsepower} HP</span>
-                    {engine.torque && <span>{engine.torque} lb-ft torque</span>}
-                    {engine.displacement_cc && <span>{engine.displacement_cc}cc</span>}
+                    {engine.torque != null && <span>{engine.torque} lb-ft</span>}
+                    {engine.displacement_cc != null && <span>{engine.displacement_cc}cc</span>}
+                    {(template.estimated_hp != null || template.estimated_torque != null) && (
+                      <span className="text-cream-300">
+                        → est. {[template.estimated_hp != null && `~${template.estimated_hp} HP`, template.estimated_torque != null && `~${template.estimated_torque} lb-ft`].filter(Boolean).join(' · ')}
+                      </span>
+                    )}
                   </div>
                 </div>
-                {engine.price && (
-                  <div className="text-right">
-                    <span className="text-2xl font-bold text-orange-400">
-                      {formatPrice(engine.price)}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Performance Estimates */}
-          {(template.estimated_hp || template.estimated_torque) && (
-            <div>
-              <h3 className="text-lg font-semibold text-cream-100 mb-3">Estimated Performance</h3>
-              <div className="grid grid-cols-2 gap-4">
-                {template.estimated_hp && (
-                  <div className="p-4 bg-olive-800 rounded-lg">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Zap className="w-5 h-5 text-orange-400" />
-                      <span className="text-sm text-cream-400">Estimated HP</span>
-                    </div>
-                    <p className="text-2xl font-bold text-cream-100">{template.estimated_hp}</p>
-                  </div>
-                )}
-                {template.estimated_torque && (
-                  <div className="p-4 bg-olive-800 rounded-lg">
-                    <div className="flex items-center gap-2 mb-1">
-                      <TrendingUp className="w-5 h-5 text-orange-400" />
-                      <span className="text-sm text-cream-400">Estimated Torque</span>
-                    </div>
-                    <p className="text-2xl font-bold text-cream-100">{template.estimated_torque} lb-ft</p>
+                {engine.price != null && (
+                  <div className="text-right flex-shrink-0">
+                    <span className="text-xl font-bold text-orange-400">{formatPrice(engine.price)}</span>
                   </div>
                 )}
               </div>

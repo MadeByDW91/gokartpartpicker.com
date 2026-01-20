@@ -163,16 +163,28 @@ export async function getForumCategories(): Promise<
       return error('Failed to fetch forum categories');
     }
 
+    // If no data, return empty array
+    if (!data || data.length === 0) {
+      return success([]);
+    }
+
     // Use optimized database function to get counts in a single query (fixes N+1 issue)
     const { data: categoriesWithCounts, error: functionError } = await supabase
       .rpc('get_forum_categories_with_counts');
 
     if (functionError) {
       // Fallback to original method if function doesn't exist (for backwards compatibility)
-      console.warn('[getForumCategories] Function not available, using fallback:', functionError);
+      // Check if it's a "function doesn't exist" error
+      const errorMessage = functionError.message || String(functionError);
+      if (errorMessage.includes('does not exist') || errorMessage.includes('function') || errorMessage.includes('42883')) {
+        console.warn('[getForumCategories] Function not available, using fallback. Run migration 20260117000002_optimize_forum_category_counts.sql');
+      } else {
+        console.warn('[getForumCategories] RPC error, using fallback:', functionError);
+      }
       
+      // Use the data we already fetched
       const categoriesWithCountsFallback = await Promise.all(
-        (data ?? []).map(async (category: ForumCategory) => {
+        data.map(async (category: ForumCategory) => {
           const { count: topicCount } = await supabase
             .from('forum_topics')
             .select('*', { count: 'exact', head: true })
@@ -198,7 +210,17 @@ export async function getForumCategories(): Promise<
       return success(categoriesWithCountsFallback);
     }
 
-    return success(categoriesWithCounts ?? []);
+    // If function returned data, use it
+    if (categoriesWithCounts && categoriesWithCounts.length > 0) {
+      return success(categoriesWithCounts);
+    }
+
+    // Final fallback: return categories without counts
+    return success(data.map((cat: ForumCategory) => ({
+      ...cat,
+      topic_count: 0,
+      post_count: 0,
+    })));
   } catch (err) {
     // If it's a table not found error, return empty array
     const errorMessage = err instanceof Error ? err.message : String(err);

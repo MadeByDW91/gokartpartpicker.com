@@ -44,48 +44,50 @@ export function SearchModal({ isOpen, onClose, onResultClick }: SearchModalProps
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-20">
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 sm:pt-20 safe-area-top">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-olive-900/90 backdrop-blur-sm" 
         onClick={onClose}
+        aria-hidden="true"
       />
 
       {/* Modal Content */}
-      <div className="relative w-full max-w-3xl">
-        <Card className="border border-olive-600 shadow-2xl">
-          <CardContent className="p-6">
+      <div className="relative w-full max-w-3xl h-full sm:h-auto flex flex-col">
+        <Card className="border border-olive-600 shadow-2xl flex-1 sm:flex-none flex flex-col">
+          <CardContent className="p-4 sm:p-6 flex-1 flex flex-col min-h-0">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center">
-                  <Search className="w-5 h-5 text-cream-100" />
+            <div className="flex items-center justify-between mb-4 sm:mb-6 flex-shrink-0">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-orange-500 flex items-center justify-center flex-shrink-0">
+                  <Search className="w-4 h-4 sm:w-5 sm:h-5 text-cream-100" />
                 </div>
-                <div>
-                  <h2 className="text-display text-xl text-cream-100">Search</h2>
-                  <p className="text-sm text-cream-400">Find engines, parts, and more</p>
+                <div className="min-w-0">
+                  <h2 className="text-display text-lg sm:text-xl text-cream-100">Search</h2>
+                  <p className="text-xs sm:text-sm text-cream-400 hidden sm:block">Find engines, parts, and more</p>
                 </div>
               </div>
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={onClose}
-                className="text-cream-400 hover:text-cream-100"
+                className="text-cream-400 hover:text-cream-100 flex-shrink-0 w-10 h-10 touch-manipulation"
+                aria-label="Close search"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 sm:w-6 sm:h-6" />
               </Button>
             </div>
 
             {/* Search Input */}
-            <div className="mb-4">
+            <div className="mb-4 flex-shrink-0">
               <AdvancedSearch 
                 placeholder="Search engines, parts, builds..." 
                 onResultClick={handleResultClick}
               />
             </div>
 
-            {/* Keyboard Shortcut Hint */}
-            <div className="flex items-center gap-2 text-xs text-cream-500 pt-4 border-t border-olive-700">
+            {/* Keyboard Shortcut Hint - Desktop only */}
+            <div className="hidden sm:flex items-center gap-2 text-xs text-cream-500 pt-4 border-t border-olive-700 flex-shrink-0">
               <kbd className="px-2 py-1 bg-olive-700 rounded text-cream-300 font-mono">
                 ESC
               </kbd>

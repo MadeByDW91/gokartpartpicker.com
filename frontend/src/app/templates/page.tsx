@@ -4,20 +4,10 @@ import { useState } from 'react';
 import { useTemplates } from '@/hooks/use-templates';
 import { TemplateCard } from '@/components/templates/TemplateCard';
 import { TemplatePreview } from '@/components/templates/TemplatePreview';
-import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { 
-  Sparkles, 
-  Filter, 
-  Loader2,
-  Rocket,
-  Zap,
-  Wallet,
-  GraduationCap,
-  Trophy,
-  Baby
-} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Sparkles, Rocket, Zap, Wallet, GraduationCap, Trophy, Baby } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { BuildTemplate, TemplateGoal } from '@/types/database';
 import { TEMPLATE_GOALS } from '@/types/database';
@@ -60,39 +50,39 @@ export default function TemplatesPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Filter Buttons */}
-        <Card className="mb-8">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Filter className="w-5 h-5 text-orange-400" />
-              <h2 className="text-lg font-semibold text-cream-100">Filter by Goal</h2>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant={selectedGoal === undefined ? 'primary' : 'secondary'}
-                size="sm"
-                onClick={() => setSelectedGoal(undefined)}
+        {/* Filter: compact pill row */}
+        <div className="flex flex-wrap items-center gap-2 mb-8">
+          <span className="text-sm text-cream-400 mr-1">Show:</span>
+          <button
+            onClick={() => setSelectedGoal(undefined)}
+            className={cn(
+              'px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
+              selectedGoal === undefined
+                ? 'bg-orange-500 text-cream-100'
+                : 'bg-olive-700 text-cream-400 hover:bg-olive-600 hover:text-cream-300 border border-olive-600'
+            )}
+          >
+            All
+          </button>
+          {TEMPLATE_GOALS.map((goal) => {
+            const config = GOAL_LABELS[goal];
+            const Icon = config.icon;
+            const isActive = selectedGoal === goal;
+            return (
+              <button
+                key={goal}
+                onClick={() => setSelectedGoal(goal)}
+                className={cn(
+                  'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
+                  isActive ? 'bg-orange-500 text-cream-100' : 'bg-olive-700 text-cream-400 hover:bg-olive-600 hover:text-cream-300 border border-olive-600'
+                )}
               >
-                All Templates
-              </Button>
-              {TEMPLATE_GOALS.map((goal) => {
-                const config = GOAL_LABELS[goal];
-                const Icon = config.icon;
-                return (
-                  <Button
-                    key={goal}
-                    variant={selectedGoal === goal ? 'primary' : 'secondary'}
-                    size="sm"
-                    onClick={() => setSelectedGoal(goal)}
-                    icon={<Icon className="w-4 h-4" />}
-                  >
-                    {config.label}
-                  </Button>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+                <Icon className="w-3.5 h-3.5" />
+                {config.label}
+              </button>
+            );
+          })}
+        </div>
 
         {/* Error State */}
         {error && (
