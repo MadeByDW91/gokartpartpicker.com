@@ -20,6 +20,10 @@ export function useParts(filters?: PartFilters) {
       }
       
       try {
+        if (!supabase) {
+          throw new Error('Supabase client is not available. Please check your environment variables.');
+        }
+
         let query = supabase
           .from('parts')
           .select('*')
@@ -47,8 +51,29 @@ export function useParts(filters?: PartFilters) {
         const { data, error } = await query;
         
         if (error) {
-          console.error('[useParts] Error fetching parts:', error);
-          throw new Error(`Failed to load parts: ${error.message}`);
+          // Better error logging - handle cases where error.message might not exist
+          const errorMessage = error.message || error.code || JSON.stringify(error) || 'Unknown error';
+          const errorDetails = {
+            message: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint,
+            fullError: error,
+          };
+          console.error('[useParts] Error fetching parts:', errorDetails);
+          
+          // Provide more helpful error messages
+          if (error.code === '42P01' || error.message?.includes('does not exist')) {
+            throw new Error('Database tables not found. Please run migrations first.');
+          }
+          if (error.message?.includes('JWT') || error.message?.includes('auth')) {
+            throw new Error('Authentication error. Please refresh the page.');
+          }
+          if (error.message?.includes('network') || error.message?.includes('fetch')) {
+            throw new Error('Network error. Please check your internet connection.');
+          }
+          
+          throw new Error(`Failed to load parts: ${errorMessage}`);
         }
         
         if (!data) {
@@ -58,7 +83,19 @@ export function useParts(filters?: PartFilters) {
         
         return data;
       } catch (error) {
-        console.error('[useParts] Unexpected error:', error);
+        // Handle AbortError specifically
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.warn('[useParts] Query was aborted (likely component unmounted)');
+          throw new Error('Request was cancelled');
+        }
+        
+        console.error('[useParts] Unexpected error:', {
+          error,
+          name: error instanceof Error ? error.name : 'Unknown',
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+        
         if (error instanceof Error) {
           throw error;
         }
@@ -99,6 +136,10 @@ export function usePart(id: string) {
       }
       
       try {
+        if (!supabase) {
+          throw new Error('Supabase client is not available. Please check your environment variables.');
+        }
+
         const { data, error } = await supabase
           .from('parts')
           .select('*')
@@ -107,15 +148,51 @@ export function usePart(id: string) {
           .single();
         
         if (error) {
-          console.error('[usePart] Error fetching part:', error);
-          throw new Error(`Failed to load part: ${error.message}`);
+          // Better error logging
+          const errorMessage = error.message || error.code || JSON.stringify(error) || 'Unknown error';
+          const errorDetails = {
+            message: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint,
+            fullError: error,
+          };
+          console.error('[usePart] Error fetching part:', errorDetails);
+          
+          // Provide more helpful error messages
+          if (error.code === 'PGRST116' || error.message?.includes('not found')) {
+            throw new Error('Part not found');
+          }
+          if (error.code === '42P01' || error.message?.includes('does not exist')) {
+            throw new Error('Database tables not found. Please run migrations first.');
+          }
+          if (error.message?.includes('JWT') || error.message?.includes('auth')) {
+            throw new Error('Authentication error. Please refresh the page.');
+          }
+          if (error.message?.includes('network') || error.message?.includes('fetch')) {
+            throw new Error('Network error. Please check your internet connection.');
+          }
+          
+          throw new Error(`Failed to load part: ${errorMessage}`);
         }
         if (!data) {
           throw new Error('Part not found');
         }
         return data;
       } catch (error) {
-        console.error('[usePart] Unexpected error:', error);
+        // Handle AbortError specifically
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.warn('[usePart] Query was aborted (likely component unmounted)');
+          throw new Error('Request was cancelled');
+        }
+        
+        console.error('[usePart] Unexpected error:', {
+          error,
+          name: error instanceof Error ? error.name : 'Unknown',
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+        
         if (error instanceof Error) {
           throw error;
         }
@@ -147,6 +224,10 @@ export function usePartBrands(category?: PartCategory) {
       }
       
       try {
+        if (!supabase) {
+          throw new Error('Supabase client is not available. Please check your environment variables.');
+        }
+
         let query = supabase
           .from('parts')
           .select('brand')
@@ -159,8 +240,29 @@ export function usePartBrands(category?: PartCategory) {
         const { data, error } = await query.order('brand');
         
         if (error) {
-          console.error('[usePartBrands] Error fetching brands:', error);
-          throw new Error(`Failed to load brands: ${error.message}`);
+          // Better error logging
+          const errorMessage = error.message || error.code || JSON.stringify(error) || 'Unknown error';
+          const errorDetails = {
+            message: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint,
+            fullError: error,
+          };
+          console.error('[usePartBrands] Error fetching brands:', errorDetails);
+          
+          // Provide more helpful error messages
+          if (error.code === '42P01' || error.message?.includes('does not exist')) {
+            throw new Error('Database tables not found. Please run migrations first.');
+          }
+          if (error.message?.includes('JWT') || error.message?.includes('auth')) {
+            throw new Error('Authentication error. Please refresh the page.');
+          }
+          if (error.message?.includes('network') || error.message?.includes('fetch')) {
+            throw new Error('Network error. Please check your internet connection.');
+          }
+          
+          throw new Error(`Failed to load brands: ${errorMessage}`);
         }
         
         // Get unique brands
@@ -168,7 +270,19 @@ export function usePartBrands(category?: PartCategory) {
         const brands: string[] = [...new Set(brandList)];
         return brands;
       } catch (error) {
-        console.error('[usePartBrands] Unexpected error:', error);
+        // Handle AbortError specifically
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.warn('[usePartBrands] Query was aborted (likely component unmounted)');
+          throw new Error('Request was cancelled');
+        }
+        
+        console.error('[usePartBrands] Unexpected error:', {
+          error,
+          name: error instanceof Error ? error.name : 'Unknown',
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+        
         if (error instanceof Error) {
           throw error;
         }
