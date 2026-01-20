@@ -64,11 +64,11 @@ async function fetchProductFromAmazon(asin: string): Promise<{
     // In server actions, we need to use the full URL
     // Determine the base URL for API calls
     // In production, use NEXT_PUBLIC_SITE_URL or VERCEL_URL
-    // In development, detect the port from environment or default to 3000
-    const devPort = process.env.PORT || '3000';
+    // In development, detect the port from environment or default to 3001
+    const devPort = process.env.PORT || '3001';
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 
                     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
-                    `http://localhost:${devPort}`; // Use detected or default port 3000
+                    `http://localhost:${devPort}`; // Use detected or default port 3001
     const apiUrl = `${baseUrl}/api/amazon-product?asin=${asin}`;
     
     console.log(`[fetchProductFromAmazon] Fetching from: ${apiUrl}`);
