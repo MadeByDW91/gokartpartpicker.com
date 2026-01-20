@@ -20,6 +20,10 @@ export function useEngines(filters?: EngineFilters) {
       }
       
       try {
+        if (!supabase) {
+          throw new Error('Supabase client is not available. Please check your environment variables.');
+        }
+
         let query = supabase
           .from('engines')
           .select('*')
@@ -53,8 +57,29 @@ export function useEngines(filters?: EngineFilters) {
         const { data, error } = await query;
         
         if (error) {
-          console.error('[useEngines] Error fetching engines:', error);
-          throw new Error(`Failed to load engines: ${error.message}`);
+          // Better error logging - handle cases where error.message might not exist
+          const errorMessage = error.message || error.code || JSON.stringify(error) || 'Unknown error';
+          const errorDetails = {
+            message: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint,
+            fullError: error,
+          };
+          console.error('[useEngines] Error fetching engines:', errorDetails);
+          
+          // Provide more helpful error messages
+          if (error.code === '42P01' || error.message?.includes('does not exist')) {
+            throw new Error('Database tables not found. Please run migrations first.');
+          }
+          if (error.message?.includes('JWT') || error.message?.includes('auth')) {
+            throw new Error('Authentication error. Please refresh the page.');
+          }
+          if (error.message?.includes('network') || error.message?.includes('fetch')) {
+            throw new Error('Network error. Please check your internet connection.');
+          }
+          
+          throw new Error(`Failed to load engines: ${errorMessage}`);
         }
         
         if (!data) {
@@ -64,7 +89,19 @@ export function useEngines(filters?: EngineFilters) {
         
         return data;
       } catch (error) {
-        console.error('[useEngines] Unexpected error:', error);
+        // Handle AbortError specifically
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.warn('[useEngines] Query was aborted (likely component unmounted)');
+          throw new Error('Request was cancelled');
+        }
+        
+        console.error('[useEngines] Unexpected error:', {
+          error,
+          name: error instanceof Error ? error.name : 'Unknown',
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+        
         if (error instanceof Error) {
           throw error;
         }
@@ -98,6 +135,10 @@ export function useEngine(id: string) {
       }
       
       try {
+        if (!supabase) {
+          throw new Error('Supabase client is not available. Please check your environment variables.');
+        }
+
         const { data, error } = await supabase
           .from('engines')
           .select('*')
@@ -106,15 +147,51 @@ export function useEngine(id: string) {
           .single();
         
         if (error) {
-          console.error('[useEngine] Error fetching engine:', error);
-          throw new Error(`Failed to load engine: ${error.message}`);
+          // Better error logging
+          const errorMessage = error.message || error.code || JSON.stringify(error) || 'Unknown error';
+          const errorDetails = {
+            message: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint,
+            fullError: error,
+          };
+          console.error('[useEngine] Error fetching engine:', errorDetails);
+          
+          // Provide more helpful error messages
+          if (error.code === 'PGRST116' || error.message?.includes('not found')) {
+            throw new Error('Engine not found');
+          }
+          if (error.code === '42P01' || error.message?.includes('does not exist')) {
+            throw new Error('Database tables not found. Please run migrations first.');
+          }
+          if (error.message?.includes('JWT') || error.message?.includes('auth')) {
+            throw new Error('Authentication error. Please refresh the page.');
+          }
+          if (error.message?.includes('network') || error.message?.includes('fetch')) {
+            throw new Error('Network error. Please check your internet connection.');
+          }
+          
+          throw new Error(`Failed to load engine: ${errorMessage}`);
         }
         if (!data) {
           throw new Error('Engine not found');
         }
         return data;
       } catch (error) {
-        console.error('[useEngine] Unexpected error:', error);
+        // Handle AbortError specifically
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.warn('[useEngine] Query was aborted (likely component unmounted)');
+          throw new Error('Request was cancelled');
+        }
+        
+        console.error('[useEngine] Unexpected error:', {
+          error,
+          name: error instanceof Error ? error.name : 'Unknown',
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+        
         if (error instanceof Error) {
           throw error;
         }
@@ -146,6 +223,10 @@ export function useEngineBrands() {
       }
       
       try {
+        if (!supabase) {
+          throw new Error('Supabase client is not available. Please check your environment variables.');
+        }
+
         const { data, error } = await supabase
           .from('engines')
           .select('brand')
@@ -153,8 +234,29 @@ export function useEngineBrands() {
           .order('brand');
         
         if (error) {
-          console.error('[useEngineBrands] Error fetching brands:', error);
-          throw new Error(`Failed to load brands: ${error.message}`);
+          // Better error logging
+          const errorMessage = error.message || error.code || JSON.stringify(error) || 'Unknown error';
+          const errorDetails = {
+            message: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint,
+            fullError: error,
+          };
+          console.error('[useEngineBrands] Error fetching brands:', errorDetails);
+          
+          // Provide more helpful error messages
+          if (error.code === '42P01' || error.message?.includes('does not exist')) {
+            throw new Error('Database tables not found. Please run migrations first.');
+          }
+          if (error.message?.includes('JWT') || error.message?.includes('auth')) {
+            throw new Error('Authentication error. Please refresh the page.');
+          }
+          if (error.message?.includes('network') || error.message?.includes('fetch')) {
+            throw new Error('Network error. Please check your internet connection.');
+          }
+          
+          throw new Error(`Failed to load brands: ${errorMessage}`);
         }
         
         // Get unique brands
@@ -162,7 +264,19 @@ export function useEngineBrands() {
         const brands: string[] = [...new Set(brandList)];
         return brands;
       } catch (error) {
-        console.error('[useEngineBrands] Unexpected error:', error);
+        // Handle AbortError specifically
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.warn('[useEngineBrands] Query was aborted (likely component unmounted)');
+          throw new Error('Request was cancelled');
+        }
+        
+        console.error('[useEngineBrands] Unexpected error:', {
+          error,
+          name: error instanceof Error ? error.name : 'Unknown',
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+        
         if (error instanceof Error) {
           throw error;
         }
