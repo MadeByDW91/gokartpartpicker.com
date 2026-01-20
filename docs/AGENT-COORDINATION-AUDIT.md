@@ -24,6 +24,7 @@ Based on the codebase, the following agents are currently active:
 | **A9** | DevOps | CI/CD, deployment | ✅ Active | `vercel.json`, deployment docs |
 | **A10** | Admin Tools Audit | Admin feature review | ✅ Active | `docs/prompts/A10-admin-tools-audit.md` |
 | **A11** | Security Audit | Security reviews | ✅ Active | `docs/prompts/A11-security-audit-agent.md`, `scripts/security-audit.ts` |
+| **A12** | Mobile Experience | Mobile optimization, responsive design | ✅ Active | `docs/prompts/A12-mobile-experience-agent.md`, `docs/MOBILE-IMPROVEMENTS.md` |
 
 **Note:** The user mentioned "5 agents building" - likely referring to the core active agents: A1, A2, A3, A4, A5
 

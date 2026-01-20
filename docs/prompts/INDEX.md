@@ -28,6 +28,9 @@
 | `A3-shopping-list.md` | A3 | Printable shopping list generator | ⏳ Ready |
 | `A3-A5-build-templates.md` | A3+A5 | Build templates/presets system | ⏳ Ready |
 | `A9-video-content.md` | A9 | Video content management (20+ per engine, 5+ per part) | ⏳ Ready |
+| `A10-admin-tools-audit.md` | A10 | Admin tools audit and review | ✅ Active |
+| `A11-security-audit-agent.md` | A11 | Security auditing and vulnerability assessment | ✅ Active |
+| `A12-mobile-experience-agent.md` | A12 | Mobile optimization and responsive design | ✅ Active |
 
 ---
 
