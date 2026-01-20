@@ -5,6 +5,7 @@ import { Printer, Download, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { GuideWithSteps } from '@/types/guides';
 import { formatDate } from '@/lib/utils';
+import { sanitizeForDisplay } from '@/lib/sanitization';
 
 interface PrintableGuideProps {
   guide: GuideWithSteps;
@@ -205,7 +206,7 @@ export function PrintableGuide({ guide, engineName }: PrintableGuideProps) {
             <h2>Introduction</h2>
             <div 
               className="prose max-w-none"
-              dangerouslySetInnerHTML={{ __html: guide.body }}
+              dangerouslySetInnerHTML={{ __html: sanitizeForDisplay(guide.body) }}
             />
           </div>
         )}
@@ -221,7 +222,7 @@ export function PrintableGuide({ guide, engineName }: PrintableGuideProps) {
                 {step.instructions && (
                   <div 
                     className="step-content"
-                    dangerouslySetInnerHTML={{ __html: step.instructions }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeForDisplay(step.instructions) }}
                   />
                 )}
                 {step.description && (

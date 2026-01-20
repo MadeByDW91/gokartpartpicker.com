@@ -13,7 +13,6 @@ import {
   success, 
   error 
 } from '@/lib/api/types';
-import type { AdminEngine, AdminPart } from '@/types/admin';
 
 interface DuplicateCandidate {
   id: string;

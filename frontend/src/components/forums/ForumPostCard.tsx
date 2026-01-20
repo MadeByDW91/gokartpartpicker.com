@@ -7,6 +7,7 @@ import { CheckCircle, ThumbsUp, Edit, Trash2, Flag, MoreVertical } from 'lucide-
 import type { ForumPost } from '@/types/database';
 import { formatDate } from '@/lib/utils';
 import { cn } from '@/lib/utils';
+import { sanitizeForDisplay } from '@/lib/sanitization';
 
 interface ForumPostCardProps {
   post: ForumPost;
@@ -84,7 +85,7 @@ export function ForumPostCard({
         {/* Post Content */}
         <div
           className="prose prose-invert prose-olive max-w-none text-cream-200 mb-4 whitespace-pre-wrap"
-          dangerouslySetInnerHTML={{ __html: post.content.replace(/\n/g, '<br>') }}
+          dangerouslySetInnerHTML={{ __html: sanitizeForDisplay(post.content.replace(/\n/g, '<br>')) }}
         />
 
         {/* Post Actions */}

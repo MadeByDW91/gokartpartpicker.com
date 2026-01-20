@@ -23,7 +23,10 @@ const jetbrainsMono = JetBrains_Mono({
   variable: '--font-mono',
 });
 
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://gokartpartpicker.com';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(appUrl),
   title: {
     default: 'GoKartPartPicker - Build Your Ultimate Go-Kart',
     template: '%s | GoKartPartPicker',

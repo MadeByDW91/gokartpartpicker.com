@@ -28,14 +28,6 @@ interface PriceChange {
   itemName?: string;
 }
 
-interface PriceHistory {
-  itemId: string;
-  itemType: 'engine' | 'part';
-  date: string;
-  price: number | null;
-  source: string;
-}
-
 /**
  * Get price changes that need review
  */

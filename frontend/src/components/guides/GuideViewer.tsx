@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { markGuideHelpful } from '@/actions/guides';
 import { PrintableGuide } from './PrintableGuide';
 import type { GuideWithSteps } from '@/types/guides';
+import { sanitizeForDisplay } from '@/lib/sanitization';
 
 interface GuideViewerProps {
   guide: GuideWithSteps;
@@ -68,7 +69,7 @@ export function GuideViewer({ guide, engineName }: GuideViewerProps) {
           <CardContent className="pt-6">
             <div 
               className="prose prose-invert max-w-none text-cream-300 [&_p]:mb-4 [&_ul]:list-disc [&_ul]:ml-6 [&_ol]:list-decimal [&_ol]:ml-6 [&_li]:mb-2 [&_strong]:text-cream-100 [&_strong]:font-semibold"
-              dangerouslySetInnerHTML={{ __html: guide.body }}
+              dangerouslySetInnerHTML={{ __html: sanitizeForDisplay(guide.body) }}
             />
           </CardContent>
         </Card>
@@ -119,7 +120,7 @@ export function GuideViewer({ guide, engineName }: GuideViewerProps) {
                       
                       {/* Instructions */}
                       <div className="prose prose-invert max-w-none text-cream-300 mb-4 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:ml-6 [&_ol]:list-decimal [&_ol]:ml-6 [&_li]:mb-2 [&_strong]:text-cream-100 [&_strong]:font-semibold">
-                        <div dangerouslySetInnerHTML={{ __html: step.instructions }} />
+                        <div dangerouslySetInnerHTML={{ __html: sanitizeForDisplay(step.instructions) }} />
                       </div>
                       
                       {/* Image */}

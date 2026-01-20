@@ -135,7 +135,6 @@ export async function previewBulkOperation(
     }
 
     const affectedCount = count || 0;
-    const affectedIds = (data || []).map((item: any) => item.id);
 
     // Get sample items with current values
     const sampleSize = Math.min(5, (data || []).length);
@@ -407,26 +406,15 @@ export async function undoBulkOperation(
     const table = operation.entity_type === 'engine' ? 'engines' : operation.entity_type === 'part' ? 'parts' : 'builds';
 
     // Restore from snapshot
-    let restored = 0;
-    let failed = 0;
-
     for (const item of operation.snapshot) {
       const { id, data } = item;
-      
-      // Remove fields that shouldn't be restored
-      const { id: _, created_at, updated_at, ...restoreData } = data as any;
+      const restoreData = { ...(data as Record<string, unknown>) };
+      delete restoreData.id;
+      delete restoreData.created_at;
+      delete restoreData.updated_at;
       restoreData.updated_at = new Date().toISOString();
 
-      const { error: restoreError } = await supabase
-        .from(table)
-        .update(restoreData)
-        .eq('id', id);
-
-      if (restoreError) {
-        failed++;
-      } else {
-        restored++;
-      }
+      await supabase.from(table).update(restoreData).eq('id', id);
     }
 
     // Mark operation as undone

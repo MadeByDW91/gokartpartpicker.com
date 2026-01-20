@@ -5,7 +5,6 @@
  * Handle API keys and integrations (basic implementation)
  */
 
-import { createClient } from '@/lib/supabase/server';
 import { requireAdmin, requireSuperAdmin } from '../admin';
 import { 
   type ActionResult, 
@@ -44,7 +43,7 @@ export async function getApiKeys(): Promise<ActionResult<ApiKey[]>> {
  * Generate new API key (placeholder)
  */
 export async function generateApiKey(
-  name: string
+  _name: string
 ): Promise<ActionResult<{ key: string }>> {
   try {
     const authResult = await requireSuperAdmin();
@@ -68,7 +67,7 @@ export async function generateApiKey(
  * Revoke API key (placeholder)
  */
 export async function revokeApiKey(
-  keyId: string
+  _keyId: string
 ): Promise<ActionResult<{ revoked: true }>> {
   try {
     const authResult = await requireSuperAdmin();

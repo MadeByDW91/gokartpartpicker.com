@@ -12,7 +12,6 @@ import {
   success, 
   error 
 } from '@/lib/api/types';
-import type { AdminEngine, AdminPart } from '@/types/admin';
 import type { Engine, Part } from '@/types/database';
 
 /**

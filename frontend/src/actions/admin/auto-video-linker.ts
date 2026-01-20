@@ -13,7 +13,6 @@ import {
 } from '@/lib/api/types';
 import { createVideo } from './videos';
 import type { PartCategory } from '@/types/database';
-import { youtubeSearchFirst } from '@/lib/youtube-api';
 
 interface VideoSearchResult {
   title: string;

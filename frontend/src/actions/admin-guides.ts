@@ -270,7 +270,6 @@ export async function updateGuide(
     if ('success' in authResult && !authResult.success) {
       return authResult as ActionResult<GuideWithSteps>;
     }
-    const { userId } = authResult as { userId: string };
 
     // Validate input
     const parsed = updateGuideSchema.safeParse(input);

@@ -39,7 +39,7 @@ function parseCSV(csvText: string): CSVRow[] {
   const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
   
   // Parse rows
-  return lines.slice(1).map((line, index) => {
+  return lines.slice(1).map((line, _index) => {
     const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
     const row: CSVRow = {};
     headers.forEach((header, i) => {
@@ -52,7 +52,7 @@ function parseCSV(csvText: string): CSVRow[] {
 /**
  * Validate and prepare engine data from CSV row
  */
-function prepareEngineFromCSV(row: CSVRow, rowIndex: number): { success: false; error: string } | { success: true; data: unknown } {
+function prepareEngineFromCSV(row: CSVRow, _rowIndex: number): { success: false; error: string } | { success: true; data: unknown } {
   try {
     // Required fields
     if (!row.name) {
@@ -105,7 +105,7 @@ function prepareEngineFromCSV(row: CSVRow, rowIndex: number): { success: false; 
 /**
  * Validate and prepare part data from CSV row
  */
-function preparePartFromCSV(row: CSVRow, rowIndex: number): { success: false; error: string } | { success: true; data: unknown } {
+function preparePartFromCSV(row: CSVRow, _rowIndex: number): { success: false; error: string } | { success: true; data: unknown } {
   try {
     // Required fields
     if (!row.name) {

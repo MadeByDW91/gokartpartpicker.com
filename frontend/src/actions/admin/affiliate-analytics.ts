@@ -9,7 +9,6 @@ import { requireAdmin } from '../admin';
 import { 
   type ActionResult, 
   success, 
-  error, 
   handleError 
 } from '@/lib/api/types';
 
