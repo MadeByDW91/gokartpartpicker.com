@@ -89,7 +89,23 @@ export default function ImageReviewPage() {
 
     try {
       const text = await file.text();
-      const data: ImageReviewItem[] = JSON.parse(text);
+      const raw: unknown[] = JSON.parse(text);
+      // Support both: 1) ImageReviewItem (suggested_image_url), 2) scripts/agents validated-images.json (image_url)
+      const data: ImageReviewItem[] = raw.map((v) => {
+        const d = (v && typeof v === 'object' && !Array.isArray(v)) ? (v as Record<string, unknown>) : {};
+        return {
+        product_id: String(d.product_id ?? ''),
+        product_type: (d.product_type === 'engine' || d.product_type === 'part' ? d.product_type : 'part') as 'engine' | 'part',
+        product_name: String(d.product_name ?? ''),
+        current_image_url: (d.current_image_url as string | null) ?? null,
+        suggested_image_url: (d.suggested_image_url as string | null) ?? (d.image_url as string | null) ?? null,
+        source: (d.source as string | null) ?? null,
+        confidence: Number(d.confidence ?? 0),
+        valid: Boolean(d.valid ?? false),
+        http_status: Number(d.http_status ?? 0),
+        validation_errors: Array.isArray(d.validation_errors) ? d.validation_errors as string[] : Array.isArray(d.errors) ? (d.errors as string[]) : [],
+        };
+      });
       setItems(data);
     } catch (error) {
       console.error('Error loading file:', error);

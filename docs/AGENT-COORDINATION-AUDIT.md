@@ -2,7 +2,7 @@
 
 > **Purpose:** Verify all agents work together cohesively and identify any conflicts or gaps  
 > **Last Updated:** 2026-01-17  
-> **Status:** 🔍 Audit in Progress
+> **Status:** ✅ Verification Complete (2026-01-17)
 
 ---
 
@@ -185,27 +185,18 @@ SELECT * FROM engines WHERE is_active = false;
 
 ### 7. A6 (Compatibility) ↔ A1 (Database) Integration
 
-**Status:** 🟡 **NEEDS VERIFICATION**
+**Status:** ✅ **VERIFIED**
 
 **Integration Points:**
-- ⚠️ Compatibility rules table exists
-- ⚠️ Rules engine implementation status unknown
-- ⚠️ Frontend integration may be incomplete
+- ✅ `compatibility_rules` table exists (`supabase/migrations/20260116000001_initial_schema.sql`)
+- ✅ RLS, indexes, and audit trigger on `compatibility_rules`
+- ✅ `useCompatibilityRules()` and `checkCompatibility()` in `use-compatibility.ts`; builder and `BuilderTable` use them
+- ✅ Admin CRUD: `frontend/src/actions/admin/compatibility.ts`, `frontend/src/actions/compatibility.ts`
 
 **Files:**
-- `docs/compatibility-rules.md` (A6)
-- `docs/compatibility-engine-design.md` (A6)
-- `supabase/migrations/*` (A1 - check for compatibility_rules table)
-
-**Action Required:**
-```sql
--- Verify compatibility_rules table exists
-SELECT * FROM information_schema.tables 
-WHERE table_name = 'compatibility_rules';
-
--- Check if rules are seeded
-SELECT COUNT(*) FROM compatibility_rules;
-```
+- `supabase/migrations/20260116000001_initial_schema.sql` (A1)
+- `frontend/src/hooks/use-compatibility.ts`, `BuilderTable.tsx`, `builder/page.tsx` (A6, A3)
+- `frontend/src/actions/admin/compatibility.ts`, `frontend/src/actions/compatibility.ts` (A4)
 
 ---
 
@@ -228,19 +219,12 @@ SELECT COUNT(*) FROM compatibility_rules;
 
 ## 🚨 Identified Conflicts & Issues
 
-### Issue 1: Part Categories Mismatch
+### ~~Issue 1: Part Categories Mismatch~~
 **Severity:** Medium  
+**Status:** ✅ **RESOLVED (2026-01-17)**  
 **Agents:** A1 (Database) ↔ A3 (UI)
 
-**Problem:**
-- Database has 26 part categories
-- Frontend types may not have all categories
-
-**Fix:**
-```typescript
-// Update frontend/src/types/database.ts
-// Ensure all 26 categories are included
-```
+- Database `part_category` enum and frontend `PART_CATEGORIES` both have 26 values and match 1:1
 
 ---
 
@@ -254,17 +238,15 @@ SELECT COUNT(*) FROM compatibility_rules;
 
 ---
 
-### Issue 3: Image Import Agents Not Integrated
+### Issue 3: Image Import Agents – Format Mapping
 **Severity:** Low  
 **Agents:** Scripts (Image Agents) ↔ A5 (Admin)
 
-**Problem:**
-- Image import scripts exist but may not be connected to admin UI
-- Admin image review page may not use scripts
+**Status:** 🟡 **PARTIAL**
 
-**Fix:**
-- Verify `/admin/images/review` uses import scripts
-- Connect scripts to admin interface
+- ✅ `/admin/images/review` exists and accepts JSON upload; workflow in `scripts/agents/README.md`: export → find → validate → **review at /admin/images/review** → import.
+- ✅ **Format mapping:** Review page now accepts both `image_url` (from scripts) and `suggested_image_url`, and `errors` or `validation_errors`.
+- ⚠️ Approve in UI only updates local state (TODO: Call API to update DB); actual DB updates are done by `import-product-images.ts` on the JSON file. Human edits JSON after review before import, or we add “Export approved” and wire Approve to an import API.
 
 ---
 
@@ -275,7 +257,7 @@ SELECT COUNT(*) FROM compatibility_rules;
 - [x] RLS policies are active
 - [x] Triggers work correctly
 - [x] Types match schema
-- [ ] All 26 part categories in types
+- [x] All 26 part categories in types
 
 ### Auth (A2)
 - [x] Login/register works
@@ -306,10 +288,10 @@ SELECT COUNT(*) FROM compatibility_rules;
 - [x] Image review works (if implemented)
 
 ### Compatibility (A6)
-- [ ] Compatibility rules table exists
-- [ ] Rules engine implemented
-- [ ] Builder uses compatibility checks
-- [ ] Warnings display correctly
+- [x] Compatibility rules table exists
+- [x] Rules engine implemented
+- [x] Builder uses compatibility checks
+- [x] Warnings display correctly
 
 ### Security (A11)
 - [x] Security audit script works
@@ -327,33 +309,25 @@ SELECT COUNT(*) FROM compatibility_rules;
 | A1 | A3 | Data types | ✅ Complete |
 | A1 | A4 | Schema & RLS | ✅ Complete |
 | A1 | A5 | Admin schema | ✅ Complete |
-| A1 | A6 | Compatibility schema | ⚠️ Needs verification |
+| A1 | A6 | Compatibility schema | ✅ Complete |
 | A2 | A3 | Auth components | ✅ Complete |
 | A2 | A5 | Admin role | ✅ Complete |
 | A4 | A3 | Server actions | ✅ Complete |
 | A4 | A5 | Admin actions | ✅ Complete |
-| A6 | A3 | Compatibility UI | ⚠️ Needs verification |
+| A6 | A3 | Compatibility UI | ✅ Complete |
 
 ---
 
 ## 📋 Action Items
 
 ### High Priority
-1. **Verify Compatibility Engine Integration**
-   - Check if `compatibility_rules` table exists
-   - Verify rules engine is implemented
-   - Test compatibility checking in builder
-
-2. **Verify Part Categories Match**
-   - Check database has all 26 categories
-   - Verify frontend types include all categories
-   - Update types if missing
+- ~~1. Verify Compatibility Engine~~ ✅ Done
+- ~~2. Verify Part Categories Match~~ ✅ Done
 
 ### Medium Priority
-3. **Connect Image Import Scripts**
-   - Verify admin image review uses scripts
-   - Connect scripts to admin interface
-   - Test end-to-end image import
+3. **Image Import – Format and Approve Flow**
+   - ~~Map `image_url` → `suggested_image_url` when loading validated-images.json~~ ✅ Done; review page normalises both `image_url` and `suggested_image_url`, and `errors`/`validation_errors`
+   - (Optional) Add “Export approved” or wire Approve to an import API so review feeds the import step
 
 4. **Complete Security Audit**
    - Run full security audit
@@ -401,6 +375,14 @@ curl http://localhost:3000/api/amazon-product?asin=B08XYZ
 curl http://localhost:3000/admin/engines
 ```
 
+### Scripts that need frontend deps (Supabase)
+Use `NODE_PATH=frontend/node_modules` so `@supabase/supabase-js` resolves:
+```bash
+cd frontend
+NODE_PATH=$PWD/node_modules npx tsx ../scripts/check-site-errors.ts
+NODE_PATH=$PWD/node_modules npx tsx ../scripts/database-health-check.ts
+```
+
 ---
 
 ## 📊 Agent Status Summary
@@ -413,7 +395,7 @@ curl http://localhost:3000/admin/engines
 | A3 | ✅ | ✅ | ✅ |
 | A4 | ✅ | ✅ | ✅ |
 | A5 | ✅ | ✅ | ✅ |
-| A6 | 🟡 | 🟡 | ✅ |
+| A6 | ✅ | ✅ | ✅ |
 | A7 | 🟡 | 🟡 | 🟡 |
 | A8 | 🟡 | 🟡 | ✅ |
 | A9 | ✅ | ✅ | ✅ |
@@ -424,6 +406,60 @@ curl http://localhost:3000/admin/engines
 - ✅ Complete and verified
 - 🟡 Partial or needs verification
 - ❌ Not started or broken
+
+---
+
+## 🔬 Further Checks (2026-01-17)
+
+### Build & TypeScript
+| Check | Result |
+|-------|--------|
+| `npm run build` (frontend) | ✅ Pass |
+| TypeScript | ✅ No type errors |
+| Next.js routes | ✅ 60 routes generated (admin, auth, builder, api, etc.) |
+
+**Notes:**  
+- Next.js warns: `middleware` → `proxy` deprecation; `metadataBase` not set (OG/twitter images).  
+- Fixed: `admin/images/review` JSON `map` typing for `image_url`/`suggested_image_url` normalization.
+
+### Security Audit (`npx tsx scripts/security-audit.ts`)
+| Severity | Count |
+|----------|-------|
+| Critical | 0 |
+| **High** | **17** |
+| Medium | 1 (.env.example missing) |
+
+**High findings:**
+- **Missing input validation (13):** `admin/engine-clones`, `admin/forums`, `admin/security`, `admin/users`, `admin/videos`, `admin`, `builds`, `compatibility`, `engines`, `forums`, `parts`, `price-alerts`, `templates`. *Note: Several actions already use Zod/`parseInput` (e.g. `admin`, `builds`, `compatibility`, `engines`, `forums`, `parts`, `admin/users`, `admin/videos`, `admin/compatibility`); audit heuristic may not detect all.*
+- **XSS / `dangerouslySetInnerHTML` (4):**  
+  - `StructuredData.tsx`: `JSON.stringify` only → low risk.  
+  - `ForumPostCard.tsx`: `post.content` with `\n`→`<br>`; forums sanitize on *write* (`sanitizeContent`); recommend `sanitizeForDisplay` at render for defense-in-depth.  
+  - `GuideViewer.tsx`, `PrintableGuide.tsx`: `guide.body`, `step.instructions`; recommend `sanitizeForDisplay` at render.  
+- **`sanitization.ts`** exists (`sanitizeContent`, `sanitizeForDisplay`) and is used in `forums.ts` on create/update.
+
+### Admin & Auth
+| Check | Result |
+|-------|--------|
+| Admin layout | ✅ `useAdmin`; redirect to `/` if `!isAdmin`; `return null` when `!isAdmin` |
+| Admin protection | ✅ Layout-level; no middleware path for `/admin` (middleware only refreshes Supabase auth) |
+| API route | ✅ `/api/amazon-product` (ƒ) |
+
+### Scripts (Supabase/DB)
+Run with `NODE_PATH=frontend/node_modules` from `frontend/` (or repo root) so `@supabase/supabase-js` resolves:
+
+| Script | Result |
+|--------|--------|
+| `check-site-errors.ts` | ✅ 5 passed, 1 warning (connection pooling :6543). Supabase, DB, forum tables, rate-limit OK. |
+| `database-health-check.ts` | ✅ Runs. ⚠️ RPCs `get_table_sizes`, `get_connection_status`, `get_slow_queries` etc. not in DB—deploy `20260117000004_database_health_checks.sql` (or equivalent) to enable. |
+
+```bash
+cd frontend && NODE_PATH=$PWD/node_modules npx tsx ../scripts/check-site-errors.ts
+cd frontend && NODE_PATH=$PWD/node_modules npx tsx ../scripts/database-health-check.ts
+```
+
+### Lint (`npm run lint` in frontend)
+- Multiple `@typescript-eslint/no-explicit-any` and `@typescript-eslint/no-unused-vars` across `actions/admin/*`, `affiliate-analytics`, `amazon-import`, `analytics`, `approvals`, `auto-video-linker`, `builds`, `bulk-operations`, `content`.  
+- Non-blocking for build; should be cleaned over time.
 
 ---
 

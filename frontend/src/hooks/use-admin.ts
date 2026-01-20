@@ -30,6 +30,12 @@ export function useAdmin(): UseAdminResult {
       return;
     }
     
+    // Safety timeout: if profile fetch takes too long, stop loading
+    const timeoutId = setTimeout(() => {
+      console.warn('[useAdmin] Profile fetch timeout - stopping loading');
+      setLoading(false);
+    }, 10000); // 10 second timeout
+    
     const fetchProfile = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -87,6 +93,7 @@ export function useAdmin(): UseAdminResult {
         console.error('Error fetching admin profile:', error);
         setProfile(null);
       } finally {
+        clearTimeout(timeoutId);
         setLoading(false);
       }
     };
@@ -105,6 +112,7 @@ export function useAdmin(): UseAdminResult {
     }
 
     return () => {
+      clearTimeout(timeoutId);
       if (subscription) {
         subscription.unsubscribe();
       }

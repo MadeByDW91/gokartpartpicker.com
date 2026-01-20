@@ -47,6 +47,22 @@ export function Header() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   
+  // Safety timeout: if loading takes too long, assume not authenticated
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loading || adminLoading) {
+        console.warn('[Header] Loading timeout - assuming not authenticated');
+        setLoadingTimeout(true);
+      }
+    }, 5000); // 5 second timeout
+    
+    return () => clearTimeout(timer);
+  }, [loading, adminLoading]);
+  
+  // Use timeout state to prevent infinite loading
+  const isActuallyLoading = !loadingTimeout && (loading || adminLoading);
+  
   // Keyboard shortcut for search (Ctrl+K / Cmd+K)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -141,7 +157,7 @@ export function Header() {
             </button>
             
             {/* User Profile - Mobile */}
-            {!loading && isAuthenticated && (
+            {!isActuallyLoading && isAuthenticated && (
               <div className="relative flex-shrink-0">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -211,7 +227,7 @@ export function Header() {
             >
               <Search className="w-5 h-5" />
             </button>
-            {loading ? (
+            {isActuallyLoading ? (
               <div className="w-24 h-9 bg-olive-700 rounded-md animate-pulse flex-shrink-0" />
             ) : isAuthenticated ? (
               <div className="relative flex-shrink-0">
@@ -356,7 +372,7 @@ export function Header() {
             <div className="border-t border-olive-700 my-6" />
 
             {/* User Actions */}
-            {loading ? (
+            {isActuallyLoading ? (
               <div className="space-y-2">
                 <div className="h-12 bg-olive-700 rounded-lg animate-pulse" />
                 <div className="h-12 bg-olive-700 rounded-lg animate-pulse" />

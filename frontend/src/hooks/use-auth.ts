@@ -25,6 +25,12 @@ export function useAuth() {
       return;
     }
     
+    // Safety timeout: if session check takes too long, stop loading
+    const timeoutId = setTimeout(() => {
+      console.warn('[useAuth] Session check timeout - stopping loading');
+      setLoading(false);
+    }, 10000); // 10 second timeout
+    
     // Get initial session
     const getSession = async () => {
       try {
@@ -50,6 +56,7 @@ export function useAuth() {
         setSession(null);
         setUser(null);
       } finally {
+        clearTimeout(timeoutId);
         setLoading(false);
       }
     };
@@ -90,6 +97,7 @@ export function useAuth() {
     }
     
     return () => {
+      clearTimeout(timeoutId);
       if (subscription) {
         subscription.unsubscribe();
       }
