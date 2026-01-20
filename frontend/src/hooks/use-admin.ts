@@ -22,6 +22,14 @@ export function useAdmin(): UseAdminResult {
   const supabase = createClient();
 
   useEffect(() => {
+    // If Supabase is not configured, stop loading immediately
+    if (!supabase) {
+      console.warn('[useAdmin] Supabase client is not available');
+      setLoading(false);
+      setProfile(null);
+      return;
+    }
+    
     const fetchProfile = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -91,7 +99,9 @@ export function useAdmin(): UseAdminResult {
     });
 
     return () => {
-      subscription.unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
   }, [supabase]);
 

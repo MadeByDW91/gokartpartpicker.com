@@ -15,7 +15,11 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
             refetchOnMount: true, // Refetch on mount to ensure fresh data
             retry: (failureCount, error) => {
               // Don't retry on configuration errors
-              if (error instanceof Error && error.message.includes('not configured')) {
+              if (error instanceof Error && (
+                error.message.includes('not configured') ||
+                error.message.includes('not available') ||
+                error.message.includes('Supabase client is null')
+              )) {
                 return false;
               }
               // Retry up to 2 times for network errors
@@ -24,6 +28,8 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
             retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
             // Add timeout to prevent infinite loading
             networkMode: 'online',
+            // Don't keep queries in loading state forever
+            throwOnError: false, // Don't throw errors, just mark as error state
           },
         },
       })

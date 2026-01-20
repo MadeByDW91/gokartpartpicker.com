@@ -16,6 +16,15 @@ export function useAuth() {
   const supabase = createClient();
   
   useEffect(() => {
+    // If Supabase is not configured, stop loading immediately
+    if (!supabase) {
+      console.warn('[useAuth] Supabase client is not available');
+      setLoading(false);
+      setUser(null);
+      setSession(null);
+      return;
+    }
+    
     // Get initial session
     const getSession = async () => {
       try {
@@ -75,11 +84,16 @@ export function useAuth() {
     );
     
     return () => {
-      subscription.unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
   }, [supabase]);
   
   const signIn = async (email: string, password: string) => {
+    if (!supabase) {
+      throw new Error('Authentication is not available. Please check your configuration.');
+    }
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -92,6 +106,9 @@ export function useAuth() {
   };
   
   const signUp = async (email: string, password: string, username: string) => {
+    if (!supabase) {
+      throw new Error('Authentication is not available. Please check your configuration.');
+    }
     setLoading(true);
     try {
       // Validate username format client-side first
@@ -137,11 +154,18 @@ export function useAuth() {
   };
   
   const signOut = async () => {
+    if (!supabase) {
+      router.push('/');
+      return;
+    }
     await supabase.auth.signOut();
     router.push('/');
   };
   
   const signInWithMagicLink = async (email: string) => {
+    if (!supabase) {
+      throw new Error('Authentication is not available. Please check your configuration.');
+    }
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
