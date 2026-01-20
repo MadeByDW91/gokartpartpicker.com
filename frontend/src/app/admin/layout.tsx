@@ -138,6 +138,7 @@ const navigationGroups: NavGroup[] = [
     icon: Settings,
     defaultOpen: false,
     items: [
+      { name: 'Deployment Status', href: '/admin/deployment', icon: Activity },
       { name: 'API Keys', href: '/admin/api', icon: Key },
     ],
   },
