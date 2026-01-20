@@ -1,11 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+
+/** ASIN format: 10 alphanumeric (e.g. B001234567) */
+const ASIN_REGEX = /^[A-Z0-9]{10}$/;
 
 /**
  * API Route for fetching Amazon product data
- * This uses a CORS proxy to bypass Amazon's bot detection
+ * Requires authentication. Uses a CORS proxy to bypass Amazon's bot detection.
+ * Rate limited by middleware (60/min per IP).
  */
-
 export async function GET(request: NextRequest) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const asin = searchParams.get('asin');
 
@@ -16,8 +27,16 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const normalized = asin.trim().toUpperCase();
+  if (!ASIN_REGEX.test(normalized)) {
+    return NextResponse.json(
+      { error: 'Invalid ASIN format; must be 10 alphanumeric characters' },
+      { status: 400 }
+    );
+  }
+
   try {
-    const amazonUrl = `https://www.amazon.com/dp/${asin}`;
+    const amazonUrl = `https://www.amazon.com/dp/${normalized}`;
     
     // Option 1: Use CORS proxy service (free tier available)
     // Using allorigins.win as a free CORS proxy
@@ -38,7 +57,7 @@ export async function GET(request: NextRequest) {
     
     // Check if we got HTML content
     if (!html || html.length < 100) {
-      console.warn(`[Amazon Product API] Received minimal or no HTML content for ASIN: ${asin}`);
+      console.warn(`[Amazon Product API] Received minimal or no HTML content for ASIN: ${normalized}`);
       // Still try to extract what we can, but this is likely a proxy issue
     }
 
@@ -152,14 +171,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Log extraction results for debugging
-    console.log(`[Amazon Product API] ASIN: ${asin}, Title: ${title ? `"${title.substring(0, 50)}..."` : 'NOT FOUND'}, Brand: ${brand || 'NOT FOUND'}`);
+    console.log(`[Amazon Product API] ASIN: ${normalized}, Title: ${title ? `"${title.substring(0, 50)}..."` : 'NOT FOUND'}, Brand: ${brand || 'NOT FOUND'}`);
 
     return NextResponse.json({
       success: true,
       data: {
         title: title || null,
         price,
-        imageUrl: imageUrl || `https://images-na.ssl-images-amazon.com/images/I/${asin}.jpg`,
+        imageUrl: imageUrl || `https://images-na.ssl-images-amazon.com/images/I/${normalized}.jpg`,
         brand: brand || null,
         description: null,
       },
@@ -167,13 +186,13 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('[Amazon Product API] Error:', error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to fetch product',
         data: {
           title: null,
           price: null,
-          imageUrl: `https://images-na.ssl-images-amazon.com/images/I/${asin}.jpg`,
+          imageUrl: `https://images-na.ssl-images-amazon.com/images/I/${normalized}.jpg`,
           brand: null,
           description: null,
         },

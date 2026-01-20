@@ -875,3 +875,7 @@ COMMENT ON FUNCTION public.audit_catalog_changes() IS 'Audit trigger for catalog
 COMMENT ON FUNCTION public.update_updated_at_column() IS 'Trigger function to update updated_at timestamp. Fixed search_path for security.';
 COMMENT ON FUNCTION public.get_forum_categories_with_counts() IS 'Get forum categories with topic and post counts. Fixed search_path for security.';
 COMMENT ON FUNCTION public.log_audit_action(audit_action, TEXT, UUID, JSONB, JSONB) IS 'Log audit action. Fixed search_path for security.';
+COMMENT ON FUNCTION public.count_visible_as_user(uuid, text) IS 'Count visible rows as user for RLS tests. Fixed search_path for security.';
+COMMENT ON FUNCTION public.count_visible_as_role(text, text) IS 'Count visible rows as role for RLS tests. Fixed search_path for security.';
+COMMENT ON FUNCTION public.test_as_user(uuid, text) IS 'Execute query as specific user for RLS tests. Fixed search_path for security.';
+COMMENT ON FUNCTION public.test_as_role(text, text) IS 'Execute query as specific role for RLS tests. Fixed search_path for security.';

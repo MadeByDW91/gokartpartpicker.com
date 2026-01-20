@@ -96,12 +96,12 @@ export function Header() {
   
   return (
     <header className="sticky top-0 z-50 bg-olive-900/95 backdrop-blur-sm border-b border-olive-700 w-full safe-area-top">
-      <nav className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-8">
         <div className="flex items-center h-14 sm:h-16 gap-2 lg:gap-4">
-          {/* Logo */}
+          {/* Logo - min 44px touch target */}
           <Link 
             href="/" 
-            className="flex items-center gap-2 sm:gap-3 group flex-shrink-0 min-w-0"
+            className="flex items-center gap-2 sm:gap-3 group flex-shrink-0 min-w-0 min-h-[44px]"
             onClick={() => setMobileMenuOpen(false)}
           >
             <div className="relative w-9 h-9 sm:w-10 sm:h-10 overflow-hidden rounded-lg border-2 border-orange-500 group-hover:border-orange-400 transition-colors flex-shrink-0">
@@ -150,7 +150,7 @@ export function Header() {
             {/* Search Icon Button - Mobile */}
             <button
               onClick={() => setSearchModalOpen(true)}
-              className="flex items-center justify-center w-10 h-10 text-cream-200 hover:text-orange-400 rounded-md hover:bg-olive-800 transition-colors flex-shrink-0 touch-manipulation"
+              className="flex items-center justify-center min-w-[44px] min-h-[44px] text-cream-200 hover:text-orange-400 rounded-md hover:bg-olive-800 transition-colors flex-shrink-0 touch-manipulation"
               aria-label="Search"
             >
               <Search className="w-5 h-5" />
@@ -161,7 +161,7 @@ export function Header() {
               <div className="relative flex-shrink-0">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-500 text-cream-100 font-bold touch-manipulation"
+                  className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full bg-orange-500 text-cream-100 font-bold touch-manipulation"
                   aria-label="User menu"
                 >
                   {user?.email?.[0].toUpperCase()}
@@ -175,7 +175,7 @@ export function Header() {
                     <div className="absolute right-0 top-full mt-2 w-48 bg-olive-800 border border-olive-600 rounded-lg shadow-lg z-20 overflow-hidden">
                       <Link
                         href="/builds"
-                        className="flex items-center gap-2 px-4 py-3 text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors"
+                        className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation"
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <Bookmark className="w-4 h-4" />
@@ -183,7 +183,7 @@ export function Header() {
                       </Link>
                       <Link
                         href="/profile"
-                        className="flex items-center gap-2 px-4 py-3 text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors"
+                        className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation"
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <User className="w-4 h-4" />
@@ -192,7 +192,7 @@ export function Header() {
                       {!adminLoading && isAdmin && (
                         <Link
                           href="/admin"
-                          className="flex items-center gap-2 px-4 py-3 text-sm text-orange-400 hover:bg-olive-700 hover:text-orange-300 transition-colors border-t border-olive-600"
+                          className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-orange-400 hover:bg-olive-700 hover:text-orange-300 transition-colors border-t border-olive-600 touch-manipulation"
                           onClick={() => setUserMenuOpen(false)}
                         >
                           <Shield className="w-4 h-4" />
@@ -204,7 +204,7 @@ export function Header() {
                           setUserMenuOpen(false);
                           signOut();
                         }}
-                        className="flex items-center gap-2 w-full px-4 py-3 text-sm text-cream-200 hover:bg-olive-700 hover:text-[var(--error)] transition-colors border-t border-olive-600"
+                        className="flex items-center gap-2 w-full px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-[var(--error)] transition-colors border-t border-olive-600 touch-manipulation"
                       >
                         <LogOut className="w-4 h-4" />
                         Sign Out
@@ -216,12 +216,12 @@ export function Header() {
             )}
           </div>
 
-          {/* Search & Auth Section - Desktop */}
-          <div className="hidden md:flex items-center gap-2 lg:gap-3 flex-shrink-0">
-            {/* Search Icon Button */}
+          {/* Search & Auth Section - Desktop (ml-auto when < lg so nav + menu align right) */}
+          <div className="hidden md:flex items-center gap-2 lg:gap-3 flex-shrink-0 ml-auto lg:ml-0">
+            {/* Search Icon Button - 44px touch target */}
             <button
               onClick={() => setSearchModalOpen(true)}
-              className="relative flex items-center justify-center w-10 h-10 text-cream-200 hover:text-orange-400 rounded-md hover:bg-olive-800 transition-colors flex-shrink-0"
+              className="relative flex items-center justify-center min-w-[44px] min-h-[44px] text-cream-200 hover:text-orange-400 rounded-md hover:bg-olive-800 transition-colors flex-shrink-0 touch-manipulation"
               aria-label="Search"
               title="Search (Ctrl+K or Cmd+K)"
             >
@@ -253,7 +253,7 @@ export function Header() {
                     <div className="absolute right-0 mt-2 w-48 bg-olive-800 border border-olive-600 rounded-lg shadow-lg z-20 overflow-hidden">
                       <Link
                         href="/builds"
-                        className="flex items-center gap-2 px-4 py-3 text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors"
+                        className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation"
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <Bookmark className="w-4 h-4" />
@@ -261,7 +261,7 @@ export function Header() {
                       </Link>
                       <Link
                         href="/profile"
-                        className="flex items-center gap-2 px-4 py-3 text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors"
+                        className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation"
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <User className="w-4 h-4" />
@@ -270,7 +270,7 @@ export function Header() {
                       {!adminLoading && isAdmin && (
                         <Link
                           href="/admin"
-                          className="flex items-center gap-2 px-4 py-3 text-sm text-orange-400 hover:bg-olive-700 hover:text-orange-300 transition-colors border-t border-olive-600"
+                          className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-orange-400 hover:bg-olive-700 hover:text-orange-300 transition-colors border-t border-olive-600 touch-manipulation"
                           onClick={() => setUserMenuOpen(false)}
                         >
                           <Shield className="w-4 h-4" />
@@ -282,7 +282,7 @@ export function Header() {
                           setUserMenuOpen(false);
                           signOut();
                         }}
-                        className="flex items-center gap-2 w-full px-4 py-3 text-sm text-cream-200 hover:bg-olive-700 hover:text-[var(--error)] transition-colors border-t border-olive-600"
+                        className="flex items-center gap-2 w-full px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-[var(--error)] transition-colors border-t border-olive-600 touch-manipulation"
                       >
                         <LogOut className="w-4 h-4" />
                         Sign Out
@@ -303,10 +303,10 @@ export function Header() {
             )}
           </div>
           
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Button - 44px touch target, show below lg so tablet can open nav */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden flex items-center justify-center w-10 h-10 text-cream-200 hover:text-orange-400 rounded-md hover:bg-olive-800 transition-colors touch-manipulation"
+            className="lg:hidden flex items-center justify-center min-w-[44px] min-h-[44px] text-cream-200 hover:text-orange-400 rounded-md hover:bg-olive-800 transition-colors touch-manipulation"
             aria-label="Toggle menu"
             aria-expanded={mobileMenuOpen}
           >
@@ -327,17 +327,17 @@ export function Header() {
         {/* Mobile Menu - Slide Animation */}
         {mobileMenuOpen && (
           <>
-            {/* Backdrop */}
+            {/* Backdrop - lg:hidden so tablet can use the menu too */}
             <div 
-              className="md:hidden fixed inset-0 top-14 sm:top-16 bg-black/50 backdrop-blur-sm z-30 transition-opacity duration-300"
+              className="lg:hidden fixed inset-0 top-14 sm:top-16 bg-black/50 backdrop-blur-sm z-30 transition-opacity duration-300"
               onClick={() => setMobileMenuOpen(false)}
               aria-hidden="true"
             />
             
-            {/* Menu Panel */}
+            {/* Menu Panel - lg:hidden so tablet can use the menu too */}
             <div 
               className={cn(
-                'md:hidden fixed inset-x-0 top-14 sm:top-16 bottom-0 bg-olive-900 border-t border-olive-700 overflow-y-auto overscroll-contain z-40 safe-area-bottom',
+                'lg:hidden fixed inset-x-0 top-14 sm:top-16 bottom-0 bg-olive-900 border-t border-olive-700 overflow-y-auto overscroll-contain z-40 safe-area-bottom',
                 'transition-transform duration-300 ease-in-out',
                 mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
               )}

@@ -166,12 +166,12 @@ function PartsPageContent() {
             {/* Filters Bar */}
             <div className="sticky top-16 z-30 bg-olive-900/95 backdrop-blur-sm border-b border-olive-700 mb-6 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4">
               <div className="flex flex-wrap items-center gap-4">
-                {/* Sidebar Toggle for Mobile */}
+                {/* Categories - opens mobile drawer, 44px touch target */}
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={() => setShowSidebar(!showSidebar)}
-                  className="lg:hidden"
+                  className="lg:hidden min-h-[44px] touch-manipulation"
                   icon={<Filter className="w-4 h-4" />}
                 >
                   Categories
@@ -237,12 +237,12 @@ function PartsPageContent() {
                   </button>
                 </div>
                 
-                {/* Mobile Filter Toggle */}
+                {/* Mobile Filter Toggle - 44px touch target */}
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={() => setShowFilters(!showFilters)}
-                  className="md:hidden"
+                  className="md:hidden min-h-[44px] touch-manipulation"
                   icon={<SlidersHorizontal className="w-4 h-4" />}
                 >
                   Filters
@@ -308,14 +308,15 @@ function PartsPageContent() {
               )}
             </div>
 
-            {/* Mobile Sidebar Overlay */}
+            {/* Mobile Categories Drawer - 44px touch targets, closes on backdrop or category select */}
             {showSidebar && (
-              <div className="lg:hidden fixed inset-0 z-50 flex">
+              <div className="lg:hidden fixed inset-0 z-50 flex" aria-modal="true" role="dialog" aria-label="Parts categories">
                 <div 
-                  className="flex-1 bg-olive-900/80 backdrop-blur-sm"
+                  className="flex-1 bg-olive-900/80 backdrop-blur-sm touch-manipulation"
                   onClick={() => setShowSidebar(false)}
+                  aria-hidden="true"
                 />
-                <aside className="w-64 bg-olive-800 border-r border-olive-700 p-4 overflow-y-auto">
+                <aside className="w-72 max-w-[85vw] bg-olive-800 border-l border-olive-700 p-4 overflow-y-auto">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold text-cream-100 flex items-center gap-2">
                       <Filter className="w-5 h-5 text-orange-400" />
@@ -323,7 +324,8 @@ function PartsPageContent() {
                     </h2>
                     <button
                       onClick={() => setShowSidebar(false)}
-                      className="text-cream-400 hover:text-cream-100"
+                      className="min-w-[44px] min-h-[44px] flex items-center justify-center text-cream-400 hover:text-cream-100 hover:bg-olive-700 rounded-md touch-manipulation"
+                      aria-label="Close categories"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -336,10 +338,10 @@ function PartsPageContent() {
                         setShowSidebar(false);
                       }}
                       className={cn(
-                        'w-full text-left px-3 py-2 text-sm font-medium rounded-md transition-colors',
+                        'w-full text-left px-4 py-3 min-h-[44px] flex items-center text-sm font-medium rounded-md transition-colors touch-manipulation',
                         !filters.category
                           ? 'bg-orange-500 text-cream-100'
-                          : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700'
+                          : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700 active:bg-olive-600'
                       )}
                     >
                       All Parts
@@ -352,10 +354,10 @@ function PartsPageContent() {
                           setShowSidebar(false);
                         }}
                         className={cn(
-                          'w-full text-left px-3 py-2 text-sm font-medium rounded-md transition-colors',
+                          'w-full text-left px-4 py-3 min-h-[44px] flex items-center text-sm font-medium rounded-md transition-colors touch-manipulation',
                           filters.category === category
                             ? 'bg-orange-500 text-cream-100'
-                            : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700'
+                            : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700 active:bg-olive-600'
                         )}
                       >
                         {getCategoryLabel(category)}

@@ -5,6 +5,7 @@
  * Fetches product data from Amazon and prepares it for part creation
  */
 
+import { headers } from 'next/headers';
 import { requireAdmin } from '../admin';
 import { 
   type ActionResult, 
@@ -72,9 +73,12 @@ async function fetchProductFromAmazon(asin: string): Promise<{
     const apiUrl = `${baseUrl}/api/amazon-product?asin=${asin}`;
     
     console.log(`[fetchProductFromAmazon] Fetching from: ${apiUrl}`);
-    
+
+    const h = await headers();
+    const cookie = h.get('cookie');
     const response = await fetch(apiUrl, {
-      cache: 'no-store', // Always fetch fresh data
+      cache: 'no-store',
+      headers: cookie ? { Cookie: cookie } : {},
     });
 
     if (!response.ok) {

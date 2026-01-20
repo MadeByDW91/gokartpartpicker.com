@@ -5,6 +5,7 @@
  * Security-first implementation with validation, rate limiting, and spam detection
  */
 
+import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import type { ForumCategory } from '@/types/database';
@@ -36,6 +37,18 @@ import {
   handleError,
 } from '@/lib/api/types';
 import { sanitizeContent, detectSpam } from '@/lib/sanitization';
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+async function getClientIp(): Promise<string> {
+  const h = await headers();
+  const forwarded = h.get('x-forwarded-for');
+  const ip = (forwarded ? forwarded.split(',')[0]?.trim() : null) || h.get('x-real-ip');
+  if (ip && ip.length > 0 && ip.length < 50) return ip;
+  return '127.0.0.1';
+}
 
 // ============================================================================
 // Auth Helpers
@@ -495,8 +508,8 @@ export async function createForumTopic(
     }
 
     // Check rate limit (5 topics per hour)
-    // Note: IP address would come from request headers in production
-    const rateLimit = await checkRateLimit(user.id, '127.0.0.1', 'create_topic', 5, 3600);
+    const clientIp = await getClientIp();
+    const rateLimit = await checkRateLimit(user.id, clientIp, 'create_topic', 5, 3600);
     if (!rateLimit.allowed) {
       return error(`Rate limit exceeded. Please wait ${rateLimit.retryAfter} seconds.`);
     }
@@ -743,7 +756,8 @@ export async function createForumPost(
     }
 
     // Check rate limit (10 posts per 5 minutes)
-    const rateLimit = await checkRateLimit(user.id, '127.0.0.1', 'create_post', 10, 300);
+    const clientIp = await getClientIp();
+    const rateLimit = await checkRateLimit(user.id, clientIp, 'create_post', 10, 300);
     if (!rateLimit.allowed) {
       return error(`Rate limit exceeded. Please wait ${rateLimit.retryAfter} seconds.`);
     }
