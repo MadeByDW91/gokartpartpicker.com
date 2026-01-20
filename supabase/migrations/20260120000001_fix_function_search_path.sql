@@ -164,6 +164,73 @@ EXCEPTION
 END;
 $$;
 
+-- Fix count_visible_as_role function (from RLS canary tests)
+DROP FUNCTION IF EXISTS public.count_visible_as_role(TEXT, TEXT) CASCADE;
+CREATE FUNCTION public.count_visible_as_role(role_name TEXT, table_name TEXT)
+RETURNS BIGINT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  row_count BIGINT;
+BEGIN
+  PERFORM set_config('request.jwt.claim.role', role_name, TRUE);
+  PERFORM set_config('request.jwt.claim.sub', '', TRUE);
+  EXECUTE format('SELECT COUNT(*) FROM %I', table_name) INTO row_count;
+  RETURN row_count;
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN -1;
+END;
+$$;
+
+-- Fix test_as_user function (from RLS canary tests)
+DROP FUNCTION IF EXISTS public.test_as_user(UUID, TEXT) CASCADE;
+CREATE FUNCTION public.test_as_user(user_id UUID, test_query TEXT)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  result BOOLEAN;
+BEGIN
+  -- Set user context
+  PERFORM set_config('request.jwt.claim.role', 'authenticated', TRUE);
+  PERFORM set_config('request.jwt.claim.sub', user_id::TEXT, TRUE);
+  -- Execute and return success
+  EXECUTE test_query;
+  RETURN TRUE;
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN FALSE;
+END;
+$$;
+
+-- Fix test_as_role function (from RLS canary tests)
+DROP FUNCTION IF EXISTS public.test_as_role(TEXT, TEXT) CASCADE;
+CREATE FUNCTION public.test_as_role(role_name TEXT, test_query TEXT)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  result BOOLEAN;
+BEGIN
+  -- Set role context
+  PERFORM set_config('request.jwt.claim.role', role_name, TRUE);
+  PERFORM set_config('request.jwt.claim.sub', '', TRUE);
+  -- Execute and return success
+  EXECUTE test_query;
+  RETURN TRUE;
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN FALSE;
+END;
+$$;
+
 -- Fix check_rate_limit function
 DROP FUNCTION IF EXISTS public.check_rate_limit(UUID, INET, TEXT, INTEGER, INTEGER) CASCADE;
 CREATE FUNCTION public.check_rate_limit(
