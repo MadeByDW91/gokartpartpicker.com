@@ -81,16 +81,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="overflow-x-hidden">
       <body
-        className={`${bebasNeue.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased min-h-screen flex flex-col`}
+        className={`${bebasNeue.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased min-h-screen flex flex-col overflow-x-hidden`}
       >
         <QueryProvider>
           <AnalyticsProvider>
             <AffiliateLinkTracker />
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
+            <div className="w-full max-w-full overflow-x-hidden">
+              <Header />
+              <main className="flex-1 w-full max-w-full overflow-x-hidden">{children}</main>
+              <Footer />
+            </div>
           </AnalyticsProvider>
         </QueryProvider>
       </body>

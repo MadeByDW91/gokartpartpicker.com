@@ -395,6 +395,9 @@ export async function createPart(
     revalidatePath(`/parts?category=${parsed.data.category}`);
     revalidatePath('/admin/parts');
     
+    // Optionally auto-add videos if requested (handled by client)
+    // The client will call autoSearchAndAddVideosForPart if needed
+    
     return success(data);
   } catch (err) {
     return handleError(err, 'createPart');

@@ -105,6 +105,9 @@
 /* Base Styles */
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 body {
@@ -113,6 +116,10 @@ body {
   font-family: var(--font-body);
   line-height: 1.6;
   min-height: 100vh;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
 }
 
 /* Custom Scrollbar */
@@ -543,6 +550,34 @@ body {
   .shopping-list-item {
     page-break-inside: avoid;
   }
+}
+
+/* Prevent Horizontal Overflow */
+* {
+  box-sizing: border-box;
+}
+
+/* Ensure all containers respect viewport width */
+.container,
+.max-w-7xl,
+.max-w-6xl,
+.max-w-5xl,
+.max-w-4xl,
+.max-w-3xl,
+.max-w-2xl,
+.max-w-xl {
+  max-width: 100%;
+  width: 100%;
+}
+
+/* Prevent images and media from overflowing */
+img,
+video,
+iframe,
+embed,
+object {
+  max-width: 100%;
+  height: auto;
 }
 
 /* Utility Classes */

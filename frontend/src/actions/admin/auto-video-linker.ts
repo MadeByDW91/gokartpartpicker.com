@@ -13,6 +13,7 @@ import {
 } from '@/lib/api/types';
 import { createVideo } from './videos';
 import type { PartCategory } from '@/types/database';
+import { youtubeSearchFirst } from '@/lib/youtube-api';
 
 interface VideoSearchResult {
   title: string;
@@ -288,6 +289,111 @@ function extractVideoInfo(videoUrl: string): {
     channelUrl: null,
     publishedDate: null,
   };
+}
+
+/**
+ * Auto-search and add videos for a part using YouTube API
+ * Searches YouTube for relevant videos and automatically creates video records
+ */
+export async function autoSearchAndAddVideosForPart(
+  partId: string,
+  partName: string,
+  partBrand: string | null,
+  partCategory: PartCategory,
+  maxVideos: number = 5
+): Promise<ActionResult<{ added: number; searched: number; errors: string[] }>> {
+  try {
+    const authResult = await requireAdmin();
+    if ('success' in authResult && !authResult.success) {
+      return authResult;
+    }
+
+    // Check if YouTube API key is configured
+    const youtubeApiKey = process.env.YOUTUBE_API_KEY;
+    if (!youtubeApiKey) {
+      return error('YouTube API key not configured. Set YOUTUBE_API_KEY in environment variables.');
+    }
+
+    // Build search queries
+    const searchQueries = buildSearchQueries(partName, partBrand, partCategory);
+    
+    const added: string[] = [];
+    const errors: string[] = [];
+    let searched = 0;
+
+    // Search for videos using YouTube API
+    for (const query of searchQueries.slice(0, 3)) { // Limit to 3 queries to avoid quota issues
+      if (added.length >= maxVideos) break;
+
+      try {
+        const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=${Math.min(3, maxVideos - added.length)}&q=${encodeURIComponent(query)}&key=${youtubeApiKey}`;
+        
+        const response = await fetch(searchUrl);
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          if (response.status === 403) {
+            errors.push(`YouTube API quota exceeded or invalid key`);
+            break;
+          }
+          errors.push(`YouTube API error: ${errorData.error?.message || response.statusText}`);
+          continue;
+        }
+
+        const data = await response.json();
+        searched += data.items?.length || 0;
+
+        // Process each video result
+        for (const item of data.items || []) {
+          if (added.length >= maxVideos) break;
+
+          const videoId = item.id?.videoId;
+          if (!videoId) continue;
+
+          const snippet = item.snippet;
+          const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+          const thumbnailUrl = snippet.thumbnails?.maxres?.url || snippet.thumbnails?.high?.url || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+          
+          // Detect video category
+          const videoCategory = detectVideoCategory(query, partCategory);
+
+          // Create video record
+          const createResult = await createVideo({
+            title: snippet.title || `${partName} Video`,
+            description: snippet.description || `Video for ${partName}${partBrand ? ` by ${partBrand}` : ''}`,
+            video_url: videoUrl,
+            thumbnail_url: thumbnailUrl,
+            duration_seconds: null, // Would need video details API call
+            category: videoCategory,
+            language: snippet.defaultLanguage || 'en',
+            part_id: partId,
+            engine_id: null,
+            channel_name: snippet.channelTitle || null,
+            channel_url: snippet.channelId ? `https://www.youtube.com/channel/${snippet.channelId}` : null,
+            published_date: snippet.publishedAt ? new Date(snippet.publishedAt) : null,
+            is_active: true,
+            is_featured: added.length === 0, // First video is featured
+            display_order: added.length,
+          });
+
+          if (createResult.success) {
+            added.push(videoUrl);
+          } else {
+            errors.push(`Failed to create video: ${createResult.error}`);
+          }
+        }
+      } catch (err) {
+        errors.push(`Error searching YouTube: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      }
+    }
+
+    return success({ 
+      added: added.length, 
+      searched,
+      errors: errors.slice(0, 5) // Limit error messages
+    });
+  } catch (err) {
+    return error(err instanceof Error ? err.message : 'Failed to auto-add videos');
+  }
 }
 
 /**

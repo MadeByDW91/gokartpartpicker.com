@@ -44,7 +44,8 @@ INSERT INTO parts (
     '{"bore_in": 0.625, "engagement_rpm": 1800, "chain_size": "#35", "chain_pitch": "#35"}'::jsonb,
     44.99,
     true
-  );
+  )
+ON CONFLICT (slug) DO NOTHING;
 
 -- ============================================================================
 -- TORQUE CONVERTERS
@@ -72,7 +73,8 @@ INSERT INTO parts (
     '{"bore_in": 0.75, "driver_pulley": "7", "driven_pulley": "8", "belt": "203780", "series": "40"}'::jsonb,
     249.99,
     true
-  );
+  )
+ON CONFLICT (slug) DO NOTHING;
 
 -- ============================================================================
 -- CHAINS
@@ -110,7 +112,8 @@ INSERT INTO parts (
     '{"chain_size": "#420", "pitch": "#420", "length_ft": 10, "links": 120, "pitch_in": 0.375}'::jsonb,
     19.99,
     true
-  );
+  )
+ON CONFLICT (slug) DO NOTHING;
 
 -- ============================================================================
 -- SPROCKETS
@@ -148,7 +151,8 @@ INSERT INTO parts (
     '{"chain_size": "#40", "pitch": "#40", "teeth": 12, "bore_in": 0.75, "type": "driver"}'::jsonb,
     14.99,
     true
-  );
+  )
+ON CONFLICT (slug) DO NOTHING;
 
 -- ============================================================================
 -- BRAKES
@@ -176,7 +180,8 @@ INSERT INTO parts (
     '{"type": "drum", "drum_diameter": "6", "mount_type": "bolt_on"}'::jsonb,
     59.99,
     true
-  );
+  )
+ON CONFLICT (slug) DO NOTHING;
 
 -- ============================================================================
 -- VERIFICATION QUERY (can be run to check seed data)

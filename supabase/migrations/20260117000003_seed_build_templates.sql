@@ -14,7 +14,7 @@
 -- BEGINNER TEMPLATES
 -- ============================================================================
 
--- Beginner Build - Predator 212 Hemi (Most Popular)
+-- Beginner Build – Predator 212 Hemi (Most Popular)
 INSERT INTO build_templates (
   name,
   description,
@@ -29,7 +29,7 @@ INSERT INTO build_templates (
   approval_status
 ) 
 SELECT 
-  'Beginner Build - Predator 212 Hemi',
+  'Beginner Build – Predator 212 Hemi',
   'Perfect starter build with the most popular engine. Includes all essential parts for a reliable go-kart that''s easy to maintain.',
   'beginner',
   id,
@@ -44,7 +44,7 @@ FROM engines
 WHERE slug = 'predator-212-hemi'
 LIMIT 1;
 
--- Beginner Build - Predator 79cc (Kids/Small Build)
+-- Kids Build – Predator 79cc
 INSERT INTO build_templates (
   name,
   description,
@@ -59,7 +59,7 @@ INSERT INTO build_templates (
   approval_status
 ) 
 SELECT 
-  'Kids Build - Predator 79cc',
+  'Kids Build – Predator 79cc',
   'Safe and reliable build perfect for younger riders. Lower power output with quality components for peace of mind.',
   'kids',
   id,
@@ -78,7 +78,7 @@ LIMIT 1;
 -- BUDGET TEMPLATES
 -- ============================================================================
 
--- Budget Build - Predator 212 Non-Hemi
+-- Budget Build – Predator 212 Non-Hemi
 INSERT INTO build_templates (
   name,
   description,
@@ -93,7 +93,7 @@ INSERT INTO build_templates (
   approval_status
 ) 
 SELECT 
-  'Budget Build - Predator 212 Non-Hemi',
+  'Budget Build – Predator 212 Non-Hemi',
   'Maximum value build using the reliable Non-Hemi engine. Great performance without breaking the bank.',
   'budget',
   id,
@@ -112,7 +112,7 @@ LIMIT 1;
 -- SPEED TEMPLATES
 -- ============================================================================
 
--- Speed Build - Predator 212 Hemi (High RPM)
+-- Speed Build – Predator 212 Hemi (High RPM)
 INSERT INTO build_templates (
   name,
   description,
@@ -127,7 +127,7 @@ INSERT INTO build_templates (
   approval_status
 ) 
 SELECT 
-  'Speed Build - Predator 212 Hemi',
+  'Speed Build – Predator 212 Hemi',
   'Optimized for top speed with high-RPM components. Perfect for racing and maximum velocity builds.',
   'speed',
   id,
@@ -142,7 +142,7 @@ FROM engines
 WHERE slug = 'predator-212-hemi'
 LIMIT 1;
 
--- Speed Build - Predator 224
+-- Speed Build – Predator 224
 INSERT INTO build_templates (
   name,
   description,
@@ -157,7 +157,7 @@ INSERT INTO build_templates (
   approval_status
 ) 
 SELECT 
-  'Speed Build - Predator 224',
+  'Speed Build – Predator 224',
   'Larger displacement for more power. High-performance components selected for maximum speed.',
   'speed',
   id,
@@ -191,7 +191,7 @@ INSERT INTO build_templates (
   approval_status
 ) 
 SELECT 
-  'Torque Build - Predator 212 Hemi',
+  'Torque Build – Predator 212 Hemi',
   'Optimized for low-end power and acceleration. Great for off-road, hills, and heavy loads.',
   'torque',
   id,
@@ -206,7 +206,7 @@ FROM engines
 WHERE slug = 'predator-212-hemi'
 LIMIT 1;
 
--- Torque Build - Predator 301
+-- Torque Build – Predator 301
 INSERT INTO build_templates (
   name,
   description,
@@ -221,7 +221,7 @@ INSERT INTO build_templates (
   approval_status
 ) 
 SELECT 
-  'Torque Build - Predator 301',
+  'Torque Build – Predator 301',
   'Maximum torque build with larger displacement engine. Perfect for heavy-duty applications and towing.',
   'torque',
   id,
@@ -240,7 +240,7 @@ LIMIT 1;
 -- COMPETITION TEMPLATES
 -- ============================================================================
 
--- Competition Build - Predator 212 Hemi
+-- Competition Build – Predator 212 Hemi
 INSERT INTO build_templates (
   name,
   description,
@@ -255,7 +255,7 @@ INSERT INTO build_templates (
   approval_status
 ) 
 SELECT 
-  'Competition Build - Predator 212 Hemi',
+  'Competition Build – Predator 212 Hemi',
   'Full performance build with premium components. Designed for competitive racing and maximum performance.',
   'competition',
   id,
@@ -270,7 +270,7 @@ FROM engines
 WHERE slug = 'predator-212-hemi'
 LIMIT 1;
 
--- Competition Build - Predator 420
+-- Competition Build – Predator 420
 INSERT INTO build_templates (
   name,
   description,
@@ -285,7 +285,7 @@ INSERT INTO build_templates (
   approval_status
 ) 
 SELECT 
-  'Competition Build - Predator 420',
+  'Competition Build – Predator 420',
   'Ultimate performance build with the largest displacement. Premium components throughout for serious racing.',
   'competition',
   id,

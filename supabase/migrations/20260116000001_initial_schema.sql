@@ -9,53 +9,69 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================================================
--- ENUM TYPES
+-- ENUM TYPES (with safe handling for existing types)
 -- ============================================================================
 
 -- User roles for access control
-CREATE TYPE user_role AS ENUM ('user', 'admin', 'super_admin');
+DO $$ BEGIN
+    CREATE TYPE user_role AS ENUM ('user', 'admin', 'super_admin');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Shaft types for engines
-CREATE TYPE shaft_type AS ENUM ('straight', 'tapered', 'threaded');
+DO $$ BEGIN
+    CREATE TYPE shaft_type AS ENUM ('straight', 'tapered', 'threaded');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Part categories for organization (aligned with db-query-contract.md)
-CREATE TYPE part_category AS ENUM (
-  'clutch',
-  'torque_converter',
-  'chain',
-  'sprocket',
-  'axle',
-  'wheel',
-  'tire',
-  'brake',
-  'throttle',
-  'frame',
-  'carburetor',
-  'exhaust',
-  'air_filter',
-  'camshaft',
-  'valve_spring',
-  'flywheel',
-  'ignition',
-  'connecting_rod',
-  'piston',
-  'crankshaft',
-  'oil_system',
-  'header',
-  'fuel_system',
-  'gasket',
-  'hardware',
-  'other'
-);
+DO $$ BEGIN
+    CREATE TYPE part_category AS ENUM (
+      'clutch',
+      'torque_converter',
+      'chain',
+      'sprocket',
+      'axle',
+      'wheel',
+      'tire',
+      'brake',
+      'throttle',
+      'frame',
+      'carburetor',
+      'exhaust',
+      'air_filter',
+      'camshaft',
+      'valve_spring',
+      'flywheel',
+      'ignition',
+      'connecting_rod',
+      'piston',
+      'crankshaft',
+      'oil_system',
+      'header',
+      'fuel_system',
+      'gasket',
+      'hardware',
+      'other'
+    );
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Audit action types
-CREATE TYPE audit_action AS ENUM ('create', 'update', 'delete');
+DO $$ BEGIN
+    CREATE TYPE audit_action AS ENUM ('create', 'update', 'delete');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- ============================================================================
 -- PROFILES TABLE (extends Supabase auth.users)
 -- ============================================================================
 
-CREATE TABLE profiles (
+CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   username TEXT UNIQUE,
   email TEXT,
@@ -72,7 +88,7 @@ COMMENT ON COLUMN profiles.role IS 'user=standard, admin=can modify catalog, sup
 -- ENGINES TABLE (aligned with db-query-contract.md)
 -- ============================================================================
 
-CREATE TABLE engines (
+CREATE TABLE IF NOT EXISTS engines (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   slug TEXT UNIQUE NOT NULL, -- URL-friendly identifier
   name TEXT NOT NULL, -- Display name (e.g., "Predator 212 Hemi")
@@ -100,10 +116,10 @@ CREATE TABLE engines (
   created_by UUID REFERENCES profiles(id)
 );
 
-CREATE INDEX idx_engines_brand ON engines(brand);
-CREATE INDEX idx_engines_displacement ON engines(displacement_cc);
-CREATE INDEX idx_engines_active ON engines(is_active) WHERE is_active = TRUE;
-CREATE INDEX idx_engines_slug ON engines(slug);
+CREATE INDEX IF NOT EXISTS idx_engines_brand ON engines(brand);
+CREATE INDEX IF NOT EXISTS idx_engines_displacement ON engines(displacement_cc);
+CREATE INDEX IF NOT EXISTS idx_engines_active ON engines(is_active) WHERE is_active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_engines_slug ON engines(slug);
 
 COMMENT ON TABLE engines IS 'Catalog of small engines. Admin-managed reference data.';
 COMMENT ON COLUMN engines.slug IS 'URL-friendly unique identifier (e.g., predator-212-hemi)';
@@ -113,7 +129,7 @@ COMMENT ON COLUMN engines.shaft_diameter IS 'Shaft diameter in inches for compat
 -- PART CATEGORIES TABLE (for extensibility)
 -- ============================================================================
 
-CREATE TABLE part_categories (
+CREATE TABLE IF NOT EXISTS part_categories (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   slug TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
@@ -130,7 +146,7 @@ COMMENT ON TABLE part_categories IS 'Categories for parts organization. Can be e
 -- PARTS TABLE (aligned with db-query-contract.md)
 -- ============================================================================
 
-CREATE TABLE parts (
+CREATE TABLE IF NOT EXISTS parts (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   slug TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
@@ -147,12 +163,12 @@ CREATE TABLE parts (
   created_by UUID REFERENCES profiles(id)
 );
 
-CREATE INDEX idx_parts_category ON parts(category);
-CREATE INDEX idx_parts_category_id ON parts(category_id);
-CREATE INDEX idx_parts_brand ON parts(brand);
-CREATE INDEX idx_parts_slug ON parts(slug);
-CREATE INDEX idx_parts_active ON parts(is_active) WHERE is_active = TRUE;
-CREATE INDEX idx_parts_name_search ON parts USING gin(to_tsvector('english', name));
+CREATE INDEX IF NOT EXISTS idx_parts_category ON parts(category);
+CREATE INDEX IF NOT EXISTS idx_parts_category_id ON parts(category_id);
+CREATE INDEX IF NOT EXISTS idx_parts_brand ON parts(brand);
+CREATE INDEX IF NOT EXISTS idx_parts_slug ON parts(slug);
+CREATE INDEX IF NOT EXISTS idx_parts_active ON parts(is_active) WHERE is_active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_parts_name_search ON parts USING gin(to_tsvector('english', name));
 
 COMMENT ON TABLE parts IS 'Catalog of go-kart parts. Admin-managed reference data.';
 COMMENT ON COLUMN parts.specifications IS 'Flexible JSON for category-specific specs (e.g., clutch engagement RPM)';
@@ -161,7 +177,7 @@ COMMENT ON COLUMN parts.specifications IS 'Flexible JSON for category-specific s
 -- COMPATIBILITY_RULES TABLE (for rule-based compatibility checking)
 -- ============================================================================
 
-CREATE TABLE compatibility_rules (
+CREATE TABLE IF NOT EXISTS compatibility_rules (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   rule_type TEXT NOT NULL, -- shaft_match, chain_pitch, bolt_pattern, etc.
   source_category TEXT NOT NULL, -- Part category or 'engine'
@@ -175,10 +191,10 @@ CREATE TABLE compatibility_rules (
   created_by UUID REFERENCES profiles(id)
 );
 
-CREATE INDEX idx_compat_rules_type ON compatibility_rules(rule_type);
-CREATE INDEX idx_compat_rules_source ON compatibility_rules(source_category);
-CREATE INDEX idx_compat_rules_target ON compatibility_rules(target_category);
-CREATE INDEX idx_compat_rules_active ON compatibility_rules(is_active) WHERE is_active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_compat_rules_type ON compatibility_rules(rule_type);
+CREATE INDEX IF NOT EXISTS idx_compat_rules_source ON compatibility_rules(source_category);
+CREATE INDEX IF NOT EXISTS idx_compat_rules_target ON compatibility_rules(target_category);
+CREATE INDEX IF NOT EXISTS idx_compat_rules_active ON compatibility_rules(is_active) WHERE is_active = TRUE;
 
 COMMENT ON TABLE compatibility_rules IS 'Deterministic compatibility rules for part/engine matching.';
 
@@ -186,7 +202,7 @@ COMMENT ON TABLE compatibility_rules IS 'Deterministic compatibility rules for p
 -- ENGINE_PART_COMPATIBILITY TABLE (direct compatibility mapping)
 -- ============================================================================
 
-CREATE TABLE engine_part_compatibility (
+CREATE TABLE IF NOT EXISTS engine_part_compatibility (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   engine_id UUID NOT NULL REFERENCES engines(id) ON DELETE CASCADE,
   part_id UUID NOT NULL REFERENCES parts(id) ON DELETE CASCADE,
@@ -200,8 +216,8 @@ CREATE TABLE engine_part_compatibility (
   CONSTRAINT unique_engine_part UNIQUE (engine_id, part_id)
 );
 
-CREATE INDEX idx_compatibility_engine ON engine_part_compatibility(engine_id);
-CREATE INDEX idx_compatibility_part ON engine_part_compatibility(part_id);
+CREATE INDEX IF NOT EXISTS idx_compatibility_engine ON engine_part_compatibility(engine_id);
+CREATE INDEX IF NOT EXISTS idx_compatibility_part ON engine_part_compatibility(part_id);
 
 COMMENT ON TABLE engine_part_compatibility IS 'Direct mapping of which parts fit which engines.';
 
@@ -209,7 +225,7 @@ COMMENT ON TABLE engine_part_compatibility IS 'Direct mapping of which parts fit
 -- BUILDS TABLE (User-created configurations - aligned with db-query-contract.md)
 -- ============================================================================
 
-CREATE TABLE builds (
+CREATE TABLE IF NOT EXISTS builds (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   engine_id UUID REFERENCES engines(id) ON DELETE SET NULL,
@@ -225,10 +241,10 @@ CREATE TABLE builds (
   updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
-CREATE INDEX idx_builds_user ON builds(user_id);
-CREATE INDEX idx_builds_engine ON builds(engine_id);
-CREATE INDEX idx_builds_public ON builds(is_public) WHERE is_public = TRUE;
-CREATE INDEX idx_builds_created ON builds(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_builds_user ON builds(user_id);
+CREATE INDEX IF NOT EXISTS idx_builds_engine ON builds(engine_id);
+CREATE INDEX IF NOT EXISTS idx_builds_public ON builds(is_public) WHERE is_public = TRUE;
+CREATE INDEX IF NOT EXISTS idx_builds_created ON builds(created_at DESC);
 
 COMMENT ON TABLE builds IS 'User-created engine builds/configurations. Owned by user_id.';
 COMMENT ON COLUMN builds.parts IS 'JSON object mapping category to part_id: {"clutch": "uuid", "chain": "uuid"}';
@@ -237,7 +253,7 @@ COMMENT ON COLUMN builds.parts IS 'JSON object mapping category to part_id: {"cl
 -- BUILD_LIKES TABLE (Social feature)
 -- ============================================================================
 
-CREATE TABLE build_likes (
+CREATE TABLE IF NOT EXISTS build_likes (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   build_id UUID NOT NULL REFERENCES builds(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -246,8 +262,8 @@ CREATE TABLE build_likes (
   CONSTRAINT unique_build_like UNIQUE (build_id, user_id)
 );
 
-CREATE INDEX idx_build_likes_build ON build_likes(build_id);
-CREATE INDEX idx_build_likes_user ON build_likes(user_id);
+CREATE INDEX IF NOT EXISTS idx_build_likes_build ON build_likes(build_id);
+CREATE INDEX IF NOT EXISTS idx_build_likes_user ON build_likes(user_id);
 
 COMMENT ON TABLE build_likes IS 'Tracks user likes on public builds.';
 
@@ -255,7 +271,7 @@ COMMENT ON TABLE build_likes IS 'Tracks user likes on public builds.';
 -- CONTENT TABLE (for static content/guides)
 -- ============================================================================
 
-CREATE TABLE content (
+CREATE TABLE IF NOT EXISTS content (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   slug TEXT UNIQUE NOT NULL,
   title TEXT NOT NULL,
@@ -270,9 +286,9 @@ CREATE TABLE content (
   created_by UUID REFERENCES profiles(id)
 );
 
-CREATE INDEX idx_content_slug ON content(slug);
-CREATE INDEX idx_content_type ON content(content_type);
-CREATE INDEX idx_content_published ON content(is_published) WHERE is_published = TRUE;
+CREATE INDEX IF NOT EXISTS idx_content_slug ON content(slug);
+CREATE INDEX IF NOT EXISTS idx_content_type ON content(content_type);
+CREATE INDEX IF NOT EXISTS idx_content_published ON content(is_published) WHERE is_published = TRUE;
 
 COMMENT ON TABLE content IS 'CMS content for guides, specs, and static pages.';
 
@@ -280,7 +296,7 @@ COMMENT ON TABLE content IS 'CMS content for guides, specs, and static pages.';
 -- AUDIT_LOG TABLE (immutable audit trail)
 -- ============================================================================
 
-CREATE TABLE audit_log (
+CREATE TABLE IF NOT EXISTS audit_log (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES profiles(id),
   action audit_action NOT NULL,
@@ -293,10 +309,10 @@ CREATE TABLE audit_log (
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
-CREATE INDEX idx_audit_user ON audit_log(user_id);
-CREATE INDEX idx_audit_table ON audit_log(table_name);
-CREATE INDEX idx_audit_record ON audit_log(record_id);
-CREATE INDEX idx_audit_created ON audit_log(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_log(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_table ON audit_log(table_name);
+CREATE INDEX IF NOT EXISTS idx_audit_record ON audit_log(record_id);
+CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log(created_at DESC);
 
 COMMENT ON TABLE audit_log IS 'Immutable audit trail for all admin actions.';
 
@@ -312,27 +328,33 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Apply updated_at triggers
+-- Apply updated_at triggers (drop first if exists, then create)
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON profiles;
 CREATE TRIGGER update_profiles_updated_at
   BEFORE UPDATE ON profiles
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_engines_updated_at ON engines;
 CREATE TRIGGER update_engines_updated_at
   BEFORE UPDATE ON engines
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_parts_updated_at ON parts;
 CREATE TRIGGER update_parts_updated_at
   BEFORE UPDATE ON parts
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_builds_updated_at ON builds;
 CREATE TRIGGER update_builds_updated_at
   BEFORE UPDATE ON builds
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_content_updated_at ON content;
 CREATE TRIGGER update_content_updated_at
   BEFORE UPDATE ON content
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_compatibility_rules_updated_at ON compatibility_rules;
 CREATE TRIGGER update_compatibility_rules_updated_at
   BEFORE UPDATE ON compatibility_rules
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -354,6 +376,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
@@ -398,10 +421,12 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ============================================================================
--- SEED INITIAL PART CATEGORIES
+-- SEED INITIAL PART CATEGORIES (only if not exists)
 -- ============================================================================
 
-INSERT INTO part_categories (slug, name, description, sort_order) VALUES
+INSERT INTO part_categories (slug, name, description, sort_order) 
+SELECT v.slug, v.name, v.description, v.sort_order
+FROM (VALUES
   ('clutch', 'Clutch', 'Centrifugal clutches and related components', 1),
   ('torque_converter', 'Torque Converter', 'CVT torque converters', 2),
   ('chain', 'Chain', 'Drive chains (#35, #40, #41, #420)', 3),
@@ -427,5 +452,9 @@ INSERT INTO part_categories (slug, name, description, sort_order) VALUES
   ('fuel_system', 'Fuel System', 'Fuel pumps and components', 23),
   ('gasket', 'Gasket', 'Gaskets and seals', 24),
   ('hardware', 'Hardware', 'Bolts, nuts, and fasteners', 25),
-  ('other', 'Other', 'Miscellaneous parts', 99);
+  ('other', 'Other', 'Miscellaneous parts', 99)
+) AS v(slug, name, description, sort_order)
+WHERE NOT EXISTS (
+  SELECT 1 FROM part_categories WHERE part_categories.slug = v.slug
+);
 

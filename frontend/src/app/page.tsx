@@ -86,9 +86,9 @@ export default function HomePage() {
       <OrganizationStructuredData />
       <WebsiteStructuredData />
       
-      <div className="relative">
+      <div className="relative w-full max-w-full overflow-x-hidden">
       {/* Hero Section */}
-      <section className="relative min-h-[80vh] flex items-center overflow-hidden">
+      <section className="relative min-h-[80vh] flex items-center overflow-hidden w-full max-w-full">
         {/* Background Image */}
         <div className="absolute inset-0">
           <Image

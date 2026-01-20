@@ -13,6 +13,7 @@
 -- Allow authenticated users to insert their own profile
 -- Note: The trigger uses SECURITY DEFINER which bypasses RLS,
 -- but this policy helps if the trigger needs to run as the user
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
 CREATE POLICY "Users can insert own profile"
   ON profiles FOR INSERT
   WITH CHECK (auth.uid() = id);

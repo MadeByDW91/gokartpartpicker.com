@@ -12,7 +12,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- FORUM CATEGORIES TABLE
 -- ============================================================================
 
-CREATE TABLE forum_categories (
+CREATE TABLE IF NOT EXISTS forum_categories (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   slug TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
@@ -27,9 +27,9 @@ CREATE TABLE forum_categories (
   updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
-CREATE INDEX idx_forum_categories_parent ON forum_categories(parent_id);
-CREATE INDEX idx_forum_categories_active ON forum_categories(is_active) WHERE is_active = TRUE;
-CREATE INDEX idx_forum_categories_slug ON forum_categories(slug);
+CREATE INDEX IF NOT EXISTS idx_forum_categories_parent ON forum_categories(parent_id);
+CREATE INDEX IF NOT EXISTS idx_forum_categories_active ON forum_categories(is_active) WHERE is_active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_forum_categories_slug ON forum_categories(slug);
 
 COMMENT ON TABLE forum_categories IS 'Forum discussion categories. Can be nested with parent_id.';
 
@@ -37,7 +37,7 @@ COMMENT ON TABLE forum_categories IS 'Forum discussion categories. Can be nested
 -- FORUM TOPICS TABLE
 -- ============================================================================
 
-CREATE TABLE forum_topics (
+CREATE TABLE IF NOT EXISTS forum_topics (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   category_id UUID NOT NULL REFERENCES forum_categories(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -57,11 +57,11 @@ CREATE TABLE forum_topics (
   UNIQUE(category_id, slug)
 );
 
-CREATE INDEX idx_topics_category ON forum_topics(category_id);
-CREATE INDEX idx_topics_user ON forum_topics(user_id);
-CREATE INDEX idx_topics_pinned ON forum_topics(is_pinned DESC, created_at DESC);
-CREATE INDEX idx_topics_active ON forum_topics(is_archived, last_reply_at DESC) WHERE is_archived = FALSE;
-CREATE INDEX idx_topics_category_active ON forum_topics(category_id, is_archived, last_reply_at DESC) WHERE is_archived = FALSE;
+CREATE INDEX IF NOT EXISTS idx_topics_category ON forum_topics(category_id);
+CREATE INDEX IF NOT EXISTS idx_topics_user ON forum_topics(user_id);
+CREATE INDEX IF NOT EXISTS idx_topics_pinned ON forum_topics(is_pinned DESC, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_topics_active ON forum_topics(is_archived, last_reply_at DESC) WHERE is_archived = FALSE;
+CREATE INDEX IF NOT EXISTS idx_topics_category_active ON forum_topics(category_id, is_archived, last_reply_at DESC) WHERE is_archived = FALSE;
 
 COMMENT ON TABLE forum_topics IS 'Forum discussion topics/threads. Each topic has a first post (content) and replies.';
 
@@ -69,7 +69,7 @@ COMMENT ON TABLE forum_topics IS 'Forum discussion topics/threads. Each topic ha
 -- FORUM POSTS TABLE
 -- ============================================================================
 
-CREATE TABLE forum_posts (
+CREATE TABLE IF NOT EXISTS forum_posts (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   topic_id UUID NOT NULL REFERENCES forum_topics(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -83,10 +83,10 @@ CREATE TABLE forum_posts (
   updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
-CREATE INDEX idx_posts_topic ON forum_posts(topic_id, created_at);
-CREATE INDEX idx_posts_user ON forum_posts(user_id);
-CREATE INDEX idx_posts_solution ON forum_posts(topic_id, is_solution) WHERE is_solution = TRUE;
-CREATE INDEX idx_posts_parent ON forum_posts(parent_post_id) WHERE parent_post_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_posts_topic ON forum_posts(topic_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_posts_user ON forum_posts(user_id);
+CREATE INDEX IF NOT EXISTS idx_posts_solution ON forum_posts(topic_id, is_solution) WHERE is_solution = TRUE;
+CREATE INDEX IF NOT EXISTS idx_posts_parent ON forum_posts(parent_post_id) WHERE parent_post_id IS NOT NULL;
 
 COMMENT ON TABLE forum_posts IS 'Forum post replies. Can be nested with parent_post_id for threaded discussions.';
 
@@ -94,7 +94,7 @@ COMMENT ON TABLE forum_posts IS 'Forum post replies. Can be nested with parent_p
 -- RATE LIMIT LOG TABLE
 -- ============================================================================
 
-CREATE TABLE rate_limit_log (
+CREATE TABLE IF NOT EXISTS rate_limit_log (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
   ip_address INET,
@@ -102,9 +102,9 @@ CREATE TABLE rate_limit_log (
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
-CREATE INDEX idx_rate_limit_user_action ON rate_limit_log(user_id, action_type, created_at) WHERE user_id IS NOT NULL;
-CREATE INDEX idx_rate_limit_ip_action ON rate_limit_log(ip_address, action_type, created_at) WHERE ip_address IS NOT NULL;
-CREATE INDEX idx_rate_limit_created ON rate_limit_log(created_at);
+CREATE INDEX IF NOT EXISTS idx_rate_limit_user_action ON rate_limit_log(user_id, action_type, created_at) WHERE user_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_rate_limit_ip_action ON rate_limit_log(ip_address, action_type, created_at) WHERE ip_address IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_rate_limit_created ON rate_limit_log(created_at);
 
 COMMENT ON TABLE rate_limit_log IS 'Rate limiting log for forum actions. Tracks user and IP-based rate limits.';
 
@@ -112,7 +112,7 @@ COMMENT ON TABLE rate_limit_log IS 'Rate limiting log for forum actions. Tracks 
 -- USER BANS TABLE
 -- ============================================================================
 
-CREATE TABLE user_bans (
+CREATE TABLE IF NOT EXISTS user_bans (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   banned_by UUID NOT NULL REFERENCES profiles(id),
@@ -123,8 +123,8 @@ CREATE TABLE user_bans (
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
-CREATE INDEX idx_user_bans_user ON user_bans(user_id, is_active) WHERE is_active = TRUE;
-CREATE INDEX idx_user_bans_expires ON user_bans(expires_at) WHERE ban_type = 'temporary' AND is_active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_user_bans_user ON user_bans(user_id, is_active) WHERE is_active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_user_bans_expires ON user_bans(expires_at) WHERE ban_type = 'temporary' AND is_active = TRUE;
 
 COMMENT ON TABLE user_bans IS 'User ban records. Tracks temporary and permanent bans.';
 
@@ -132,7 +132,8 @@ COMMENT ON TABLE user_bans IS 'User ban records. Tracks temporary and permanent 
 -- FORUM AUDIT LOG TABLE
 -- ============================================================================
 
-CREATE TYPE forum_audit_action AS ENUM (
+DO $$ BEGIN
+    CREATE TYPE forum_audit_action AS ENUM (
   'topic_created',
   'topic_edited',
   'topic_deleted',
@@ -148,9 +149,12 @@ CREATE TYPE forum_audit_action AS ENUM (
   'content_flagged',
   'content_approved',
   'content_rejected'
-);
+    );
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE TABLE forum_audit_log (
+CREATE TABLE IF NOT EXISTS forum_audit_log (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES profiles(id),
   action forum_audit_action NOT NULL,
@@ -162,10 +166,10 @@ CREATE TABLE forum_audit_log (
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
-CREATE INDEX idx_forum_audit_user ON forum_audit_log(user_id);
-CREATE INDEX idx_forum_audit_action ON forum_audit_log(action);
-CREATE INDEX idx_forum_audit_created ON forum_audit_log(created_at DESC);
-CREATE INDEX idx_forum_audit_content ON forum_audit_log(content_type, content_id);
+CREATE INDEX IF NOT EXISTS idx_forum_audit_user ON forum_audit_log(user_id);
+CREATE INDEX IF NOT EXISTS idx_forum_audit_action ON forum_audit_log(action);
+CREATE INDEX IF NOT EXISTS idx_forum_audit_created ON forum_audit_log(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_forum_audit_content ON forum_audit_log(content_type, content_id);
 
 COMMENT ON TABLE forum_audit_log IS 'Audit log for all forum actions. Immutable record of security-relevant events.';
 
@@ -261,6 +265,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_topic_stats_on_post ON forum_posts;
 CREATE TRIGGER update_topic_stats_on_post
   AFTER INSERT ON forum_posts
   FOR EACH ROW
@@ -284,22 +289,26 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_topic_stats_on_post_delete ON forum_posts;
 CREATE TRIGGER update_topic_stats_on_post_delete
   AFTER DELETE ON forum_posts
   FOR EACH ROW
   EXECUTE FUNCTION update_topic_stats_on_delete();
 
 -- Updated_at trigger
+DROP TRIGGER IF EXISTS update_forum_categories_updated_at ON forum_categories;
 CREATE TRIGGER update_forum_categories_updated_at
   BEFORE UPDATE ON forum_categories
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_forum_topics_updated_at ON forum_topics;
 CREATE TRIGGER update_forum_topics_updated_at
   BEFORE UPDATE ON forum_topics
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_forum_posts_updated_at ON forum_posts;
 CREATE TRIGGER update_forum_posts_updated_at
   BEFORE UPDATE ON forum_posts
   FOR EACH ROW
@@ -311,36 +320,52 @@ CREATE TRIGGER update_forum_posts_updated_at
 
 -- Ensure slug is URL-friendly
 ALTER TABLE forum_categories
+DROP CONSTRAINT IF EXISTS forum_categories_slug_format;
+ALTER TABLE forum_categories
 ADD CONSTRAINT forum_categories_slug_format 
 CHECK (slug ~ '^[a-z0-9-]+$');
 
+ALTER TABLE forum_topics
+DROP CONSTRAINT IF EXISTS forum_topics_slug_format;
 ALTER TABLE forum_topics
 ADD CONSTRAINT forum_topics_slug_format 
 CHECK (slug ~ '^[a-z0-9-]+$');
 
 -- Ensure title/content are not empty
 ALTER TABLE forum_topics
+DROP CONSTRAINT IF EXISTS forum_topics_title_not_empty;
+ALTER TABLE forum_topics
 ADD CONSTRAINT forum_topics_title_not_empty 
 CHECK (char_length(TRIM(title)) > 0);
 
 ALTER TABLE forum_topics
+DROP CONSTRAINT IF EXISTS forum_topics_content_not_empty;
+ALTER TABLE forum_topics
 ADD CONSTRAINT forum_topics_content_not_empty 
 CHECK (char_length(TRIM(content)) > 0);
 
+ALTER TABLE forum_posts
+DROP CONSTRAINT IF EXISTS forum_posts_content_not_empty;
 ALTER TABLE forum_posts
 ADD CONSTRAINT forum_posts_content_not_empty 
 CHECK (char_length(TRIM(content)) > 0);
 
 -- Ensure slug has reasonable length
 ALTER TABLE forum_categories
+DROP CONSTRAINT IF EXISTS forum_categories_slug_length;
+ALTER TABLE forum_categories
 ADD CONSTRAINT forum_categories_slug_length 
 CHECK (char_length(slug) >= 3 AND char_length(slug) <= 200);
 
+ALTER TABLE forum_topics
+DROP CONSTRAINT IF EXISTS forum_topics_slug_length;
 ALTER TABLE forum_topics
 ADD CONSTRAINT forum_topics_slug_length 
 CHECK (char_length(slug) >= 3 AND char_length(slug) <= 200);
 
 -- Ensure title has reasonable length
+ALTER TABLE forum_topics
+DROP CONSTRAINT IF EXISTS forum_topics_title_length;
 ALTER TABLE forum_topics
 ADD CONSTRAINT forum_topics_title_length 
 CHECK (char_length(title) >= 3 AND char_length(title) <= 200);
@@ -362,6 +387,7 @@ ALTER TABLE forum_audit_log ENABLE ROW LEVEL SECURITY;
 -- ============================================================================
 
 -- Public can view active categories (if not requires_auth)
+DROP POLICY IF EXISTS "Public can view active categories" ON forum_categories;
 CREATE POLICY "Public can view active categories"
 ON forum_categories FOR SELECT
 USING (
@@ -370,6 +396,7 @@ USING (
 );
 
 -- Admins can manage categories
+DROP POLICY IF EXISTS "Admins can manage categories" ON forum_categories;
 CREATE POLICY "Admins can manage categories"
 ON forum_categories FOR ALL
 USING (is_admin())
@@ -380,6 +407,7 @@ WITH CHECK (is_admin());
 -- ============================================================================
 
 -- Public can view topics in public categories
+DROP POLICY IF EXISTS "Public can view topics in public categories" ON forum_topics;
 CREATE POLICY "Public can view topics in public categories"
 ON forum_topics FOR SELECT
 USING (
@@ -392,6 +420,7 @@ USING (
 );
 
 -- Authenticated users can create topics (if not banned)
+DROP POLICY IF EXISTS "Authenticated users can create topics" ON forum_topics;
 CREATE POLICY "Authenticated users can create topics"
 ON forum_topics FOR INSERT
 TO authenticated
@@ -411,6 +440,7 @@ WITH CHECK (
 );
 
 -- Users can edit own topics (within time limit, if not locked)
+DROP POLICY IF EXISTS "Users can edit own topics" ON forum_topics;
 CREATE POLICY "Users can edit own topics"
 ON forum_topics FOR UPDATE
 TO authenticated
@@ -425,6 +455,7 @@ WITH CHECK (
 );
 
 -- Users can delete own topics (within time limit, if no replies)
+DROP POLICY IF EXISTS "Users can delete own topics" ON forum_topics;
 CREATE POLICY "Users can delete own topics"
 ON forum_topics FOR DELETE
 TO authenticated
@@ -435,6 +466,7 @@ USING (
 );
 
 -- Admins can moderate all topics
+DROP POLICY IF EXISTS "Admins can moderate topics" ON forum_topics;
 CREATE POLICY "Admins can moderate topics"
 ON forum_topics FOR ALL
 USING (is_admin() OR is_moderator())
@@ -445,6 +477,7 @@ WITH CHECK (is_admin() OR is_moderator());
 -- ============================================================================
 
 -- Public can view posts in public topics
+DROP POLICY IF EXISTS "Public can view posts in public topics" ON forum_posts;
 CREATE POLICY "Public can view posts in public topics"
 ON forum_posts FOR SELECT
 USING (
@@ -456,6 +489,7 @@ USING (
 );
 
 -- Authenticated users can create posts (if topic not locked, user not banned)
+DROP POLICY IF EXISTS "Authenticated users can create posts" ON forum_posts;
 CREATE POLICY "Authenticated users can create posts"
 ON forum_posts FOR INSERT
 TO authenticated
@@ -476,6 +510,7 @@ WITH CHECK (
 );
 
 -- Users can edit own posts (within time limit)
+DROP POLICY IF EXISTS "Users can edit own posts" ON forum_posts;
 CREATE POLICY "Users can edit own posts"
 ON forum_posts FOR UPDATE
 TO authenticated
@@ -486,6 +521,7 @@ USING (
 WITH CHECK (auth.uid() = user_id);
 
 -- Users can delete own posts (within time limit, if no replies)
+DROP POLICY IF EXISTS "Users can delete own posts" ON forum_posts;
 CREATE POLICY "Users can delete own posts"
 ON forum_posts FOR DELETE
 TO authenticated
@@ -499,6 +535,7 @@ USING (
 );
 
 -- Admins can moderate all posts
+DROP POLICY IF EXISTS "Admins can moderate posts" ON forum_posts;
 CREATE POLICY "Admins can moderate posts"
 ON forum_posts FOR ALL
 USING (is_admin() OR is_moderator())
@@ -509,18 +546,21 @@ WITH CHECK (is_admin() OR is_moderator());
 -- ============================================================================
 
 -- Users can view own rate limit logs
+DROP POLICY IF EXISTS "Users can view own rate limit logs" ON rate_limit_log;
 CREATE POLICY "Users can view own rate limit logs"
 ON rate_limit_log FOR SELECT
 TO authenticated
 USING (user_id = auth.uid());
 
 -- Admins can view all rate limit logs
+DROP POLICY IF EXISTS "Admins can view all rate limit logs" ON rate_limit_log;
 CREATE POLICY "Admins can view all rate limit logs"
 ON rate_limit_log FOR SELECT
 TO authenticated
 USING (is_admin() OR is_moderator());
 
 -- System can insert rate limit logs (via function)
+DROP POLICY IF EXISTS "System can insert rate limit logs" ON rate_limit_log;
 CREATE POLICY "System can insert rate limit logs"
 ON rate_limit_log FOR INSERT
 TO authenticated
@@ -531,18 +571,21 @@ WITH CHECK (true); -- Function handles validation
 -- ============================================================================
 
 -- Users can view own ban status
+DROP POLICY IF EXISTS "Users can view own ban status" ON user_bans;
 CREATE POLICY "Users can view own ban status"
 ON user_bans FOR SELECT
 TO authenticated
 USING (user_id = auth.uid());
 
 -- Admins can view all bans
+DROP POLICY IF EXISTS "Admins can view all bans" ON user_bans;
 CREATE POLICY "Admins can view all bans"
 ON user_bans FOR SELECT
 TO authenticated
 USING (is_admin() OR is_moderator());
 
 -- Admins can manage bans
+DROP POLICY IF EXISTS "Admins can manage bans" ON user_bans;
 CREATE POLICY "Admins can manage bans"
 ON user_bans FOR ALL
 TO authenticated
@@ -554,23 +597,27 @@ WITH CHECK (is_admin() OR is_moderator());
 -- ============================================================================
 
 -- Only admins can read audit logs
+DROP POLICY IF EXISTS "Admins can read audit logs" ON forum_audit_log;
 CREATE POLICY "Admins can read audit logs"
 ON forum_audit_log FOR SELECT
 TO authenticated
 USING (is_admin() OR is_moderator());
 
 -- System can insert audit logs (via function)
+DROP POLICY IF EXISTS "System can insert audit logs" ON forum_audit_log;
 CREATE POLICY "System can insert audit logs"
 ON forum_audit_log FOR INSERT
 TO authenticated
 WITH CHECK (true); -- Function handles validation
 
 -- No one can modify or delete audit logs
+DROP POLICY IF EXISTS "No audit log modification" ON forum_audit_log;
 CREATE POLICY "No audit log modification"
 ON forum_audit_log FOR UPDATE
 TO authenticated
 USING (false);
 
+DROP POLICY IF EXISTS "No audit log deletion" ON forum_audit_log;
 CREATE POLICY "No audit log deletion"
 ON forum_audit_log FOR DELETE
 TO authenticated

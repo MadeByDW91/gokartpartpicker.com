@@ -61,10 +61,13 @@ async function fetchProductFromAmazon(asin: string): Promise<{
   try {
     // Use our API route which handles CORS proxy
     // For server actions, we construct the URL from environment or use localhost for dev
+    // In server actions, we need to use the full URL
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 
-                    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` :
-                    'http://localhost:3000';
+                    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+                    'http://localhost:3001'; // Default to 3001 for local dev
     const apiUrl = `${baseUrl}/api/amazon-product?asin=${asin}`;
+    
+    console.log(`[fetchProductFromAmazon] Fetching from: ${apiUrl}`);
     
     const response = await fetch(apiUrl, {
       cache: 'no-store', // Always fetch fresh data

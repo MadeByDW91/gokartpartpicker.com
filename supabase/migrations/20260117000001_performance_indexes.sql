@@ -58,19 +58,6 @@ CREATE INDEX IF NOT EXISTS idx_builds_engine
 ON builds(engine_id, is_public, created_at DESC)
 WHERE engine_id IS NOT NULL;
 
--- Builds by template flag
-CREATE INDEX IF NOT EXISTS idx_builds_templates 
-ON builds(is_template, is_active, created_at DESC)
-WHERE is_template = TRUE AND is_active = TRUE;
-
--- Build parts lookup
-CREATE INDEX IF NOT EXISTS idx_build_parts_build 
-ON build_parts(build_id, part_id);
-
--- Build parts by part (reverse lookup)
-CREATE INDEX IF NOT EXISTS idx_build_parts_part 
-ON build_parts(part_id);
-
 -- ============================================================================
 -- PART INDEXES (Filtering performance)
 -- ============================================================================
@@ -133,11 +120,6 @@ WHERE role IN ('admin', 'super_admin');
 CREATE INDEX IF NOT EXISTS idx_content_type_published 
 ON content(content_type, is_published, created_at DESC)
 WHERE is_published = TRUE;
-
--- Content by engine (guides filtering)
-CREATE INDEX IF NOT EXISTS idx_content_engine 
-ON content(engine_id, is_published)
-WHERE engine_id IS NOT NULL AND is_published = TRUE;
 
 -- Videos by engine
 CREATE INDEX IF NOT EXISTS idx_videos_engine_active 

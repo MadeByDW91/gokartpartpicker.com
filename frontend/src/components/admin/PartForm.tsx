@@ -10,6 +10,7 @@ import { slugify } from '@/lib/utils';
 import { PART_CATEGORIES } from '@/types/database';
 import { createPart, updatePart } from '@/actions/admin';
 import { getPartCategories } from '@/actions/parts';
+import { autoSearchAndAddVideosForPart } from '@/actions/admin/auto-video-linker';
 import type { Part } from '@/types/database';
 
 interface AdminPart extends Part {
@@ -38,6 +39,8 @@ export function PartForm({ part, mode }: PartFormProps) {
   const [success, setSuccess] = useState(false);
   const [categories, setCategories] = useState<PartCategory[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [autoAddVideos, setAutoAddVideos] = useState(false);
+  const [videoStatus, setVideoStatus] = useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -136,11 +139,30 @@ export function PartForm({ part, mode }: PartFormProps) {
         if (!result.success) {
           throw new Error(result.error || 'Failed to create part');
         }
+        
+        // Auto-add videos if enabled
+        if (autoAddVideos && result.data) {
+          setVideoStatus('Searching for videos...');
+          const videoResult = await autoSearchAndAddVideosForPart(
+            result.data.id,
+            result.data.name,
+            result.data.brand,
+            result.data.category,
+            5 // Max 5 videos
+          );
+          
+          if (videoResult.success) {
+            setVideoStatus(`Added ${videoResult.data.added} video(s) automatically!`);
+          } else {
+            setVideoStatus(`Video search: ${videoResult.error}`);
+          }
+        }
+        
         setSuccess(true);
         setTimeout(() => {
           router.push('/admin/parts');
           router.refresh();
-        }, 1000);
+        }, 2000); // Give time to see video status
       } else if (part) {
         const result = await updatePart({ ...data, id: part.id });
         if (!result.success) {
@@ -287,6 +309,31 @@ export function PartForm({ part, mode }: PartFormProps) {
               Active (visible in public catalog)
             </label>
           </div>
+          
+          {mode === 'create' && (
+            <div className="flex items-center gap-3 pt-2 border-t border-olive-600">
+              <input
+                type="checkbox"
+                id="auto_add_videos"
+                checked={autoAddVideos}
+                onChange={(e) => setAutoAddVideos(e.target.checked)}
+                className="w-5 h-5 rounded border-olive-600 bg-olive-800 text-orange-500 focus:ring-orange-500 focus:ring-offset-olive-800"
+              />
+              <label htmlFor="auto_add_videos" className="text-cream-200">
+                Auto-add videos (searches YouTube for relevant videos)
+              </label>
+            </div>
+          )}
+          
+          {videoStatus && (
+            <div className={`p-3 rounded-lg ${
+              videoStatus.includes('Added') 
+                ? 'bg-[rgba(74,124,89,0.1)] border border-[rgba(74,124,89,0.3)] text-[var(--success)]'
+                : 'bg-[rgba(166,61,64,0.1)] border border-[rgba(166,61,64,0.3)] text-[var(--error)]'
+            }`}>
+              <p className="text-sm">{videoStatus}</p>
+            </div>
+          )}
         </CardContent>
         <CardFooter className="flex justify-end gap-3">
           <Button

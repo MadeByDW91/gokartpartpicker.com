@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Zap, Gauge, ExternalLink, Plus } from 'lucide-react';
@@ -36,6 +37,7 @@ export function EngineCard({
   isSelected = false,
   showAddButton = true 
 }: EngineCardProps) {
+  const router = useRouter();
   const [imageError, setImageError] = useState(false);
 
   // Reset error state if image_url changes
@@ -43,11 +45,21 @@ export function EngineCard({
     setImageError(false);
   }, [engine.image_url]);
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't trigger if clicking the link or button
+    if ((e.target as HTMLElement).closest('a, button')) {
+      return;
+    }
+    // Navigate to engine detail page
+    router.push(`/engines/${engine.slug}`);
+  };
+
   return (
     <Card 
       variant={isSelected ? 'accent' : 'default'} 
       hoverable 
-      className="overflow-hidden group"
+      className="overflow-hidden group cursor-pointer"
+      onClick={handleCardClick}
     >
       {/* Image */}
       <div className="relative h-48 bg-olive-800 overflow-hidden">

@@ -35,7 +35,8 @@ import {
   Lock,
   Flag,
   FolderTree,
-  Share2
+  Share2,
+  Clock
 } from 'lucide-react';
 
 // Navigation groups
@@ -50,6 +51,7 @@ interface NavItem {
   name: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  badge?: boolean; // If true, show pending count badge
 }
 
 const navigationGroups: NavGroup[] = [
@@ -81,6 +83,7 @@ const navigationGroups: NavGroup[] = [
     icon: BarChart3,
     defaultOpen: false,
     items: [
+      { name: 'Approvals', href: '/admin/approvals', icon: Clock, badge: true },
       { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
       { name: 'Reports', href: '/admin/reports/missing-data', icon: ClipboardList },
       { name: 'Audit Log', href: '/admin/audit', icon: ClipboardList },
@@ -148,6 +151,7 @@ export default function AdminLayout({
   const [openGroups, setOpenGroups] = useState<Set<string>>(
     new Set(navigationGroups.filter(g => g.defaultOpen).map(g => g.name))
   );
+  const [pendingApprovalsCount, setPendingApprovalsCount] = useState<number>(0);
 
   // Debug logging
   useEffect(() => {
@@ -195,6 +199,27 @@ export default function AdminLayout({
       }
     });
   }, [pathname]);
+
+  // Fetch pending approvals count
+  useEffect(() => {
+    if (isAdmin) {
+      const fetchCount = async () => {
+        try {
+          const result = await getPendingApprovalsCount();
+          if (result.success && result.data) {
+            setPendingApprovalsCount(result.data.total);
+          }
+        } catch (err) {
+          console.error('Error fetching pending approvals count:', err);
+        }
+      };
+
+      fetchCount();
+      // Refresh every 30 seconds
+      const interval = setInterval(fetchCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [isAdmin]);
 
   const toggleGroup = (groupName: string) => {
     setOpenGroups(prev => {
@@ -309,14 +334,21 @@ export default function AdminLayout({
                           key={item.name}
                           href={item.href}
                           className={cn(
-                            'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors',
+                            'flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors',
                             isActive
                               ? 'bg-orange-500/10 text-orange-400 border border-orange-500/30'
                               : 'text-cream-200 hover:bg-olive-700 hover:text-cream-100'
                           )}
                         >
-                          <item.icon className="w-4 h-4 flex-shrink-0" />
-                          {item.name}
+                          <div className="flex items-center gap-3">
+                            <item.icon className="w-4 h-4 flex-shrink-0" />
+                            {item.name}
+                          </div>
+                          {item.badge && pendingApprovalsCount > 0 && (
+                            <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-red-500 text-cream-100">
+                              {pendingApprovalsCount > 99 ? '99+' : pendingApprovalsCount}
+                            </span>
+                          )}
                         </Link>
                       );
                     })}

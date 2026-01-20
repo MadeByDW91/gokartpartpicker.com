@@ -5,7 +5,9 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getAdminPart } from '@/actions/admin';
 import { PartForm } from '@/components/admin/PartForm';
-import { ChevronLeft, Loader2 } from 'lucide-react';
+import { autoSearchAndAddVideosForPart } from '@/actions/admin/auto-video-linker';
+import { Button } from '@/components/ui/Button';
+import { ChevronLeft, Loader2, Video, CheckCircle, AlertCircle } from 'lucide-react';
 import type { Part } from '@/types/database';
 
 interface AdminPart extends Part {
@@ -22,6 +24,8 @@ export default function EditPartPage() {
   const [part, setPart] = useState<AdminPart | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [addingVideos, setAddingVideos] = useState(false);
+  const [videoStatus, setVideoStatus] = useState<{ success: boolean; message: string } | null>(null);
 
   useEffect(() => {
     const fetchPart = async () => {
@@ -96,6 +100,68 @@ export default function EditPartPage() {
         <p className="text-cream-300 mt-1">
           {part.name}
         </p>
+      </div>
+
+      {/* Auto-Add Videos Button */}
+      <div className="bg-olive-800 border border-olive-600 rounded-lg p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-cream-100 mb-1">Auto-Add Videos</h3>
+            <p className="text-sm text-cream-400">
+              Automatically search YouTube and add relevant videos for this part
+            </p>
+            {videoStatus && (
+              <div className={`mt-3 flex items-center gap-2 text-sm ${
+                videoStatus.success ? 'text-green-400' : 'text-red-400'
+              }`}>
+                {videoStatus.success ? (
+                  <CheckCircle className="w-4 h-4" />
+                ) : (
+                  <AlertCircle className="w-4 h-4" />
+                )}
+                <span>{videoStatus.message}</span>
+              </div>
+            )}
+          </div>
+          <Button
+            variant="primary"
+            icon={<Video className="w-4 h-4" />}
+            onClick={async () => {
+              if (!part) return;
+              setAddingVideos(true);
+              setVideoStatus(null);
+              
+              const result = await autoSearchAndAddVideosForPart(
+                part.id,
+                part.name,
+                part.brand,
+                part.category,
+                5 // Max 5 videos
+              );
+              
+              if (result.success) {
+                setVideoStatus({
+                  success: true,
+                  message: `Successfully added ${result.data.added} video(s)! ${result.data.errors.length > 0 ? `(${result.data.errors.length} errors)` : ''}`
+                });
+                // Refresh the page to show new videos
+                setTimeout(() => {
+                  router.refresh();
+                }, 2000);
+              } else {
+                setVideoStatus({
+                  success: false,
+                  message: result.error || 'Failed to add videos'
+                });
+              }
+              
+              setAddingVideos(false);
+            }}
+            disabled={addingVideos}
+          >
+            {addingVideos ? 'Searching...' : 'Auto-Add Videos'}
+          </Button>
+        </div>
       </div>
 
       {/* Form */}

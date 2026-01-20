@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Package, ExternalLink, Plus, Check } from 'lucide-react';
@@ -26,6 +27,7 @@ export function PartCard({
   showAddButton = true,
   compact = false 
 }: PartCardProps) {
+  const router = useRouter();
   const [imageError, setImageError] = useState(false);
 
   // Reset error state if image_url changes
@@ -38,7 +40,8 @@ export function PartCard({
     if ((e.target as HTMLElement).closest('a, button')) {
       return;
     }
-    onAddToBuild?.(part);
+    // Navigate to part detail page
+    router.push(`/parts/${part.slug}`);
   };
 
   return (

@@ -9,7 +9,7 @@
 -- ENGINE_CLONES TABLE
 -- ============================================================================
 
-CREATE TABLE engine_clones (
+CREATE TABLE IF NOT EXISTS engine_clones (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   engine_id UUID NOT NULL REFERENCES engines(id) ON DELETE CASCADE,
   clone_engine_id UUID NOT NULL REFERENCES engines(id) ON DELETE CASCADE,
@@ -26,9 +26,9 @@ CREATE TABLE engine_clones (
   CONSTRAINT no_self_reference CHECK (engine_id != clone_engine_id)
 );
 
-CREATE INDEX idx_engine_clones_engine ON engine_clones(engine_id);
-CREATE INDEX idx_engine_clones_clone ON engine_clones(clone_engine_id);
-CREATE INDEX idx_engine_clones_active ON engine_clones(is_active) WHERE is_active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_engine_clones_engine ON engine_clones(engine_id);
+CREATE INDEX IF NOT EXISTS idx_engine_clones_clone ON engine_clones(clone_engine_id);
+CREATE INDEX IF NOT EXISTS idx_engine_clones_active ON engine_clones(is_active) WHERE is_active = TRUE;
 
 COMMENT ON TABLE engine_clones IS 'Links engines that are clones or compatible with the same parts. Many engines are clones of Honda GX series (e.g., Predator 212 is a clone of Honda GX200).';
 COMMENT ON COLUMN engine_clones.relationship_type IS 'clone=exact clone, compatible=same parts fit, similar=mostly compatible';
@@ -38,6 +38,7 @@ COMMENT ON COLUMN engine_clones.notes IS 'Optional notes about the relationship 
 -- UPDATED_AT TRIGGER
 -- ============================================================================
 
+DROP TRIGGER IF EXISTS update_engine_clones_updated_at ON engine_clones;
 CREATE TRIGGER update_engine_clones_updated_at
   BEFORE UPDATE ON engine_clones
   FOR EACH ROW
@@ -50,11 +51,13 @@ CREATE TRIGGER update_engine_clones_updated_at
 ALTER TABLE engine_clones ENABLE ROW LEVEL SECURITY;
 
 -- Anyone can view active clone relationships
+DROP POLICY IF EXISTS "Engine clones are publicly readable" ON engine_clones;
 CREATE POLICY "Engine clones are publicly readable"
   ON engine_clones FOR SELECT
   USING (is_active = TRUE);
 
 -- Admins can view all relationships
+DROP POLICY IF EXISTS "Admins can view all engine clones" ON engine_clones;
 CREATE POLICY "Admins can view all engine clones"
   ON engine_clones FOR SELECT
   USING (
@@ -66,6 +69,7 @@ CREATE POLICY "Admins can view all engine clones"
   );
 
 -- Only admins can manage clone relationships
+DROP POLICY IF EXISTS "Admins can insert engine clones" ON engine_clones;
 CREATE POLICY "Admins can insert engine clones"
   ON engine_clones FOR INSERT
   WITH CHECK (
@@ -76,6 +80,7 @@ CREATE POLICY "Admins can insert engine clones"
     )
   );
 
+DROP POLICY IF EXISTS "Admins can update engine clones" ON engine_clones;
 CREATE POLICY "Admins can update engine clones"
   ON engine_clones FOR UPDATE
   USING (
@@ -86,6 +91,7 @@ CREATE POLICY "Admins can update engine clones"
     )
   );
 
+DROP POLICY IF EXISTS "Admins can delete engine clones" ON engine_clones;
 CREATE POLICY "Admins can delete engine clones"
   ON engine_clones FOR DELETE
   USING (

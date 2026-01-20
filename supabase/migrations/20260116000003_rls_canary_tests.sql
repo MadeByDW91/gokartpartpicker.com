@@ -10,12 +10,16 @@
 -- -----------------------------------------------------------------------------
 -- TEST RESULT TYPE
 -- -----------------------------------------------------------------------------
-CREATE TYPE rls_test_result AS (
-  test_name TEXT,
-  passed BOOLEAN,
-  message TEXT,
-  tested_at TIMESTAMPTZ
-);
+DO $$ BEGIN
+    CREATE TYPE rls_test_result AS (
+      test_name TEXT,
+      passed BOOLEAN,
+      message TEXT,
+      tested_at TIMESTAMPTZ
+    );
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- -----------------------------------------------------------------------------
 -- TEST HELPER: Execute as specific role
