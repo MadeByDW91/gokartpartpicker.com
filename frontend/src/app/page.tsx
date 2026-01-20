@@ -10,7 +10,8 @@ import {
   Shield, 
   TrendingUp,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
+  Sparkles
 } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -266,8 +267,73 @@ export default function HomePage() {
         </div>
       </section>
       
-      {/* Categories */}
+      {/* Quick Links */}
       <section className="py-20 bg-olive-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-12">
+            <h2 className="text-display text-3xl sm:text-4xl text-cream-100 mb-4">
+              Quick Links
+            </h2>
+            <p className="text-cream-400 max-w-2xl">
+              Get started quickly with our most popular tools and resources.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link
+              href="/builder"
+              className="p-4 bg-olive-700 rounded-lg border border-olive-600 hover:border-orange-500 transition-colors group"
+            >
+              <div className="flex items-center gap-3">
+                <Wrench className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-cream-100">Build Configurator</h3>
+                  <p className="text-sm text-cream-400">Start building your kart</p>
+                </div>
+              </div>
+            </Link>
+            <Link
+              href="/engines"
+              className="p-4 bg-olive-700 rounded-lg border border-olive-600 hover:border-orange-500 transition-colors group"
+            >
+              <div className="flex items-center gap-3">
+                <Cog className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-cream-100">Browse Engines</h3>
+                  <p className="text-sm text-cream-400">Find the ultimate engine</p>
+                </div>
+              </div>
+            </Link>
+            <Link
+              href="/parts"
+              className="p-4 bg-olive-700 rounded-lg border border-olive-600 hover:border-orange-500 transition-colors group"
+            >
+              <div className="flex items-center gap-3">
+                <Package className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-cream-100">Browse Parts</h3>
+                  <p className="text-sm text-cream-400">Explore all parts</p>
+                </div>
+              </div>
+            </Link>
+            <Link
+              href="/templates"
+              className="p-4 bg-olive-700 rounded-lg border border-olive-600 hover:border-orange-500 transition-colors group"
+            >
+              <div className="flex items-center gap-3">
+                <Sparkles className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-cream-100">Build Templates</h3>
+                  <p className="text-sm text-cream-400">Start from a template</p>
+                </div>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+      
+      {/* Categories */}
+      <section className="py-20 bg-olive-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-display text-3xl sm:text-4xl text-cream-100 mb-4">
@@ -283,7 +349,7 @@ export default function HomePage() {
               <Link
                 key={category.name}
                 href={category.href}
-                className="group p-4 bg-olive-700 border border-olive-600 rounded-lg hover:border-orange-500 hover:shadow-[0_0_20px_rgba(201,106,36,0.2)] transition-all text-center"
+                className="group p-4 bg-olive-800 border border-olive-600 rounded-lg hover:border-orange-500 hover:shadow-[0_0_20px_rgba(201,106,36,0.2)] transition-all text-center"
               >
                 <category.icon className="w-8 h-8 text-orange-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
                 <h3 className="text-sm font-semibold text-cream-100 mb-1">{category.name}</h3>
