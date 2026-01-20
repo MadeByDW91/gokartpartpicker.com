@@ -11,7 +11,8 @@
 -- ============================================================================
 
 -- Fix update_updated_at_column function
-CREATE OR REPLACE FUNCTION public.update_updated_at_column()
+DROP FUNCTION IF EXISTS public.update_updated_at_column() CASCADE;
+CREATE FUNCTION public.update_updated_at_column()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -24,7 +25,8 @@ END;
 $$;
 
 -- Fix is_admin function
-CREATE OR REPLACE FUNCTION public.is_admin()
+DROP FUNCTION IF EXISTS public.is_admin() CASCADE;
+CREATE FUNCTION public.is_admin()
 RETURNS BOOLEAN
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -40,7 +42,8 @@ END;
 $$;
 
 -- Fix is_super_admin function
-CREATE OR REPLACE FUNCTION public.is_super_admin()
+DROP FUNCTION IF EXISTS public.is_super_admin() CASCADE;
+CREATE FUNCTION public.is_super_admin()
 RETURNS BOOLEAN
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -74,7 +77,8 @@ END;
 $$;
 
 -- Fix log_audit_action function
-CREATE OR REPLACE FUNCTION public.log_audit_action(
+DROP FUNCTION IF EXISTS public.log_audit_action(audit_action, TEXT, UUID, JSONB, JSONB) CASCADE;
+CREATE FUNCTION public.log_audit_action(
   p_action audit_action,
   p_table_name TEXT,
   p_record_id UUID,
@@ -111,7 +115,8 @@ END;
 $$;
 
 -- Fix audit_catalog_changes function
-CREATE OR REPLACE FUNCTION public.audit_catalog_changes()
+DROP FUNCTION IF EXISTS public.audit_catalog_changes() CASCADE;
+CREATE FUNCTION public.audit_catalog_changes()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -137,24 +142,31 @@ END;
 $$;
 
 -- Fix count_visible_as_user function (from RLS canary tests)
-CREATE OR REPLACE FUNCTION public.count_visible_as_user(user_id UUID, table_name TEXT)
-RETURNS INTEGER
+-- Drop first to avoid return type conflict (original returns BIGINT, not INTEGER)
+DROP FUNCTION IF EXISTS public.count_visible_as_user(UUID, TEXT) CASCADE;
+CREATE FUNCTION public.count_visible_as_user(user_id UUID, table_name TEXT)
+RETURNS BIGINT
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
 DECLARE
-  row_count INTEGER;
+  row_count BIGINT;
   query_text TEXT;
 BEGIN
-  query_text := format('SELECT COUNT(*) FROM %I', table_name);
-  EXECUTE query_text INTO row_count;
+  PERFORM set_config('request.jwt.claim.role', 'authenticated', TRUE);
+  PERFORM set_config('request.jwt.claim.sub', user_id::TEXT, TRUE);
+  EXECUTE format('SELECT COUNT(*) FROM %I', table_name) INTO row_count;
   RETURN row_count;
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN -1;
 END;
 $$;
 
 -- Fix check_rate_limit function
-CREATE OR REPLACE FUNCTION public.check_rate_limit(
+DROP FUNCTION IF EXISTS public.check_rate_limit(UUID, INET, TEXT, INTEGER, INTEGER) CASCADE;
+CREATE FUNCTION public.check_rate_limit(
   p_user_id UUID,
   p_ip_address INET,
   p_action_type TEXT,
@@ -202,7 +214,8 @@ END;
 $$;
 
 -- Fix videos_auto_thumbnail function
-CREATE OR REPLACE FUNCTION public.videos_auto_thumbnail()
+DROP FUNCTION IF EXISTS public.videos_auto_thumbnail() CASCADE;
+CREATE FUNCTION public.videos_auto_thumbnail()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -230,7 +243,8 @@ END;
 $$;
 
 -- Fix get_price_change function
-CREATE OR REPLACE FUNCTION public.get_price_change(
+DROP FUNCTION IF EXISTS public.get_price_change(UUID, UUID, INTEGER) CASCADE;
+CREATE FUNCTION public.get_price_change(
   p_engine_id UUID DEFAULT NULL,
   p_part_id UUID DEFAULT NULL,
   p_days INTEGER DEFAULT 30
@@ -308,7 +322,8 @@ END;
 $$;
 
 -- Fix update_user_last_active function
-CREATE OR REPLACE FUNCTION public.update_user_last_active()
+DROP FUNCTION IF EXISTS public.update_user_last_active() CASCADE;
+CREATE FUNCTION public.update_user_last_active()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -323,7 +338,8 @@ END;
 $$;
 
 -- Fix is_user_banned function
-CREATE OR REPLACE FUNCTION public.is_user_banned(p_user_id UUID)
+DROP FUNCTION IF EXISTS public.is_user_banned(UUID) CASCADE;
+CREATE FUNCTION public.is_user_banned(p_user_id UUID)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -340,7 +356,8 @@ END;
 $$;
 
 -- Fix is_moderator function
-CREATE OR REPLACE FUNCTION public.is_moderator()
+DROP FUNCTION IF EXISTS public.is_moderator() CASCADE;
+CREATE FUNCTION public.is_moderator()
 RETURNS BOOLEAN
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -356,7 +373,8 @@ END;
 $$;
 
 -- Fix update_topic_stats function
-CREATE OR REPLACE FUNCTION public.update_topic_stats()
+DROP FUNCTION IF EXISTS public.update_topic_stats() CASCADE;
+CREATE FUNCTION public.update_topic_stats()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -380,7 +398,8 @@ END;
 $$;
 
 -- Fix update_topic_stats_on_delete function
-CREATE OR REPLACE FUNCTION public.update_topic_stats_on_delete()
+DROP FUNCTION IF EXISTS public.update_topic_stats_on_delete() CASCADE;
+CREATE FUNCTION public.update_topic_stats_on_delete()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -401,7 +420,8 @@ END;
 $$;
 
 -- Fix get_forum_categories_with_counts function
-CREATE OR REPLACE FUNCTION public.get_forum_categories_with_counts()
+DROP FUNCTION IF EXISTS public.get_forum_categories_with_counts() CASCADE;
+CREATE FUNCTION public.get_forum_categories_with_counts()
 RETURNS TABLE (
   id UUID,
   slug TEXT,
@@ -448,7 +468,8 @@ $$;
 -- Fix run_rls_canary_tests function
 -- Note: This is a large function. We'll recreate it with search_path set.
 -- The full implementation is preserved from 20260116000003_rls_canary_tests.sql
-CREATE OR REPLACE FUNCTION public.run_rls_canary_tests()
+DROP FUNCTION IF EXISTS public.run_rls_canary_tests() CASCADE;
+CREATE FUNCTION public.run_rls_canary_tests()
 RETURNS SETOF rls_test_result
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -751,7 +772,8 @@ END;
 $$;
 
 -- Fix check_rls_coverage function
-CREATE OR REPLACE FUNCTION public.check_rls_coverage()
+DROP FUNCTION IF EXISTS public.check_rls_coverage() CASCADE;
+CREATE FUNCTION public.check_rls_coverage()
 RETURNS TABLE (
   table_name TEXT,
   rls_enabled BOOLEAN,
