@@ -64,6 +64,7 @@ const navigationGroups: NavGroup[] = [
     items: [
       { name: 'Engines', href: '/admin/engines', icon: Cog },
       { name: 'Parts', href: '/admin/parts', icon: Package },
+      { name: 'Templates', href: '/admin/templates', icon: FileText },
       { name: 'Guides', href: '/admin/guides', icon: BookOpen },
       { name: 'Compatibility', href: '/admin/compatibility', icon: GitCompare },
       { name: 'Bulk Operations', href: '/admin/bulk-operations', icon: Settings },
@@ -74,7 +75,6 @@ const navigationGroups: NavGroup[] = [
     icon: FileText,
     defaultOpen: false,
     items: [
-      { name: 'Templates', href: '/admin/templates', icon: FileText },
       { name: 'Videos', href: '/admin/videos', icon: Video },
       { name: 'Image Review', href: '/admin/images/review', icon: ImageIcon },
       { name: 'Social Media', href: '/admin/social', icon: Share2 },
