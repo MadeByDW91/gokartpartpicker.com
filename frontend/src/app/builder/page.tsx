@@ -342,14 +342,14 @@ function BuilderPageContent() {
       <div className="bg-olive-800 border-b border-olive-700 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Wrench className="w-6 h-6 text-orange-400" />
-              <h1 className="text-display text-2xl sm:text-3xl text-cream-100">
-                  Build Your Kart
-                </h1>
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+              <Wrench className="w-5 h-5 sm:w-6 sm:h-6 text-orange-400 flex-shrink-0" />
+              <h1 className="text-display text-xl sm:text-2xl lg:text-3xl text-cream-100 truncate">
+                Build Your Kart
+              </h1>
             </div>
             
-            <div className="hidden md:flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2 flex-shrink-0">
               <Link href="/templates">
                 <Button variant="secondary" size="sm" icon={<Sparkles className="w-4 h-4" />}>
                   Templates
@@ -392,12 +392,39 @@ function BuilderPageContent() {
                 </Link>
               )}
             </div>
+            
+            {/* Mobile Actions */}
+            <div className="md:hidden flex items-center gap-2 flex-shrink-0">
+              <Link href="/templates">
+                <Button variant="ghost" size="sm" icon={<Sparkles className="w-4 h-4" />} className="min-h-[44px] min-w-[44px] touch-manipulation" aria-label="Templates">
+                </Button>
+              </Link>
+              {(selectedEngine || selectedParts.size > 0) && (
+                <>
+                  <Button variant="ghost" size="sm" onClick={clearBuild} icon={<Trash2 className="w-4 h-4" />} className="min-h-[44px] min-w-[44px] touch-manipulation" aria-label="Clear build">
+                  </Button>
+                  <ShareButton
+                    options={shareBuild(savedBuildId || '', `My Go-Kart Build - $${totalPrice.toFixed(2)}`)}
+                    variant="icon"
+                  />
+                </>
+              )}
+              {isAuthenticated ? (
+                <Button variant="primary" size="sm" onClick={() => setShowSaveModal(true)} disabled={!selectedEngine && selectedParts.size === 0} icon={<Save className="w-4 h-4" />} className="min-h-[44px] touch-manipulation">
+                  <span className="hidden sm:inline">Save</span>
+                </Button>
+              ) : (
+                <Link href="/auth/login?redirect=/builder">
+                  <Button variant="secondary" size="sm" className="min-h-[44px] touch-manipulation">Login</Button>
+                </Link>
+              )}
+            </div>
           </div>
           
         </div>
       </div>
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Builder Table */}
         <BuilderTable
           selectedEngine={selectedEngine}

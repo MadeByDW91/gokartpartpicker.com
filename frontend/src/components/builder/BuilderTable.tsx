@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Plus, X, Check, ExternalLink, Zap, AlertTriangle, Info, Scale } from 'lucide-react';
+import { Plus, X, Check, ExternalLink, Zap, AlertTriangle, Info, Scale, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { formatPrice, getCategoryLabel, CATEGORY_GROUPS } from '@/lib/utils';
@@ -169,7 +169,8 @@ export function BuilderTable({
 
   return (
     <div className="bg-olive-800 rounded-lg border border-olive-600 overflow-hidden">
-      <div className="overflow-x-auto">
+      {/* Desktop Table View */}
+      <div className="hidden lg:block overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="bg-olive-700 border-b border-olive-600">
@@ -496,6 +497,291 @@ export function BuilderTable({
             </tr>
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="lg:hidden space-y-3 p-4 sm:p-6">
+        {/* Engine Card */}
+        <div className="bg-olive-700 rounded-lg border border-olive-600 p-4 sm:p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base sm:text-lg font-semibold text-cream-100">Engine</h3>
+            {selectedEngine && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onRemoveEngine}
+                className="text-cream-400 hover:text-orange-400 min-h-[44px] min-w-[44px] touch-manipulation"
+                aria-label="Remove engine"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            )}
+          </div>
+          {selectedEngine ? (
+            <div className="space-y-3">
+              <div>
+                <div className="text-lg sm:text-xl font-bold text-cream-100 mb-1">{selectedEngine.name}</div>
+                <div className="text-sm sm:text-base text-cream-400">{selectedEngine.brand}</div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <div className="text-cream-400">Price</div>
+                  <div className="text-lg font-bold text-orange-400">
+                    {selectedEngine.price ? formatPrice(selectedEngine.price) : '—'}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-cream-400">HP</div>
+                  <div className="text-lg font-bold text-cream-100">{selectedEngine.horsepower} HP</div>
+                </div>
+                <div>
+                  <div className="text-cream-400">Torque</div>
+                  <div className="text-lg font-bold text-cream-100">{selectedEngine.torque} lb-ft</div>
+                </div>
+                <div>
+                  <div className="text-cream-400">Displacement</div>
+                  <div className="text-lg font-bold text-cream-100">{selectedEngine.displacement_cc}cc</div>
+                </div>
+              </div>
+              <div className="pt-2 border-t border-olive-600">
+                <Badge variant="success" size="sm" className="text-xs sm:text-sm">
+                  <Check className="w-4 h-4" />
+                  Compatible
+                </Badge>
+              </div>
+            </div>
+          ) : (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={onSelectEngine}
+              icon={<Plus className="w-5 h-5" />}
+              className="w-full min-h-[52px] text-base touch-manipulation"
+            >
+              Choose An Engine
+            </Button>
+          )}
+        </div>
+
+        {/* Part Categories by Group */}
+        {CATEGORY_GROUPS.map((group) => {
+          const isExpanded = expandedGroups.has(group.id);
+          const selectedCategories = group.categories.filter((cat) => selectedParts.has(cat as PartCategory));
+          const hasSelected = selectedCategories.length > 0;
+
+          return (
+            <div key={group.id} className="bg-olive-700 rounded-lg border border-olive-600 overflow-hidden">
+              {/* Group Header */}
+              <button
+                onClick={() => toggleGroup(group.id)}
+                className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-olive-600 transition-colors touch-manipulation min-h-[60px]"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="text-base sm:text-lg font-semibold text-cream-100 mb-1">{group.label}</div>
+                  {hasSelected && !isExpanded && (
+                    <div className="text-sm text-orange-400">
+                      {selectedCategories.length} selected
+                    </div>
+                  )}
+                  {!hasSelected && (
+                    <div className="text-sm text-cream-400">
+                      {group.categories.map((cat) => getCategoryLabel(cat as PartCategory)).join(', ')}
+                    </div>
+                  )}
+                </div>
+                <div className="flex-shrink-0 ml-3">
+                  {isExpanded ? (
+                    <ChevronUp className="w-5 h-5 text-cream-400" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-cream-400" />
+                  )}
+                </div>
+              </button>
+
+              {/* Selected Parts Summary (when collapsed) */}
+              {hasSelected && !isExpanded && (
+                <div className="px-4 sm:px-5 pb-4 space-y-2">
+                  {selectedCategories.map((category) => {
+                    const part = selectedParts.get(category as PartCategory);
+                    if (!part) return null;
+                    return (
+                      <div
+                        key={category}
+                        className="flex items-center justify-between bg-olive-800 rounded p-3"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-cream-100 truncate">{part.name}</div>
+                          <div className="text-xs text-cream-400">{getCategoryLabel(category as PartCategory)}</div>
+                        </div>
+                        <div className="flex items-center gap-2 ml-3">
+                          <div className="text-sm font-bold text-orange-400">
+                            {part.price ? formatPrice(part.price) : '—'}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onRemovePart(category as PartCategory);
+                            }}
+                            className="text-cream-400 hover:text-orange-400 min-h-[44px] min-w-[44px] touch-manipulation"
+                            aria-label={`Remove ${part.name}`}
+                          >
+                            <X className="w-5 h-5" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Expanded Category List */}
+              {isExpanded && (
+                <div className="border-t border-olive-600 divide-y divide-olive-600">
+                  {group.categories.map((category) => {
+                    const categoryTyped = category as PartCategory;
+                    const selectedPart = selectedParts.get(categoryTyped);
+                    const keySpec = selectedPart ? getKeySpec(selectedPart) : null;
+                    const compatStatus = selectedPart && selectedEngine 
+                      ? getCompatibilityStatus(selectedPart, selectedEngine, compatibilityWarnings)
+                      : 'unknown';
+
+                    return (
+                      <div
+                        key={category}
+                        className={`p-4 sm:p-5 ${selectedPart ? 'bg-olive-800/50' : ''}`}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="text-sm sm:text-base font-semibold text-cream-200">
+                            {getCategoryLabel(categoryTyped)}
+                          </h4>
+                          {selectedPart && (
+                            <div className="flex items-center gap-2">
+                              {compatStatus === 'compatible' && (
+                                <Badge variant="success" size="sm" className="text-xs">
+                                  <Check className="w-3 h-3" />
+                                </Badge>
+                              )}
+                              {compatStatus === 'warning' && (
+                                <Badge variant="warning" size="sm" className="text-xs">
+                                  <AlertTriangle className="w-3 h-3" />
+                                </Badge>
+                              )}
+                              {compatStatus === 'error' && (
+                                <Badge variant="error" size="sm" className="text-xs">
+                                  <AlertTriangle className="w-3 h-3" />
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {selectedPart ? (
+                          <div className="space-y-3">
+                            <div>
+                              <div className="text-base sm:text-lg font-bold text-cream-100 mb-1">
+                                {selectedPart.name}
+                              </div>
+                              <div className="text-sm text-cream-400">{selectedPart.brand}</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <div className="text-cream-400">Price</div>
+                                <div className="text-lg font-bold text-orange-400">
+                                  {selectedPart.price ? formatPrice(selectedPart.price) : '—'}
+                                </div>
+                              </div>
+                              {keySpec && (
+                                <div>
+                                  <div className="text-cream-400">Key Spec</div>
+                                  <div className="text-lg font-bold text-cream-100">{keySpec}</div>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 pt-2 border-t border-olive-600">
+                              {selectedPart.slug && (
+                                <Link
+                                  href={`/parts/${selectedPart.slug}`}
+                                  className="text-sm text-orange-400 hover:text-orange-300 flex-1"
+                                >
+                                  View Details →
+                                </Link>
+                              )}
+                              {selectedPart.affiliate_url && (
+                                <a
+                                  href={selectedPart.affiliate_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer sponsored"
+                                  className="p-2 text-cream-400 hover:text-orange-400 min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation"
+                                  aria-label={`Buy ${selectedPart.name}`}
+                                >
+                                  <ExternalLink className="w-5 h-5" />
+                                </a>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => onRemovePart(categoryTyped)}
+                                className="text-cream-400 hover:text-orange-400 min-h-[44px] min-w-[44px] touch-manipulation"
+                                aria-label={`Remove ${selectedPart.name}`}
+                              >
+                                <X className="w-5 h-5" />
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => onSelectPart(categoryTyped)}
+                            icon={<Plus className="w-5 h-5" />}
+                            className="w-full min-h-[52px] text-base touch-manipulation"
+                          >
+                            Choose {getCategoryLabel(categoryTyped)}
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Total Summary Card */}
+        <div className="bg-olive-700 rounded-lg border-2 border-orange-500 p-4 sm:p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg sm:text-xl font-bold text-cream-100">Total</h3>
+            <div className="text-2xl sm:text-3xl font-bold text-orange-400">
+              {formatPrice(totalPrice)}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4 pt-3 border-t border-olive-600">
+            {totalWeight > 0 && (
+              <div>
+                <div className="text-sm text-cream-400 mb-1">Total Weight</div>
+                <div className="flex items-center gap-1 text-lg font-bold text-cream-100">
+                  <Scale className="w-4 h-4" />
+                  {totalWeight.toFixed(1)} lbs
+                </div>
+              </div>
+            )}
+            {selectedEngine && (
+              <div>
+                <div className="text-sm text-cream-400 mb-1">Total HP</div>
+                <div className="flex items-center gap-1 text-lg font-bold text-orange-400">
+                  <Zap className="w-4 h-4" />
+                  {performance.hp.toFixed(performance.hp % 1 === 0 ? 0 : 1)} hp
+                </div>
+                <div className="text-xs text-cream-500 mt-1">
+                  {performance.topSpeed.toFixed(0)} mph top speed
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

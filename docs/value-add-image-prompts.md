@@ -1,8 +1,8 @@
 # Value-Add Assets — Image Generation Prompts
 
-> **Version:** 2.0  
+> **Version:** 3.0  
 > **Last Updated:** 2026-01-16  
-> **Status:** Ready for Asset Generation — Theme-Aligned
+> **Status:** Ready for Asset Generation — Professional Refined
 
 ---
 
@@ -199,12 +199,12 @@ wheels on axle, complete assembly, complex, filled, 3D, realistic, detailed, mod
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport wheel and tire icon, 24x24 pixels, vector silhouette. Circular wheel with tire: outer tire profile, wheel rim visible inside, spoke pattern suggested (4-5 spokes). 2px stroke in cream (#f5f0e6). Front view. Minimal detail. Utilitarian style. Transparent background. Go-kart wheel style. Industrial, garage-built aesthetic. Bold strokes.
+Professional motorsport wheel and tire icon, 24x24 pixels, vector silhouette. Circular wheel with tire: outer tire profile, wheel rim visible inside, spoke pattern suggested (4-5 spokes). 2.5px stroke in cream (#f5f0e6). Front view. Clean, precise engineering lines. Minimal detail. Refined technical style. Transparent background. Go-kart wheel style. Professional racing aesthetic. Polished, purposeful design.
 ```
 
 #### NEGATIVE PROMPT
 ```
-car tire, bicycle wheel, complex, filled, gradient, 3D, realistic, detailed tread pattern, modern, glossy, decorative, thin strokes
+car tire, bicycle wheel, complex, filled, gradient, 3D, realistic, detailed tread pattern, modern glossy SaaS, decorative, thin strokes, rough, DIY, unrefined, vintage distressed
 ```
 
 ---
@@ -219,12 +219,12 @@ car tire, bicycle wheel, complex, filled, gradient, 3D, realistic, detailed trea
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport brake disc icon, 24x24 pixels, vector silhouette. Circular brake disc with center hub: disc with ventilation holes or slots visible (3-4 holes). Center hub attachment point. 2px stroke in cream (#f5f0e6). Front/side view. Minimal detail. Utilitarian style. Transparent background. Disc brake style. Industrial, garage-built aesthetic. Bold strokes.
+Professional motorsport brake disc icon, 24x24 pixels, vector silhouette. Circular brake disc with center hub: disc with precision ventilation holes or slots visible (3-4 holes). Center hub attachment point. 2.5px stroke in cream (#f5f0e6). Front/side view. Clean, precise engineering lines. Minimal detail. Refined technical style. Transparent background. Disc brake style. Professional racing aesthetic. Polished, purposeful design.
 ```
 
 #### NEGATIVE PROMPT
 ```
-drum brake, caliper, complex mechanism, filled, 3D, realistic, detailed, modern, glossy, decorative, thin strokes
+drum brake, caliper, complex mechanism, filled, 3D, realistic, detailed, modern glossy SaaS, decorative, thin strokes, rough, DIY, unrefined, vintage distressed
 ```
 
 ---
@@ -239,12 +239,12 @@ drum brake, caliper, complex mechanism, filled, 3D, realistic, detailed, modern,
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport exhaust pipe icon, 24x24 pixels, vector silhouette. Curved exhaust header pipe: starts wide at engine end, narrows to exit, curved shape, flanges visible at connection. 2px stroke in cream (#f5f0e6). Side view. Minimal detail. Utilitarian style. Transparent background. Go-kart exhaust header style. Industrial, garage-built aesthetic. Bold strokes.
+Professional motorsport exhaust pipe icon, 24x24 pixels, vector silhouette. Curved exhaust header pipe: starts wide at engine end, narrows to exit, precision curved shape, flanges visible at connection. 2.5px stroke in cream (#f5f0e6). Side view. Clean, precise engineering lines. Minimal detail. Refined technical style. Transparent background. Go-kart exhaust header style. Professional racing aesthetic. Polished, purposeful design.
 ```
 
 #### NEGATIVE PROMPT
 ```
-car exhaust, muffler, complex system, filled, 3D, realistic, detailed catalytic converter, modern, glossy, decorative, thin strokes
+car exhaust, muffler, complex system, filled, 3D, realistic, detailed catalytic converter, modern glossy SaaS, decorative, thin strokes, rough, DIY, unrefined, vintage distressed
 ```
 
 ---
@@ -259,12 +259,12 @@ car exhaust, muffler, complex system, filled, 3D, realistic, detailed catalytic 
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport go-kart frame chassis icon, 24x24 pixels, vector silhouette. Tubular frame outline: main rails, front bumper bar, rear axle mounts. Rectangular/trapezoid shape suggesting kart frame. 2px stroke in cream (#f5f0e6). Top-down or side view. Minimal detail. Utilitarian style. Transparent background. Racing kart frame style. Industrial, garage-built aesthetic. Bold strokes.
+Professional motorsport go-kart frame chassis icon, 24x24 pixels, vector silhouette. Tubular frame outline: main rails, front bumper bar, rear axle mounts. Rectangular/trapezoid shape suggesting kart frame. 2.5px stroke in cream (#f5f0e6). Top-down or side view. Clean, precise engineering lines. Minimal detail. Refined technical style. Transparent background. Racing kart frame style. Professional racing aesthetic. Polished, purposeful design.
 ```
 
 #### NEGATIVE PROMPT
 ```
-complete kart, wheels, engine, complex, filled, 3D, realistic, detailed welding, modern, glossy, decorative, thin strokes
+complete kart, wheels, engine, complex, filled, 3D, realistic, detailed welding, modern glossy SaaS, decorative, thin strokes, rough, DIY, unrefined, vintage distressed
 ```
 
 ---
@@ -419,12 +419,12 @@ gradient, shadow, 3D, decorative, fancy, script font, complex illustration, mode
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport share success confirmation, 300x200 pixels, vector. Dark olive (#1a1e15) background with film grain texture. Center: link icon in badge-style circle (orange #c96a24 border, cream #f5f0e6 fill) with checkmark. Below: subtle "LINK COPIED" indicator in condensed uppercase cream text. Small link chain icon on side in orange. Industrial, garage-built aesthetic. Positive feedback visual. Minimal detail. Utilitarian style.
+Professional motorsport share success confirmation, 300x200 pixels, vector. Dark olive (#1a1e15) background with subtle texture. Center: link icon in refined badge-style circle (orange #c96a24 border, dark olive #2d3226 fill) with checkmark. Below: subtle "LINK COPIED" indicator in condensed uppercase cream text. Small link chain icon on side in orange. Professional racing aesthetic. Positive feedback visual. Minimal detail. Clean, polished style.
 ```
 
 #### NEGATIVE PROMPT
 ```
-detailed UI, text content, complex, busy, cluttered, 3D, realistic, gradients, modern, glossy, clean, bright colors, decorative
+detailed UI, text content, complex, busy, cluttered, 3D, realistic, gradients, modern glossy SaaS, clean, bright colors, decorative, rough, DIY, unrefined, heavy film grain, vintage distressed
 ```
 
 ---
@@ -439,12 +439,12 @@ detailed UI, text content, complex, busy, cluttered, 3D, realistic, gradients, m
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport build comparison diagram, 500x300 pixels, vector. Dark olive (#1a1e15) background with film grain texture. Two badge-style build cards side-by-side: left card (dark olive #2d3226, orange border) with engine badge and 3 part icons, right card with different engine badge and part icons. Center: comparison arrows (up/down) and equal signs in orange (#c96a24). All in cream (#f5f0e6) and orange accents. Industrial, garage-built aesthetic. Minimal, utilitarian comparison layout.
+Professional motorsport build comparison diagram, 500x300 pixels, vector. Dark olive (#1a1e15) background with subtle texture. Two refined badge-style build cards side-by-side: left card (dark olive #2d3226, orange border) with engine badge and 3 part icons, right card with different engine badge and part icons. Center: clean comparison arrows (up/down) and equal signs in orange (#c96a24). All in cream (#f5f0e6) and orange accents. Professional racing aesthetic. Clean, polished comparison layout.
 ```
 
 #### NEGATIVE PROMPT
 ```
-filled cards, shadows, 3D, realistic, detailed content, text, busy, cluttered, modern, glossy, clean, bright colors, decorative, gradients
+filled cards, shadows, 3D, realistic, detailed content, text, busy, cluttered, modern glossy SaaS, clean, bright colors, decorative, gradients, rough, DIY, unrefined, heavy film grain, vintage distressed
 ```
 
 ---
@@ -459,12 +459,12 @@ filled cards, shadows, 3D, realistic, detailed content, text, busy, cluttered, m
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport empty saved builds illustration, 300x200 pixels, vector. Dark olive (#1a1e15) background with film grain texture. Two empty badge-style build card outlines (dashed lines in cream #f5f0e6) stacked. Small bookmark icon on side in orange (#c96a24). "No saved builds yet" feel. Dotted lines suggesting "add here". Industrial, garage-built aesthetic. Minimal, inviting, not sad. Utilitarian style.
+Professional motorsport empty saved builds illustration, 300x200 pixels, vector. Dark olive (#1a1e15) background with subtle texture. Two empty refined badge-style build card outlines (dashed lines in cream #f5f0e6) stacked. Small bookmark icon on side in orange (#c96a24). "No saved builds yet" feel. Dotted lines suggesting "add here". Professional racing aesthetic. Minimal, inviting, not sad. Clean, polished style.
 ```
 
 #### NEGATIVE PROMPT
 ```
-filled shapes, detailed content, busy, cluttered, sad, negative, text labels, complex, modern, glossy, clean, bright colors, decorative
+filled shapes, detailed content, busy, cluttered, sad, negative, text labels, complex, modern glossy SaaS, clean, bright colors, decorative, rough, DIY, unrefined, heavy film grain, vintage distressed
 ```
 
 ---
@@ -479,12 +479,12 @@ filled shapes, detailed content, busy, cluttered, sad, negative, text labels, co
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport compatibility conflict explanation, 500x300 pixels, vector. Dark olive (#1a1e15) background with film grain texture. Visual showing incompatible parts: engine icon on left (cream #f5f0e6), red X mark in center (#a63d40), incompatible part icon on right. Warning triangle above in orange (#d4803c). Below: suggested compatible part with green checkmark arrow (#4a7c59). All icons simplified (2px strokes), utilitarian style. Industrial, garage-built aesthetic. Educational, helpful error state. Film grain overlay.
+Professional motorsport compatibility conflict explanation, 500x300 pixels, vector. Dark olive (#1a1e15) background with subtle texture. Visual showing incompatible parts: engine icon on left (cream #f5f0e6), red X mark in center (#a63d40), incompatible part icon on right. Warning triangle above in orange (#d4803c). Below: suggested compatible part with green checkmark arrow (#4a7c59). All icons simplified (2.5px strokes), refined technical style. Professional racing aesthetic. Educational, helpful error state. Clean design.
 ```
 
 #### NEGATIVE PROMPT
 ```
-detailed parts, realistic, complex, intimidating, scary, busy, cluttered, text explanations, modern, glossy, clean, bright colors, decorative, gradients
+detailed parts, realistic, complex, intimidating, scary, busy, cluttered, text explanations, modern glossy SaaS, clean, bright colors, decorative, gradients, rough, DIY, unrefined, heavy film grain, vintage distressed
 ```
 
 ---
@@ -499,12 +499,12 @@ detailed parts, realistic, complex, intimidating, scary, busy, cluttered, text e
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport missing part warning, 400x250 pixels, vector. Dark olive (#1a1e15) background with film grain texture. Center: question mark in badge-style circle (orange #d4803c border) or empty slot shape (dashed outline). Warning triangle above in orange. Surrounding: small part icons (clutch, chain) with checkmarks in cream (#f5f0e6), one missing with question mark. Industrial, garage-built aesthetic. Helpful, informative warning state. Minimal detail. Utilitarian style. Film grain overlay.
+Professional motorsport missing part warning, 400x250 pixels, vector. Dark olive (#1a1e15) background with subtle texture. Center: question mark in refined badge-style circle (orange #d4803c border) or empty slot shape (dashed outline). Warning triangle above in orange. Surrounding: small part icons (clutch, chain) with checkmarks in cream (#f5f0e6), one missing with question mark. Professional racing aesthetic. Helpful, informative warning state. Minimal detail. Clean, polished style.
 ```
 
 #### NEGATIVE PROMPT
 ```
-detailed parts, realistic, intimidating, scary, busy, cluttered, text, complex, modern, glossy, clean, bright colors, decorative, gradients
+detailed parts, realistic, intimidating, scary, busy, cluttered, text, complex, modern glossy SaaS, clean, bright colors, decorative, gradients, rough, DIY, unrefined, heavy film grain, vintage distressed
 ```
 
 ---
@@ -519,12 +519,12 @@ detailed parts, realistic, intimidating, scary, busy, cluttered, text, complex, 
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport performance gauge, 200x200 pixels, vector. Semi-circle gauge arc (270 degrees) with tick marks. Color zones: orange (#c96a24) high performance, cream (#f5f0e6) medium, muted gray low. Needle pointer. Dark olive (#2d3226) gauge body. Center area clear for HP/torque number. Industrial, garage-built aesthetic. Film grain texture at 5% opacity. Utilitarian, technical gauge style. Retro speedometer feel. Transparent background.
+Professional motorsport performance gauge, 200x200 pixels, vector. Semi-circle gauge arc (270 degrees) with precise tick marks. Color zones: orange (#c96a24) high performance, cream (#f5f0e6) medium, refined gray low. Precision needle pointer. Dark olive (#2d3226) gauge body with subtle depth. Center area clear for HP/torque number. Professional racing aesthetic. Subtle texture at 2% opacity. Technical, polished gauge style. Modern precision instrument feel. Transparent background.
 ```
 
 #### NEGATIVE PROMPT
 ```
-filled background, complex dials, multiple needles, 3D, realistic, detailed, text in center, modern, glossy, clean, bright colors, decorative, gradients
+filled background, complex dials, multiple needles, 3D, realistic, detailed, text in center, modern glossy SaaS, clean, bright colors, decorative, gradients, rough, DIY, unrefined, heavy film grain, vintage distressed, retro
 ```
 
 ---
@@ -539,12 +539,12 @@ filled background, complex dials, multiple needles, 3D, realistic, detailed, tex
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport budget progress bar, 300x100 pixels, vector. Horizontal progress bar: dark olive background (#2d3226), orange (#c96a24) fill indicating spent amount (75% full). Markers showing budget limit. Dollar sign icon on left in cream (#f5f0e6), percentage on right. Film grain texture at 3% opacity. Industrial, garage-built aesthetic. Utilitarian, technical progress indicator. Badge-style container. Transparent background.
+Professional motorsport budget progress bar, 300x100 pixels, vector. Horizontal progress bar: dark olive background (#2d3226), orange (#c96a24) fill indicating spent amount (75% full). Precision markers showing budget limit. Dollar sign icon on left in cream (#f5f0e6), percentage on right. Subtle texture at 2% opacity. Professional racing aesthetic. Clean, technical progress indicator. Refined badge-style container. Transparent background.
 ```
 
 #### NEGATIVE PROMPT
 ```
-gradient fill, 3D, realistic, detailed, text content, complex illustrations, modern, glossy, clean, bright colors, decorative
+gradient fill, 3D, realistic, detailed, text content, complex illustrations, modern glossy SaaS, clean, bright colors, decorative, rough, DIY, unrefined, heavy film grain, vintage distressed
 ```
 
 ---
@@ -554,40 +554,41 @@ gradient fill, 3D, realistic, detailed, text content, complex illustrations, mod
 **Total Prompts:** 15 high-priority assets (all theme-aligned)
 
 **Priority 1 (Critical):** 10 assets
-1. Part Category Icons (10 icons) - All updated with vintage motorsport aesthetic
-2. Build Progress Steps - Badge-style with film grain
-3. Compatibility Score Gauge - Retro speedometer style
-4. Build Preview Thumbnail - Badge-style card with dark olive background
-5. First Build Guide - Dark atmospheric onboarding
-6. Build Complete Celebration - Vintage motorsport celebration
-7. Compatibility Explanation Diagram - Industrial, educational
-8. Compatibility Status Badge - Badge-style with film grain
-9. Compatibility Conflict Visual - Dark olive background, utilitarian
-10. Missing Part Warning - Badge-style warning with film grain
+1. Part Category Icons (10 icons) - All updated with professional motorsport aesthetic
+2. Build Progress Steps - Refined badge-style with subtle texture
+3. Compatibility Score Gauge - Modern precision instrument style
+4. Build Preview Thumbnail - Refined badge-style card with dark olive background
+5. First Build Guide - Professional onboarding illustration
+6. Build Complete Celebration - Professional motorsport celebration
+7. Compatibility Explanation Diagram - Clean, educational
+8. Compatibility Status Badge - Refined badge-style with subtle texture
+9. Compatibility Conflict Visual - Dark olive background, clean design
+10. Missing Part Warning - Refined badge-style warning
 
 **Priority 2 (Important):** 5 assets
-11. Build Share Success - Badge-style confirmation
-12. Build Comparison Visual - Dark olive background, badge cards
-13. Empty Saved Builds - Dark atmospheric empty state
-14. Performance Score Gauge - Retro speedometer style
-15. Budget Status Indicator - Badge-style progress bar
+11. Build Share Success - Refined badge-style confirmation
+12. Build Comparison Visual - Dark olive background, refined badge cards
+13. Empty Saved Builds - Professional empty state
+14. Performance Score Gauge - Modern precision instrument style
+15. Budget Status Indicator - Refined badge-style progress bar
 
 ---
 
 ## 🎨 Theme Consistency Checklist
 
 All prompts now include:
-- ✅ **Vintage motorsport aesthetic** — retro, industrial, garage-built
+- ✅ **Professional motorsport aesthetic** — refined, polished, technical precision
 - ✅ **Dark olive backgrounds** (`#1a1e15`) where appropriate
-- ✅ **Film grain texture** (3-5% opacity) for vintage feel
-- ✅ **Badge-style elements** — rounded rectangles, emblem forms
+- ✅ **Subtle texture** (2% opacity) — not heavy grain
+- ✅ **Refined badge-style elements** — rounded rectangles, precise corners
 - ✅ **Orange accents** (`#c96a24`) for highlights
 - ✅ **Cream text/icons** (`#f5f0e6`) for contrast
-- ✅ **Utilitarian style** — no decorative elements
-- ✅ **Industrial aesthetic** — garage workshop feel
+- ✅ **Clean, purposeful design** — polished, not decorative
+- ✅ **Professional racing aesthetic** — engineering-grade quality
 - ✅ **High contrast** — dark backgrounds with light elements
-- ✅ **Bold strokes** — confident, not thin/hairline
+- ✅ **Precise strokes** (2.5px) — clean engineering lines
 - ✅ **No modern/SaaS styling** — avoids glossy, clean, sterile
+- ✅ **No rough/DIY elements** — avoids unrefined, vintage distressed
 
 ---
 
@@ -595,8 +596,8 @@ All prompts now include:
 
 1. Generate Part Category Icons first (highest impact, 10 icons)
 2. Create Build Progress Steps (onboarding value)
-3. Design gauges and status indicators (retro speedometer style)
-4. Add celebration and success visuals (badge-style)
+3. Design gauges and status indicators (modern precision instrument style)
+4. Add celebration and success visuals (refined badge-style)
 5. Complete remaining assets
 
 **All prompts are theme-aligned and ready to copy/paste into your image generation tool.**
