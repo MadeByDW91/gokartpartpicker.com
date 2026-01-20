@@ -57,13 +57,13 @@ export async function getTemplates(
   try {
     const supabase = await createClient();
     
-    // Query public, active, approved templates
+    // Query public, active templates. approval_status is applied in app when the column exists
+    // (avoids "column does not exist" when 20260116000013_user_templates_approval hasn't run)
     let query = supabase
       .from('build_templates')
       .select('*')
       .eq('is_public', true)
-      .eq('is_active', true)
-      .eq('approval_status', 'approved');
+      .eq('is_active', true);
 
     if (goal) {
       query = query.eq('goal', goal);
@@ -77,29 +77,25 @@ export async function getTemplates(
       console.error('[getTemplates] Database error:', dbError);
       console.error('[getTemplates] Error code:', dbError.code);
       console.error('[getTemplates] Error message:', dbError.message);
-      console.error('[getTemplates] Error details:', dbError.details);
-      console.error('[getTemplates] Error hint:', dbError.hint);
       
-      // Check if it's a permissions/RLS error
       if (dbError.code === '42501' || dbError.message?.includes('permission') || dbError.message?.includes('policy')) {
         return error('Permission denied. Please check RLS policies for build_templates table.');
       }
-      
       return error(`Failed to fetch templates: ${dbError.message || 'Unknown error'}`);
     }
 
-    // Return empty array if no templates found (this is valid, not an error)
-    if (!data || data.length === 0) {
-      console.log('[getTemplates] No templates found in database');
+    // Only show approved when approval_status exists; else allow rows without it (pre-migration)
+    let list = (data || []).filter(
+      (t: { approval_status?: string }) => t.approval_status === 'approved' || t.approval_status === undefined
+    );
+
+    if (list.length === 0) {
       return success([]);
     }
 
-    console.log(`[getTemplates] Found ${data.length} templates`);
-
-    // Try to enrich with engine data if engine_id exists
-    // But don't fail if this doesn't work
+    // Enrich with engine data if engine_id exists (don't fail if engines fetch errors)
     const templatesWithEngines = await Promise.all(
-      data.map(async (template: any) => {
+      list.map(async (template: any) => {
         if (template.engine_id) {
           try {
             const { data: engine, error: engineError } = await supabase

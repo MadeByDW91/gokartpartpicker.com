@@ -142,12 +142,14 @@ export function Header() {
             
             {/* User Profile - Mobile */}
             {!loading && isAuthenticated && (
-              <button
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-500 text-cream-100 font-bold flex-shrink-0 touch-manipulation relative"
-                aria-label="User menu"
-              >
-                {user?.email?.[0].toUpperCase()}
+              <div className="relative flex-shrink-0">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-500 text-cream-100 font-bold touch-manipulation"
+                  aria-label="User menu"
+                >
+                  {user?.email?.[0].toUpperCase()}
+                </button>
                 {userMenuOpen && (
                   <>
                     <div 
@@ -194,7 +196,7 @@ export function Header() {
                     </div>
                   </>
                 )}
-              </button>
+              </div>
             )}
           </div>
 

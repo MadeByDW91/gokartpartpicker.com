@@ -102,7 +102,7 @@ export default function TemplatesPage() {
                   <Skeleton className="h-6 w-4/5 mb-2" />
                   <Skeleton className="h-3 w-16 mb-4" />
                   <Skeleton className="h-4 w-2/5 mb-5" />
-                  <Skeleton className="h-px w-full mb-5" />
+                  <div className="h-px bg-olive-600/60 mb-5" />
                   <Skeleton className="h-10 w-full" />
                 </CardContent>
               </Card>
@@ -111,7 +111,7 @@ export default function TemplatesPage() {
         )}
 
         {/* Empty State */}
-        {!isLoading && templates && templates.length === 0 && (
+        {!isLoading && !error && (!templates || templates.length === 0) && (
           <Card>
             <CardContent className="py-12 text-center">
               <Sparkles className="w-16 h-16 text-olive-600 mx-auto mb-4" />
@@ -121,12 +121,15 @@ export default function TemplatesPage() {
                   ? `No ${GOAL_LABELS[selectedGoal].label.toLowerCase()} templates available yet.`
                   : 'No templates available yet.'}
               </p>
+              <p className="text-sm text-cream-500 mt-3">
+                Run the build_templates seed migration if you haven’t yet.
+              </p>
             </CardContent>
           </Card>
         )}
 
         {/* Templates Grid */}
-        {!isLoading && templates && templates.length > 0 && (
+        {!isLoading && !error && templates && templates.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
             {templates.map((template) => (
               <TemplateCard
