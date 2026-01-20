@@ -25,7 +25,7 @@ export async function resendVerificationEmail(
       type: 'signup',
       email: email,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001'}/auth/callback`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || `http://localhost:${process.env.PORT || '3000'}`}/auth/callback`,
       },
     });
 
