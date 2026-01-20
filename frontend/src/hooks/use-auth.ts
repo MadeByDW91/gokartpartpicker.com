@@ -57,31 +57,37 @@ export function useAuth() {
     getSession();
     
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event: AuthChangeEvent, session: Session | null) => {
-        // Ignore token refresh errors - they're handled internally
-        if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
-        }
-      },
-      (error: unknown) => {
-        // Handle auth errors gracefully
-        if (error && typeof error === 'object' && 'message' in error) {
-          const errorMessage = (error as { message?: string }).message;
-          if (errorMessage?.includes('Failed to fetch') || errorMessage?.includes('Network')) {
-            console.warn('Network error in auth state change:', error);
-            // Don't clear session on network errors - might be temporary
+    let subscription: { unsubscribe: () => void } | null = null;
+    try {
+      const authChangeResult = supabase.auth.onAuthStateChange(
+        (event: AuthChangeEvent, session: Session | null) => {
+          // Ignore token refresh errors - they're handled internally
+          if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+            setSession(session);
+            setUser(session?.user ?? null);
+            setLoading(false);
+          }
+        },
+        (error: unknown) => {
+          // Handle auth errors gracefully
+          if (error && typeof error === 'object' && 'message' in error) {
+            const errorMessage = (error as { message?: string }).message;
+            if (errorMessage?.includes('Failed to fetch') || errorMessage?.includes('Network')) {
+              console.warn('Network error in auth state change:', error);
+              // Don't clear session on network errors - might be temporary
+            } else {
+              console.error('Auth state change error:', error);
+            }
           } else {
             console.error('Auth state change error:', error);
           }
-        } else {
-          console.error('Auth state change error:', error);
+          setLoading(false);
         }
-        setLoading(false);
-      }
-    );
+      );
+      subscription = authChangeResult.data?.subscription || null;
+    } catch (error) {
+      console.warn('[useAuth] Failed to set up auth state listener:', error);
+    }
     
     return () => {
       if (subscription) {

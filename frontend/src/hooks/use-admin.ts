@@ -94,9 +94,15 @@ export function useAdmin(): UseAdminResult {
     fetchProfile();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      fetchProfile();
-    });
+    let subscription: { unsubscribe: () => void } | null = null;
+    try {
+      const authChangeResult = supabase.auth.onAuthStateChange(() => {
+        fetchProfile();
+      });
+      subscription = authChangeResult.data?.subscription || null;
+    } catch (error) {
+      console.warn('[useAdmin] Failed to set up auth state listener:', error);
+    }
 
     return () => {
       if (subscription) {
