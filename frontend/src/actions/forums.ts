@@ -140,6 +140,12 @@ export async function getForumCategories(): Promise<
 > {
   try {
     const supabase = await createClient();
+    
+    // Check if Supabase is properly configured
+    if (!supabase || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      console.error('[getForumCategories] Supabase not configured');
+      return error('Database connection not configured. Please check environment variables.');
+    }
 
     const { data, error: dbError } = await supabase
       .from('forum_categories')
