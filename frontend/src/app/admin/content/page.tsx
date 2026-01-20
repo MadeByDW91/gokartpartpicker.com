@@ -21,7 +21,7 @@ export default function AdminContentPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-display text-3xl text-cream-100">Content Management</h1>
-          <p className="text-cream-300 mt-1">Manage content automation and bulk operations</p>
+          <p className="text-cream-300 mt-1">Manage content automation and workflows</p>
         </div>
       </div>
 
@@ -50,7 +50,7 @@ export default function AdminContentPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-cream-400">
-                Automate content generation, find duplicates, and manage bulk operations for engines and parts.
+                Automate content generation and find duplicates for engines and parts.
               </p>
             </CardContent>
           </Card>

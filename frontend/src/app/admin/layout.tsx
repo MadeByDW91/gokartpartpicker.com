@@ -67,7 +67,6 @@ const navigationGroups: NavGroup[] = [
       { name: 'Templates', href: '/admin/templates', icon: FileText },
       { name: 'Guides', href: '/admin/guides', icon: BookOpen },
       { name: 'Compatibility', href: '/admin/compatibility', icon: GitCompare },
-      { name: 'Bulk Operations', href: '/admin/bulk-operations', icon: Settings },
     ],
   },
   {
