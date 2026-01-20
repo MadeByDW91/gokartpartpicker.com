@@ -46,7 +46,7 @@
   - Add these 4 variables:
     1. `NEXT_PUBLIC_SUPABASE_URL=https://ybtcciyyinxywitfmlhv.supabase.co:6543`
     2. `NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
-    3. `SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
+    3. `SUPABASE_SERVICE_ROLE_KEY=<from Supabase project API settings>`
     4. `NEXT_PUBLIC_APP_URL=https://gokartpartpicker.com`
   - Select ALL environments (Production, Preview, Development)
   - After adding, redeploy
