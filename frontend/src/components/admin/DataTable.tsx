@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 interface Column<T> {
   key: string;
-  header: string;
+  header: string | React.ReactNode;
   sortable?: boolean;
   className?: string;
   render?: (item: T) => React.ReactNode;

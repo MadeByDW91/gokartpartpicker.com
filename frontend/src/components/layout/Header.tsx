@@ -59,6 +59,19 @@ export function Header() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
   
   // Debug: Log admin status
   if (isAuthenticated && !adminLoading) {
@@ -66,12 +79,16 @@ export function Header() {
   }
   
   return (
-    <header className="sticky top-0 z-50 bg-olive-900/95 backdrop-blur-sm border-b border-olive-700 w-full">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center h-16 gap-2 lg:gap-4">
+    <header className="sticky top-0 z-50 bg-olive-900/95 backdrop-blur-sm border-b border-olive-700 w-full safe-area-top">
+      <nav className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+        <div className="flex items-center h-14 sm:h-16 gap-2 lg:gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
-            <div className="relative w-10 h-10 overflow-hidden rounded-lg border-2 border-orange-500 group-hover:border-orange-400 transition-colors flex-shrink-0">
+          <Link 
+            href="/" 
+            className="flex items-center gap-2 sm:gap-3 group flex-shrink-0 min-w-0"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <div className="relative w-9 h-9 sm:w-10 sm:h-10 overflow-hidden rounded-lg border-2 border-orange-500 group-hover:border-orange-400 transition-colors flex-shrink-0">
               <Image
                 src="/brand/brand-iconmark-v1.svg"
                 alt="GoKartPartPicker"
@@ -112,7 +129,76 @@ export function Header() {
             })}
           </div>
           
-          {/* Search & Auth Section */}
+          {/* Mobile Search & User - Visible on mobile */}
+          <div className="flex md:hidden items-center gap-2 flex-shrink-0 ml-auto">
+            {/* Search Icon Button - Mobile */}
+            <button
+              onClick={() => setSearchModalOpen(true)}
+              className="flex items-center justify-center w-10 h-10 text-cream-200 hover:text-orange-400 rounded-md hover:bg-olive-800 transition-colors flex-shrink-0 touch-manipulation"
+              aria-label="Search"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+            
+            {/* User Profile - Mobile */}
+            {!loading && isAuthenticated && (
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-500 text-cream-100 font-bold flex-shrink-0 touch-manipulation relative"
+                aria-label="User menu"
+              >
+                {user?.email?.[0].toUpperCase()}
+                {userMenuOpen && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-10" 
+                      onClick={() => setUserMenuOpen(false)} 
+                    />
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-olive-800 border border-olive-600 rounded-lg shadow-lg z-20 overflow-hidden">
+                      <Link
+                        href="/builds"
+                        className="flex items-center gap-2 px-4 py-3 text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <Bookmark className="w-4 h-4" />
+                        Saved Builds
+                      </Link>
+                      <Link
+                        href="/profile"
+                        className="flex items-center gap-2 px-4 py-3 text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <User className="w-4 h-4" />
+                        Profile
+                      </Link>
+                      {!adminLoading && isAdmin && (
+                        <Link
+                          href="/admin"
+                          className="flex items-center gap-2 px-4 py-3 text-sm text-orange-400 hover:bg-olive-700 hover:text-orange-300 transition-colors border-t border-olive-600"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <Shield className="w-4 h-4" />
+                          Admin Panel
+                        </Link>
+                      )}
+                      <button
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          signOut();
+                        }}
+                        className="flex items-center gap-2 w-full px-4 py-3 text-sm text-cream-200 hover:bg-olive-700 hover:text-[var(--error)] transition-colors border-t border-olive-600"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+
+          {/* Search & Auth Section - Desktop */}
           <div className="hidden md:flex items-center gap-2 lg:gap-3 flex-shrink-0">
             {/* Search Icon Button */}
             <button
@@ -202,7 +288,9 @@ export function Header() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-cream-200 hover:text-orange-400 rounded-md hover:bg-olive-800 transition-colors"
+            className="md:hidden flex items-center justify-center w-10 h-10 text-cream-200 hover:text-orange-400 rounded-md hover:bg-olive-800 transition-colors touch-manipulation"
+            aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? (
               <X className="w-6 h-6" />
@@ -218,24 +306,17 @@ export function Header() {
           onClose={() => setSearchModalOpen(false)} 
         />
         
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-olive-700">
-            {/* Mobile Search Button */}
-            <div className="px-4 mb-4">
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  setSearchModalOpen(true);
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-cream-200 bg-olive-800 hover:bg-olive-700 rounded-md transition-colors"
-              >
-                <Search className="w-5 h-5" />
-                <span>Search engines, parts...</span>
-              </button>
-            </div>
-            
-            <div className="space-y-1">
+        {/* Mobile Menu - Slide Animation */}
+        <div 
+          className={cn(
+            'md:hidden fixed inset-x-0 top-14 sm:top-16 bottom-0 bg-olive-900 border-t border-olive-700 overflow-y-auto overscroll-contain transition-transform duration-300 ease-in-out z-40 safe-area-bottom',
+            mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          )}
+          style={{ display: mobileMenuOpen ? 'block' : 'none' }}
+        >
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            {/* Navigation Links */}
+            <nav className="space-y-2 mb-6">
               {navigation.map((item) => {
                 const isActive = pathname === item.href || 
                   (item.href !== '/' && pathname.startsWith(item.href));
@@ -246,65 +327,91 @@ export function Header() {
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
-                      'flex items-center gap-3 px-4 py-3 text-sm font-medium uppercase tracking-wide rounded-md transition-colors',
+                      'flex items-center gap-3 px-4 py-4 text-base font-medium uppercase tracking-wide rounded-lg transition-colors touch-manipulation min-h-[44px]',
                       isActive 
                         ? 'text-orange-400 bg-olive-800' 
-                        : 'text-cream-200 hover:text-orange-400 hover:bg-olive-800'
+                        : 'text-cream-200 hover:text-orange-400 hover:bg-olive-800 active:bg-olive-700'
                     )}
                   >
-                    <item.icon className="w-5 h-5" />
-                    {item.name}
+                    <item.icon className="w-5 h-5 flex-shrink-0" />
+                    <span>{item.name}</span>
                   </Link>
                 );
               })}
-              
-              {isAuthenticated ? (
-                <>
+            </nav>
+
+            {/* Divider */}
+            <div className="border-t border-olive-700 my-6" />
+
+            {/* User Actions */}
+            {loading ? (
+              <div className="space-y-2">
+                <div className="h-12 bg-olive-700 rounded-lg animate-pulse" />
+                <div className="h-12 bg-olive-700 rounded-lg animate-pulse" />
+              </div>
+            ) : isAuthenticated ? (
+              <div className="space-y-2">
+                <Link
+                  href="/builds"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-4 text-base font-medium uppercase tracking-wide text-cream-200 hover:text-orange-400 hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[44px] active:bg-olive-700"
+                >
+                  <Bookmark className="w-5 h-5 flex-shrink-0" />
+                  <span>Saved Builds</span>
+                </Link>
+                {!adminLoading && isAdmin && (
                   <Link
-                    href="/builds"
+                    href="/admin"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium uppercase tracking-wide text-cream-200 hover:text-orange-400 hover:bg-olive-800 rounded-md transition-colors"
+                    className="flex items-center gap-3 px-4 py-4 text-base font-medium uppercase tracking-wide text-orange-400 hover:text-orange-300 hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[44px] active:bg-olive-700"
                   >
-                    <Bookmark className="w-5 h-5" />
-                    Saved Builds
+                    <Shield className="w-5 h-5 flex-shrink-0" />
+                    <span>Admin Panel</span>
                   </Link>
-                  {isAdmin && (
-                    <Link
-                      href="/admin"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 text-sm font-medium uppercase tracking-wide text-orange-400 hover:text-orange-300 hover:bg-olive-800 rounded-md transition-colors border-t border-olive-600"
-                    >
-                      <Shield className="w-5 h-5" />
-                      Admin Panel
-                    </Link>
-                  )}
-                  <button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      signOut();
-                    }}
-                    className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium uppercase tracking-wide text-cream-200 hover:text-[var(--error)] hover:bg-olive-800 rounded-md transition-colors"
-                  >
-                    <LogOut className="w-5 h-5" />
-                    Sign Out
-                  </button>
-                </>
-              ) : (
-                <div className="flex gap-2 px-4 pt-3">
-                  <Link href="/auth/login" className="flex-1">
-                    <Button variant="secondary" size="sm" className="w-full">
-                      Login
-                    </Button>
-                  </Link>
-                  <Link href="/auth/register" className="flex-1">
-                    <Button variant="primary" size="sm" className="w-full">
-                      Sign Up
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </div>
+                )}
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    signOut();
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-4 text-base font-medium uppercase tracking-wide text-cream-200 hover:text-[var(--error)] hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[44px] active:bg-olive-700"
+                >
+                  <LogOut className="w-5 h-5 flex-shrink-0" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <Link 
+                  href="/auth/login" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full"
+                >
+                  <Button variant="secondary" size="lg" className="w-full touch-manipulation min-h-[44px]">
+                    Login
+                  </Button>
+                </Link>
+                <Link 
+                  href="/auth/register" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full"
+                >
+                  <Button variant="primary" size="lg" className="w-full touch-manipulation min-h-[44px]">
+                    Sign Up
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
+        </div>
+
+        {/* Mobile Menu Backdrop */}
+        {mobileMenuOpen && (
+          <div 
+            className="md:hidden fixed inset-0 top-14 sm:top-16 bg-black/50 backdrop-blur-sm z-30"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
         )}
       </nav>
     </header>

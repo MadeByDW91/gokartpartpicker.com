@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAdmin } from '@/hooks/use-admin';
+import { GlobalSearch } from '@/components/admin/GlobalSearch';
+import { getPendingApprovalsCount } from '@/actions/admin/approvals';
 import { 
   LayoutDashboard, 
   Cog, 
@@ -64,6 +66,7 @@ const navigationGroups: NavGroup[] = [
       { name: 'Parts', href: '/admin/parts', icon: Package },
       { name: 'Guides', href: '/admin/guides', icon: BookOpen },
       { name: 'Compatibility', href: '/admin/compatibility', icon: GitCompare },
+      { name: 'Bulk Operations', href: '/admin/bulk-operations', icon: Settings },
     ],
   },
   {
@@ -392,6 +395,12 @@ export default function AdminLayout({
 
       {/* Main Content */}
       <main className="flex-1 ml-64">
+        {/* Header Bar with Search */}
+        <div className="sticky top-0 z-40 bg-olive-900/95 backdrop-blur-sm border-b border-olive-600 px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-end gap-4">
+            <GlobalSearch />
+          </div>
+        </div>
         <div className="p-6 lg:p-8">
           {children}
         </div>

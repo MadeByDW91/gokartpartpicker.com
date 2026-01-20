@@ -163,34 +163,42 @@ export async function getForumCategories(): Promise<
       return error('Failed to fetch forum categories');
     }
 
-    // Get topic and post counts for each category
-    const categoriesWithCounts = await Promise.all(
-      (data ?? []).map(async (category: ForumCategory) => {
-        // Get topic count
-        const { count: topicCount } = await supabase
-          .from('forum_topics')
-          .select('*', { count: 'exact', head: true })
-          .eq('category_id', category.id)
-          .eq('is_archived', false);
+    // Use optimized database function to get counts in a single query (fixes N+1 issue)
+    const { data: categoriesWithCounts, error: functionError } = await supabase
+      .rpc('get_forum_categories_with_counts');
 
-        // Get post count (sum of replies_count from topics)
-        const { data: topics } = await supabase
-          .from('forum_topics')
-          .select('replies_count')
-          .eq('category_id', category.id)
-          .eq('is_archived', false);
+    if (functionError) {
+      // Fallback to original method if function doesn't exist (for backwards compatibility)
+      console.warn('[getForumCategories] Function not available, using fallback:', functionError);
+      
+      const categoriesWithCountsFallback = await Promise.all(
+        (data ?? []).map(async (category: ForumCategory) => {
+          const { count: topicCount } = await supabase
+            .from('forum_topics')
+            .select('*', { count: 'exact', head: true })
+            .eq('category_id', category.id)
+            .eq('is_archived', false);
 
-        const postCount = topics?.reduce((sum: number, topic: { replies_count: number | null }) => sum + (topic.replies_count || 0), 0) || 0;
+          const { data: topics } = await supabase
+            .from('forum_topics')
+            .select('replies_count')
+            .eq('category_id', category.id)
+            .eq('is_archived', false);
 
-        return {
-          ...category,
-          topic_count: topicCount || 0,
-          post_count: postCount,
-        };
-      })
-    );
+          const postCount = topics?.reduce((sum: number, topic: { replies_count: number | null }) => sum + (topic.replies_count || 0), 0) || 0;
 
-    return success(categoriesWithCounts);
+          return {
+            ...category,
+            topic_count: topicCount || 0,
+            post_count: postCount,
+          };
+        })
+      );
+      
+      return success(categoriesWithCountsFallback);
+    }
+
+    return success(categoriesWithCounts ?? []);
   } catch (err) {
     // If it's a table not found error, return empty array
     const errorMessage = err instanceof Error ? err.message : String(err);
