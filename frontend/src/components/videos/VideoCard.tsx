@@ -40,25 +40,30 @@ export function VideoCard({ video, onClick, compact = false }: VideoCardProps) {
   const [showPlayer, setShowPlayer] = useState(false);
   const [thumbError, setThumbError] = useState(false);
   const [imgSrc, setImgSrc] = useState<string | null>(null);
-  const [triedFallback, setTriedFallback] = useState(false);
 
   const thumbUrl = video.thumbnail_url || getYouTubeThumbnailUrl(video.video_url) || null;
   const showThumb = !!thumbUrl && !thumbError;
 
-  // Sync img src when video or thumbUrl changes; reset error and fallback state
+  // Sync img src when video or thumbUrl changes; reset error state
   useEffect(() => {
     setImgSrc(thumbUrl);
     setThumbError(false);
-    setTriedFallback(false);
   }, [thumbUrl, video.id]);
 
   const handleThumbError = () => {
-    if (!triedFallback && imgSrc?.includes('mqdefault')) {
-      setTriedFallback(true);
-      setImgSrc(imgSrc.replace('mqdefault.jpg', 'default.jpg'));
-    } else {
+    if (!imgSrc?.includes('i.ytimg.com')) {
       setThumbError(true);
+      return;
     }
+    if (imgSrc.includes('hqdefault')) {
+      setImgSrc(imgSrc.replace('hqdefault.jpg', 'mqdefault.jpg'));
+      return;
+    }
+    if (imgSrc.includes('mqdefault')) {
+      setImgSrc(imgSrc.replace('mqdefault.jpg', 'default.jpg'));
+      return;
+    }
+    setThumbError(true);
   };
 
   const handleClick = () => {

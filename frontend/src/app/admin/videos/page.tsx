@@ -156,7 +156,20 @@ export default function AdminVideosPage() {
       const result = await refreshVideoThumbnails();
       if (result.success && result.data) {
         await fetchVideos();
-        alert(`Updated ${result.data.updated} thumbnail(s) from video URLs.`);
+        const { updated, placeholderUrlCount } = result.data;
+        if (updated > 0) {
+          alert(`Updated ${updated} thumbnail(s) from video URLs.`);
+        } else if (placeholderUrlCount > 0) {
+          alert(
+            `No thumbnails updated. ${placeholderUrlCount} video(s) still have placeholder URLs.\n\n` +
+            `Run "Auto-fill URLs from YouTube" first to replace placeholders with real YouTube links. ` +
+            `After that, thumbnails will be set automatically (or run this again).`
+          );
+        } else {
+          alert(
+            'No thumbnails to update. All videos either already have thumbnails or use non-YouTube URLs.'
+          );
+        }
       } else if (!result.success) {
         const msg = 'error' in result ? result.error : 'Failed to refresh thumbnails';
         setError(msg);

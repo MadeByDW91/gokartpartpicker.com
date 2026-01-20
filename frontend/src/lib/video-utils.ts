@@ -1,11 +1,12 @@
-const YT_ID_REGEX = /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+// watch, embed, shorts, youtu.be
+const YT_ID_REGEX = /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
 const PLACEHOLDER_PATTERN = /^(PLACEHOLDER|EXAMPLE)/i;
 
 /**
  * Derive YouTube thumbnail URL from video_url when thumbnail_url is missing.
- * Supports: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID.
- * Uses i.ytimg.com (YouTube's CDN). mqdefault (320x180) is more reliable than
- * hqdefault for older/short videos. Returns null for placeholders or non-YouTube.
+ * Supports: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID, youtube.com/shorts/ID.
+ * Uses i.ytimg.com (YouTube's CDN). hqdefault (480x360) first; VideoCard falls back to
+ * mqdefault then default on load error. Returns null for placeholders or non-YouTube.
  */
 export function getYouTubeThumbnailUrl(
   videoUrl: string | null | undefined
@@ -14,7 +15,7 @@ export function getYouTubeThumbnailUrl(
   const m = videoUrl.match(YT_ID_REGEX);
   const id = m?.[1];
   if (!id || PLACEHOLDER_PATTERN.test(id)) return null;
-  return `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
+  return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 }
 
 /**

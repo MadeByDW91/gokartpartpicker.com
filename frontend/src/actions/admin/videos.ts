@@ -28,7 +28,7 @@ import {
 } from '@/lib/api/types';
 import type { Video } from '@/types/database';
 import { requireAdmin } from '../admin';
-import { getYouTubeThumbnailUrl } from '@/lib/video-utils';
+import { getYouTubeThumbnailUrl, isEmbeddableVideoUrl } from '@/lib/video-utils';
 import { youtubeSearchFirst } from '@/lib/youtube-api';
 
 /**
@@ -293,11 +293,13 @@ export async function bulkDeleteVideos(
  * Runs the same logic as the DB trigger in bulk. Use after bulk-import or when fixing PLACEHOLDER URLs.
  * Requires admin role.
  */
-export async function refreshVideoThumbnails(): Promise<ActionResult<{ updated: number }>> {
+export async function refreshVideoThumbnails(): Promise<
+  ActionResult<{ updated: number; placeholderUrlCount: number }>
+> {
   try {
     const authResult = await requireAdmin();
     if ('success' in authResult && !authResult.success) {
-      return authResult as ActionResult<{ updated: number }>;
+      return authResult as ActionResult<{ updated: number; placeholderUrlCount: number }>;
     }
 
     const supabase = await createClient();
@@ -311,7 +313,9 @@ export async function refreshVideoThumbnails(): Promise<ActionResult<{ updated: 
     }
 
     let updated = 0;
+    let placeholderUrlCount = 0;
     for (const v of list ?? []) {
+      if (!isEmbeddableVideoUrl(v.video_url)) placeholderUrlCount++;
       if (v.thumbnail_url) continue;
       const thumb = getYouTubeThumbnailUrl(v.video_url);
       if (!thumb) continue;
@@ -328,7 +332,7 @@ export async function refreshVideoThumbnails(): Promise<ActionResult<{ updated: 
     revalidatePath('/parts');
     revalidatePath('/parts/[slug]', 'page');
 
-    return success({ updated });
+    return success({ updated, placeholderUrlCount });
   } catch (err) {
     return handleError(err, 'refreshVideoThumbnails');
   }
