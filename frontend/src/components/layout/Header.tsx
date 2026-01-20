@@ -342,9 +342,9 @@ export function Header() {
                 mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
               )}
             >
-          <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
             {/* Navigation Links */}
-            <nav className="space-y-2 mb-6">
+            <nav className="space-y-1 sm:space-y-2 mb-6 sm:mb-8">
               {navigation.map((item) => {
                 const isActive = pathname === item.href || 
                   (item.href !== '/' && pathname.startsWith(item.href));
@@ -355,7 +355,7 @@ export function Header() {
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
-                      'flex items-center gap-3 px-4 py-4 text-base font-medium uppercase tracking-wide rounded-lg transition-colors touch-manipulation min-h-[44px]',
+                      'flex items-center gap-3 px-4 sm:px-5 py-3.5 sm:py-4 text-base sm:text-lg font-medium uppercase tracking-wide rounded-lg transition-colors touch-manipulation min-h-[52px] sm:min-h-[56px]',
                       isActive 
                         ? 'text-orange-400 bg-olive-800' 
                         : 'text-cream-200 hover:text-orange-400 hover:bg-olive-800 active:bg-olive-700'

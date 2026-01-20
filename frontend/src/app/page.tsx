@@ -139,20 +139,20 @@ export default function HomePage() {
             </p>
             
             {/* CTAs */}
-            <div className="flex flex-wrap gap-4 animate-fade-in" style={{ animationDelay: '300ms' }}>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 animate-fade-in" style={{ animationDelay: '300ms' }}>
               <Link
                 href="/builder"
-                className="btn btn-primary text-lg px-8 py-4 animate-pulse-glow"
+                className="btn btn-primary text-base sm:text-lg px-6 sm:px-8 py-3.5 sm:py-4 min-h-[52px] sm:min-h-[56px] animate-pulse-glow touch-manipulation flex items-center justify-center gap-2"
               >
-                <Wrench className="w-5 h-5" />
+                <Wrench className="w-5 h-5 sm:w-6 sm:h-6" />
                 Start Building
               </Link>
               <Link
                 href="/templates"
-                className="btn btn-secondary text-lg px-8 py-4"
+                className="btn btn-secondary text-base sm:text-lg px-6 sm:px-8 py-3.5 sm:py-4 min-h-[52px] sm:min-h-[56px] touch-manipulation flex items-center justify-center gap-2"
               >
                 Browse Templates
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
               </Link>
             </div>
             
@@ -279,52 +279,52 @@ export default function HomePage() {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <Link
               href="/builder"
-              className="p-4 bg-olive-700 rounded-lg border border-olive-600 hover:border-orange-500 transition-colors group"
+              className="p-4 sm:p-5 bg-olive-700 rounded-lg border border-olive-600 hover:border-orange-500 transition-colors group touch-manipulation min-h-[80px] sm:min-h-[100px]"
             >
-              <div className="flex items-center gap-3">
-                <Wrench className="w-5 h-5 text-orange-400 flex-shrink-0" />
+              <div className="flex items-center gap-3 sm:gap-4">
+                <Wrench className="w-5 h-5 sm:w-6 sm:h-6 text-orange-400 flex-shrink-0" />
                 <div>
-                  <h3 className="font-semibold text-cream-100">Build Configurator</h3>
-                  <p className="text-sm text-cream-400">Start building your kart</p>
+                  <h3 className="font-semibold text-base sm:text-lg text-cream-100">Build Configurator</h3>
+                  <p className="text-sm sm:text-base text-cream-400">Start building your kart</p>
                 </div>
               </div>
             </Link>
             <Link
               href="/engines"
-              className="p-4 bg-olive-700 rounded-lg border border-olive-600 hover:border-orange-500 transition-colors group"
+              className="p-4 sm:p-5 bg-olive-700 rounded-lg border border-olive-600 hover:border-orange-500 transition-colors group touch-manipulation min-h-[80px] sm:min-h-[100px]"
             >
-              <div className="flex items-center gap-3">
-                <Cog className="w-5 h-5 text-orange-400 flex-shrink-0" />
+              <div className="flex items-center gap-3 sm:gap-4">
+                <Cog className="w-5 h-5 sm:w-6 sm:h-6 text-orange-400 flex-shrink-0" />
                 <div>
-                  <h3 className="font-semibold text-cream-100">Browse Engines</h3>
-                  <p className="text-sm text-cream-400">Find the ultimate engine</p>
+                  <h3 className="font-semibold text-base sm:text-lg text-cream-100">Browse Engines</h3>
+                  <p className="text-sm sm:text-base text-cream-400">Find the ultimate engine</p>
                 </div>
               </div>
             </Link>
             <Link
               href="/parts"
-              className="p-4 bg-olive-700 rounded-lg border border-olive-600 hover:border-orange-500 transition-colors group"
+              className="p-4 sm:p-5 bg-olive-700 rounded-lg border border-olive-600 hover:border-orange-500 transition-colors group touch-manipulation min-h-[80px] sm:min-h-[100px]"
             >
-              <div className="flex items-center gap-3">
-                <Package className="w-5 h-5 text-orange-400 flex-shrink-0" />
+              <div className="flex items-center gap-3 sm:gap-4">
+                <Package className="w-5 h-5 sm:w-6 sm:h-6 text-orange-400 flex-shrink-0" />
                 <div>
-                  <h3 className="font-semibold text-cream-100">Browse Parts</h3>
-                  <p className="text-sm text-cream-400">Explore all parts</p>
+                  <h3 className="font-semibold text-base sm:text-lg text-cream-100">Browse Parts</h3>
+                  <p className="text-sm sm:text-base text-cream-400">Explore all parts</p>
                 </div>
               </div>
             </Link>
             <Link
               href="/templates"
-              className="p-4 bg-olive-700 rounded-lg border border-olive-600 hover:border-orange-500 transition-colors group"
+              className="p-4 sm:p-5 bg-olive-700 rounded-lg border border-olive-600 hover:border-orange-500 transition-colors group touch-manipulation min-h-[80px] sm:min-h-[100px]"
             >
-              <div className="flex items-center gap-3">
-                <Sparkles className="w-5 h-5 text-orange-400 flex-shrink-0" />
+              <div className="flex items-center gap-3 sm:gap-4">
+                <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-orange-400 flex-shrink-0" />
                 <div>
-                  <h3 className="font-semibold text-cream-100">Build Templates</h3>
-                  <p className="text-sm text-cream-400">Start from a template</p>
+                  <h3 className="font-semibold text-base sm:text-lg text-cream-100">Build Templates</h3>
+                  <p className="text-sm sm:text-base text-cream-400">Start from a template</p>
                 </div>
               </div>
             </Link>

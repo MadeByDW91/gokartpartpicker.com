@@ -55,7 +55,7 @@ export function PartCard({
       onClick={handleCardClick}
     >
       {/* Image */}
-      <div className={`relative ${compact ? 'h-32' : 'h-40'} bg-olive-800 overflow-hidden`}>
+      <div className={`relative ${compact ? 'h-32 sm:h-36' : 'h-40 sm:h-48'} bg-olive-800 overflow-hidden`}>
         {part.image_url && !imageError ? (
           <Image
             src={part.image_url}
@@ -86,9 +86,9 @@ export function PartCard({
         )}
       </div>
       
-      <CardContent className={compact ? 'p-3' : 'p-4'}>
+      <CardContent className={compact ? 'p-3' : 'p-4 sm:p-5'}>
         {/* Brand */}
-        <p className="text-xs text-cream-400 uppercase tracking-wide mb-1">
+        <p className="text-xs sm:text-sm text-cream-400 uppercase tracking-wide mb-1.5">
           {part.brand}
         </p>
         
@@ -96,7 +96,7 @@ export function PartCard({
         <Link 
           href={`/parts/${part.slug}`}
           className={`font-bold text-cream-100 hover:text-orange-400 transition-colors line-clamp-2 ${
-            compact ? 'text-sm' : 'text-base'
+            compact ? 'text-sm sm:text-base' : 'text-base sm:text-lg'
           }`}
         >
           {part.name}
@@ -104,9 +104,9 @@ export function PartCard({
         
         {/* Key Specs (if available) */}
         {!compact && part.specifications && Object.keys(part.specifications).length > 0 && (
-          <div className="mt-2 text-xs text-cream-400">
+          <div className="mt-2 sm:mt-3 text-xs sm:text-sm text-cream-400">
             {Object.entries(part.specifications).slice(0, 2).map(([key, value]) => (
-              <span key={key} className="mr-3">
+              <span key={key} className="mr-3 sm:mr-4">
                 {key.replace(/_/g, ' ')}: <span className="text-cream-200">{String(value)}</span>
               </span>
             ))}
@@ -114,22 +114,22 @@ export function PartCard({
         )}
         
         {/* Price & Actions */}
-        <div className={`flex items-center justify-between ${compact ? 'mt-2' : 'mt-3 pt-3 border-t border-olive-600'}`}>
-          <span className={`font-bold text-orange-400 ${compact ? 'text-lg' : 'text-xl'}`}>
+        <div className={`flex items-center justify-between gap-2 sm:gap-3 ${compact ? 'mt-2' : 'mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-olive-600'}`}>
+          <span className={`font-bold text-orange-400 ${compact ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl'}`}>
             {part.price ? formatPrice(part.price) : 'Contact'}
           </span>
           
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {part.affiliate_url && !compact && (
               <a
                 href={part.affiliate_url}
                 target="_blank"
                 rel="noopener noreferrer sponsored"
-                className="p-1.5 text-cream-400 hover:text-orange-400 hover:bg-olive-600 rounded-md transition-colors"
+                className="p-2 sm:p-2.5 text-cream-400 hover:text-orange-400 hover:bg-olive-600 rounded-md transition-colors touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
                 title="Buy Now (affiliate link)"
                 aria-label="Buy Now (affiliate link)"
               >
-                <ExternalLink className="w-4 h-4" />
+                <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5" />
               </a>
             )}
             
@@ -141,8 +141,11 @@ export function PartCard({
                   e.preventDefault();
                   onAddToBuild?.(part);
                 }}
-                icon={isSelected ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
-                className={compact ? 'px-2 py-1 text-xs' : ''}
+                icon={isSelected ? <Check className="w-3 h-3 sm:w-4 sm:h-4" /> : <Plus className="w-3 h-3 sm:w-4 sm:h-4" />}
+                className={cn(
+                  compact ? 'px-2 py-1 text-xs min-h-[36px]' : 'min-h-[44px] px-3 sm:px-4',
+                  'touch-manipulation'
+                )}
               >
                 {compact ? '' : isSelected ? 'Selected' : 'Add'}
               </Button>

@@ -9,30 +9,34 @@
 ## 🎨 Theme Guidelines
 
 **GoKartPartPicker Aesthetic:**
-- **Vintage motorsport badge** — rounded rectangles, emblem forms
-- **Industrial/garage-built** — utilitarian, authentic, not decorative
+- **Professional motorsport** — refined, polished, technical precision
+- **Industrial elegance** — clean engineering aesthetic, purposeful design
 - **Dark olive base** (`#1a1e15`) with **orange accents** (`#c96a24`)
-- **Film grain texture** — subtle vintage feel
+- **Refined details** — subtle textures, quality craftsmanship feel
 - **High contrast** — cream text on dark backgrounds
 - **Bold, condensed typography** — Bebas Neue style
-- **No glossy/SaaS aesthetics** — avoid modern, clean, sterile
-- **Retro motorsport** — garage workshop, authentic tools
+- **Technical precision** — engineering-grade, professional tools
+- **Modern motorsport** — racing-grade quality, not DIY
 
 **Visual Do's:**
-- Dark atmospheric backgrounds
-- Subtle mechanical/industrial elements
-- Orange accent lighting
-- Film grain overlay
-- Rounded badge shapes
+- Dark professional backgrounds
+- Clean, precise mechanical elements
+- Orange accent highlights
+- Subtle texture (not heavy grain)
+- Refined badge shapes
 - High contrast
+- Polished, purposeful design
+- Technical precision
 
 **Visual Don'ts:**
 - Bright, neon, colorful
-- Glossy, clean, sterile
+- Glossy, overly polished, sterile
 - Modern, futuristic, cyberpunk
 - Cartoon, illustration style
 - Light backgrounds
 - Complex gradients
+- Rough, DIY, unrefined
+- Heavy film grain (too vintage)
 
 ---
 
@@ -75,12 +79,12 @@ Each section contains:
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport engine block icon, 24x24 pixels, vector silhouette. Horizontal small go-kart engine: rectangular base with cooling fins on top, cylinder head, pull-start handle on side. 2px stroke in cream (#f5f0e6). Minimal detail, utilitarian style. Transparent background. Industrial, garage-built aesthetic. Bold, confident strokes. No decorative elements.
+Professional motorsport engine block icon, 24x24 pixels, vector silhouette. Horizontal small go-kart engine: rectangular base with precision cooling fins on top, cylinder head, pull-start handle on side. 2.5px stroke in cream (#f5f0e6). Clean, precise engineering lines. Minimal detail, refined technical style. Transparent background. Professional racing aesthetic. Polished, purposeful design. No decorative elements.
 ```
 
 #### NEGATIVE PROMPT
 ```
-car engine, large engine, detailed, complex, filled shape, gradient, shadow, 3D, colorful, text, realistic photo, modern, glossy, clean, decorative, thin strokes
+car engine, large engine, detailed, complex, filled shape, gradient, shadow, 3D, colorful, text, realistic photo, modern glossy SaaS, decorative, thin strokes, rough, DIY, unrefined, vintage distressed
 ```
 
 ---
@@ -95,12 +99,12 @@ car engine, large engine, detailed, complex, filled shape, gradient, shadow, 3D,
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport clutch disc icon, 24x24 pixels, vector silhouette. Circular clutch disc with teeth around outer edge, center hub with hole. 2px stroke in cream (#f5f0e6). Side angle view showing depth. Minimal detail, utilitarian. Transparent background. Industrial, garage-built aesthetic. Go-kart clutch style. Bold strokes.
+Professional motorsport clutch disc icon, 24x24 pixels, vector silhouette. Circular clutch disc with precision teeth around outer edge, center hub with hole. 2.5px stroke in cream (#f5f0e6). Side angle view showing depth. Clean, precise engineering lines. Minimal detail, refined technical style. Transparent background. Professional racing aesthetic. Polished, purposeful design.
 ```
 
 #### NEGATIVE PROMPT
 ```
-automotive clutch, complex, filled, gradient, 3D, realistic, detailed mechanism, text, modern, glossy, decorative, thin strokes
+automotive clutch, complex, filled, gradient, 3D, realistic, detailed mechanism, text, modern glossy SaaS, decorative, thin strokes, rough, DIY, unrefined, vintage distressed
 ```
 
 ---
@@ -115,12 +119,12 @@ automotive clutch, complex, filled, gradient, 3D, realistic, detailed mechanism,
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport CVT torque converter icon, 24x24 pixels, vector silhouette. Two-pulley system: drive pulley on left, driven pulley on right, belt connecting them. Pulleys shown as circles with angled sides. 2px stroke in cream (#f5f0e6). Minimal detail, side view. Utilitarian style. Transparent background. Go-kart CVT style (Comet TAV2, 30-series). Industrial, garage-built aesthetic. Bold strokes.
+Professional motorsport CVT torque converter icon, 24x24 pixels, vector silhouette. Two-pulley system: drive pulley on left, driven pulley on right, precision belt connecting them. Pulleys shown as circles with angled sides. 2.5px stroke in cream (#f5f0e6). Clean, precise engineering lines. Side view. Refined technical style. Transparent background. Go-kart CVT style (Comet TAV2, 30-series). Professional racing aesthetic. Polished, purposeful design.
 ```
 
 #### NEGATIVE PROMPT
 ```
-automotive torque converter, automatic transmission, complex, filled, 3D, realistic, detailed, modern, glossy, decorative, thin strokes
+automotive torque converter, automatic transmission, complex, filled, 3D, realistic, detailed, modern glossy SaaS, decorative, thin strokes, rough, DIY, unrefined, vintage distressed
 ```
 
 ---
@@ -135,12 +139,12 @@ automotive torque converter, automatic transmission, complex, filled, 3D, realis
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport chain link icon, 24x24 pixels, vector silhouette. Two interconnected chain links: oval/oblong links with visible connection point. 2px stroke in cream (#f5f0e6). Minimal detail showing link structure. Utilitarian style. Transparent background. Motorcycle/go-kart chain style. Industrial, garage-built aesthetic. Bold strokes.
+Professional motorsport chain link icon, 24x24 pixels, vector silhouette. Two interconnected chain links: oval/oblong links with visible connection point. 2.5px stroke in cream (#f5f0e6). Clean, precise engineering lines showing link structure. Refined technical style. Transparent background. Motorcycle/go-kart chain style. Professional racing aesthetic. Polished, purposeful design.
 ```
 
 #### NEGATIVE PROMPT
 ```
-bicycle chain, necklace chain, complex, filled, gradient, 3D, realistic, detailed mechanism, modern, glossy, decorative, thin strokes
+bicycle chain, necklace chain, complex, filled, gradient, 3D, realistic, detailed mechanism, modern glossy SaaS, decorative, thin strokes, rough, DIY, unrefined, vintage distressed
 ```
 
 ---
@@ -155,12 +159,12 @@ bicycle chain, necklace chain, complex, filled, gradient, 3D, realistic, detaile
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport sprocket gear icon, 24x24 pixels, vector silhouette. Circular sprocket with visible teeth around perimeter (8-10 teeth). Center hub with hole. 2px stroke in cream (#f5f0e6). Front view showing teeth pattern. Minimal detail, recognizable at small size. Utilitarian style. Transparent background. Industrial, garage-built aesthetic. Bold strokes.
+Professional motorsport sprocket gear icon, 24x24 pixels, vector silhouette. Circular sprocket with precision teeth around perimeter (8-10 teeth). Center hub with hole. 2.5px stroke in cream (#f5f0e6). Front view showing teeth pattern. Clean, precise engineering lines. Minimal detail, recognizable at small size. Refined technical style. Transparent background. Professional racing aesthetic. Polished, purposeful design.
 ```
 
 #### NEGATIVE PROMPT
 ```
-gear, complex gear train, filled, gradient, 3D, realistic, detailed, text, modern, glossy, decorative, thin strokes
+gear, complex gear train, filled, gradient, 3D, realistic, detailed, text, modern glossy SaaS, decorative, thin strokes, rough, DIY, unrefined, vintage distressed
 ```
 
 ---
@@ -175,12 +179,12 @@ gear, complex gear train, filled, gradient, 3D, realistic, detailed, text, moder
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport axle shaft icon, 24x24 pixels, vector silhouette. Horizontal cylindrical shaft: straight rod shape, slight taper at ends, keyway notch visible on one end. 2px stroke in cream (#f5f0e6). Side view. Minimal detail. Utilitarian style. Transparent background. Go-kart axle style. Industrial, garage-built aesthetic. Bold strokes.
+Professional motorsport axle shaft icon, 24x24 pixels, vector silhouette. Horizontal cylindrical shaft: straight rod shape, slight taper at ends, precision keyway notch visible on one end. 2.5px stroke in cream (#f5f0e6). Side view. Clean, precise engineering lines. Minimal detail. Refined technical style. Transparent background. Go-kart axle style. Professional racing aesthetic. Polished, purposeful design.
 ```
 
 #### NEGATIVE PROMPT
 ```
-wheels on axle, complete assembly, complex, filled, 3D, realistic, detailed, modern, glossy, decorative, thin strokes
+wheels on axle, complete assembly, complex, filled, 3D, realistic, detailed, modern glossy SaaS, decorative, thin strokes, rough, DIY, unrefined, vintage distressed
 ```
 
 ---
@@ -275,12 +279,12 @@ complete kart, wheels, engine, complex, filled, 3D, realistic, detailed welding,
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport build progress indicator, 300x60 pixels, vector. Three connected badge-style steps: left badge (rounded rectangle, orange #c96a24 fill, engine icon), middle badge (orange border #c96a24, cream #f5f0e6 fill, parts icon), right badge (gray border, transparent, checkmark). Connecting lines between badges. Step labels "ENGINE", "PARTS", "REVIEW" in condensed uppercase cream text below. Industrial, garage-built aesthetic. Film grain texture overlay at 3% opacity. Transparent background.
+Professional motorsport build progress indicator, 300x60 pixels, vector. Three connected refined badge-style steps: left badge (rounded rectangle with precise corners, orange #c96a24 fill, engine icon), middle badge (orange border #c96a24, dark olive #2d3226 fill, parts icon), right badge (refined gray border, transparent, checkmark). Clean connecting lines between badges. Step labels "ENGINE", "PARTS", "REVIEW" in condensed uppercase cream text below. Professional racing aesthetic. Subtle texture overlay at 2% opacity. Polished, purposeful design. Transparent background.
 ```
 
 #### NEGATIVE PROMPT
 ```
-filled backgrounds, gradients, shadows, 3D, realistic, complex illustrations, people, text overlays, busy, modern, glossy, clean, decorative, thin strokes, bright colors
+filled backgrounds, gradients, shadows, 3D, realistic, complex illustrations, people, text overlays, busy, modern glossy SaaS, decorative, thin strokes, bright colors, rough, DIY, unrefined, heavy film grain, vintage distressed
 ```
 
 ---
@@ -295,12 +299,12 @@ filled backgrounds, gradients, shadows, 3D, realistic, complex illustrations, pe
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport compatibility gauge, 200x200 pixels, vector. Semi-circle gauge arc (270 degrees) with tick marks. Color zones: muted green (#4a7c59) 70-100%, orange (#d4803c) 40-70%, muted red (#a63d40) 0-40%. Needle pointer at top. Dark olive (#2d3226) gauge body. Center area clear for percentage. Industrial, garage-built aesthetic. Film grain texture at 5% opacity. Utilitarian, technical gauge style. Transparent background. Retro speedometer feel.
+Professional motorsport compatibility gauge, 200x200 pixels, vector. Semi-circle gauge arc (270 degrees) with precise tick marks. Color zones: refined green (#4a7c59) 70-100%, orange (#d4803c) 40-70%, refined red (#a63d40) 0-40%. Precision needle pointer at top. Dark olive (#2d3226) gauge body with subtle depth. Center area clear for percentage. Professional racing aesthetic. Subtle texture at 2% opacity. Technical, polished gauge style. Transparent background. Modern precision instrument feel.
 ```
 
 #### NEGATIVE PROMPT
 ```
-filled background, complex dials, multiple needles, 3D, realistic, detailed, text in center, gradients, modern, glossy, clean, bright colors, decorative
+filled background, complex dials, multiple needles, 3D, realistic, detailed, text in center, gradients, modern glossy SaaS, clean, bright colors, decorative, rough, DIY, unrefined, heavy film grain, vintage distressed, retro
 ```
 
 ---
@@ -315,12 +319,12 @@ filled background, complex dials, multiple needles, 3D, realistic, detailed, tex
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport build preview card, 400x300 pixels, vector. Badge-style card: top section with engine badge (rounded rectangle, orange #c96a24 border, cream #f5f0e6 fill), middle section with 3-4 part icon silhouettes in row (sprocket, clutch, chain - cream strokes), bottom section with price tag badge and compatibility status dot (muted green #4a7c59). Dark olive (#2d3226) card background. Film grain texture at 3% opacity. Industrial, garage-built aesthetic. Utilitarian layout. Ready for dynamic content overlay.
+Professional motorsport build preview card, 400x300 pixels, vector. Refined badge-style card: top section with engine badge (rounded rectangle with precise corners, orange #c96a24 border, dark olive #2d3226 fill), middle section with 3-4 part icon silhouettes in row (sprocket, clutch, chain - precise cream strokes), bottom section with price tag badge and compatibility status indicator (refined green #4a7c59 dot). Dark olive (#2d3226) card background with subtle depth. Subtle texture at 2% opacity. Professional racing aesthetic. Clean, polished layout. Ready for dynamic content overlay.
 ```
 
 #### NEGATIVE PROMPT
 ```
-filled card background, shadows, 3D, realistic photos, specific part names, detailed illustrations, text content, modern, glossy, clean, bright colors, decorative, gradients
+filled card background, shadows, 3D, realistic photos, specific part names, detailed illustrations, text content, modern glossy SaaS, clean, bright colors, decorative, gradients, rough, DIY, unrefined, heavy film grain, vintage distressed
 ```
 
 ---
@@ -335,12 +339,12 @@ filled card background, shadows, 3D, realistic photos, specific part names, deta
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport onboarding illustration, 600x400 pixels, vector. Dark olive (#1a1e15) background with film grain texture. Left: tool silhouette (wrench) in cream (#f5f0e6). Center: arrow in orange (#c96a24). Right: simple go-kart frame silhouette with parts being added (sprocket, chain). Small icons: engine badge, parts package. All in cream and orange accents. Industrial, garage-built aesthetic. Utilitarian, approachable, not intimidating. Minimal detail. Vintage motorsport badge style elements. "Start building" message feel.
+Professional motorsport onboarding illustration, 600x400 pixels, vector. Dark olive (#1a1e15) background with subtle texture. Left: refined tool silhouette (precision wrench) in cream (#f5f0e6). Center: clean arrow in orange (#c96a24). Right: simple go-kart frame silhouette with parts being added (sprocket, chain). Small icons: engine badge, parts package. All in cream and orange accents. Professional racing aesthetic. Clean, approachable, not intimidating. Minimal detail. Refined motorsport badge style elements. "Start building" message feel. Polished design.
 ```
 
 #### NEGATIVE PROMPT
 ```
-detailed faces, realistic people, complex machinery, intimidating, scary, busy, cluttered, text labels, cartoon style, modern, glossy, clean, bright colors, decorative, gradients
+detailed faces, realistic people, complex machinery, intimidating, scary, busy, cluttered, text labels, cartoon style, modern glossy SaaS, clean, bright colors, decorative, gradients, rough, DIY, unrefined, heavy film grain, vintage distressed
 ```
 
 ---
@@ -355,12 +359,12 @@ detailed faces, realistic people, complex machinery, intimidating, scary, busy, 
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport build complete celebration, 400x300 pixels, vector. Dark olive (#1a1e15) background with film grain texture. Center: large checkmark in badge-style circle (orange #c96a24 border, cream #f5f0e6 fill). Surrounding: subtle celebration elements - small sparkles/stars in orange and cream. Bottom: simple go-kart silhouette (completed). Industrial, garage-built aesthetic. Positive, celebratory, achievement feel. Minimal detail. Utilitarian celebration style. Success state visual.
+Professional motorsport build complete celebration, 400x300 pixels, vector. Dark olive (#1a1e15) background with subtle texture. Center: large checkmark in refined badge-style circle (orange #c96a24 border, dark olive #2d3226 fill). Surrounding: subtle celebration elements - small sparkles/stars in orange and cream. Bottom: simple go-kart silhouette (completed). Professional racing aesthetic. Positive, celebratory, achievement feel. Minimal detail. Clean, polished celebration style. Success state visual.
 ```
 
 #### NEGATIVE PROMPT
 ```
-party hats, balloons, detailed faces, complex, busy, cluttered, text, realistic confetti, gradients, modern, glossy, clean, bright colors, decorative
+party hats, balloons, detailed faces, complex, busy, cluttered, text, realistic confetti, gradients, modern glossy SaaS, clean, bright colors, decorative, rough, DIY, unrefined, heavy film grain, vintage distressed
 ```
 
 ---
@@ -375,12 +379,12 @@ party hats, balloons, detailed faces, complex, busy, cluttered, text, realistic 
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport compatibility diagram, 500x350 pixels, vector. Dark olive (#1a1e15) background with film grain texture. Visual explanation: left engine icon (cream #f5f0e6), connected by green checkmark arrow (#4a7c59) to middle part (clutch), connected by green arrow to right part (sprocket). "COMPATIBLE" label below in condensed uppercase cream text. Bottom: incompatible example - engine connected by red X arrow (#a63d40) to wrong part. All icons simplified (2px strokes), utilitarian style. Industrial, garage-built aesthetic. Educational diagram. Film grain overlay.
+Professional motorsport compatibility diagram, 500x350 pixels, vector. Dark olive (#1a1e15) background with subtle texture. Visual explanation: left engine icon (cream #f5f0e6), connected by green checkmark arrow (#4a7c59) to middle part (clutch), connected by green arrow to right part (sprocket). "COMPATIBLE" label below in condensed uppercase cream text. Bottom: incompatible example - engine connected by red X arrow (#a63d40) to wrong part. All icons simplified (2.5px strokes), refined technical style. Professional racing aesthetic. Clean educational diagram. Polished design.
 ```
 
 #### NEGATIVE PROMPT
 ```
-detailed parts, realistic, complex mechanisms, text explanations, busy, cluttered, 3D, gradients, modern, glossy, clean, bright colors, decorative
+detailed parts, realistic, complex mechanisms, text explanations, busy, cluttered, 3D, gradients, modern glossy SaaS, clean, bright colors, decorative, rough, DIY, unrefined, heavy film grain, vintage distressed
 ```
 
 ---
@@ -395,12 +399,12 @@ detailed parts, realistic, complex mechanisms, text explanations, busy, cluttere
 
 #### PRIMARY PROMPT
 ```
-Vintage motorsport compatibility status badge, 100x32 pixels, vector. Badge-style rounded rectangle (4px radius, dark olive #2d3226 background). Muted green (#4a7c59) left accent bar (4px wide). Cream (#f5f0e6) condensed uppercase text "100% COMPATIBLE". 1px green border. Industrial, garage-built aesthetic. Film grain texture at 3% opacity. Utilitarian badge style. Transparent background.
+Professional motorsport compatibility status badge, 100x32 pixels, vector. Refined badge-style rounded rectangle (4px radius, dark olive #2d3226 background). Refined green (#4a7c59) left accent bar (4px wide). Cream (#f5f0e6) condensed uppercase text "100% COMPATIBLE". 1px green border. Professional racing aesthetic. Subtle texture at 2% opacity. Clean, polished badge style. Transparent background.
 ```
 
 #### NEGATIVE PROMPT
 ```
-gradient, shadow, 3D, decorative, fancy, script font, complex illustration, modern, glossy, clean, bright colors
+gradient, shadow, 3D, decorative, fancy, script font, complex illustration, modern glossy SaaS, clean, bright colors, rough, DIY, unrefined, heavy film grain, vintage distressed
 ```
 
 ---
