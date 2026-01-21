@@ -93,16 +93,16 @@ function PartsPageContent() {
   
   return (
     <div className="min-h-screen bg-olive-900">
-      {/* Header */}
+      {/* Header - Mobile Optimized */}
       <div className="bg-olive-800 border-b border-olive-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Package className="w-8 h-8 text-orange-400" />
-            <h1 className="text-display text-3xl sm:text-4xl text-cream-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <Package className="w-6 h-6 sm:w-8 sm:h-8 text-orange-400 flex-shrink-0" />
+            <h1 className="text-display text-2xl sm:text-3xl lg:text-4xl text-cream-100">
               Parts
             </h1>
           </div>
-          <p className="text-cream-400 max-w-2xl">
+          <p className="text-sm sm:text-base text-cream-400 max-w-2xl">
             Find the ultimate parts for your go-kart build. Filter by category to find what you need.
           </p>
         </div>
@@ -163,22 +163,12 @@ function PartsPageContent() {
 
           {/* Main Content Area */}
           <div className="flex-1 min-w-0">
-            {/* Filters Bar */}
-            <div className="sticky top-16 z-30 bg-olive-900/95 backdrop-blur-sm border-b border-olive-700 mb-6 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4">
-              <div className="flex flex-wrap items-center gap-4">
-                {/* Categories - opens mobile drawer, 44px touch target */}
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setShowSidebar(!showSidebar)}
-                  className="lg:hidden min-h-[44px] touch-manipulation"
-                  icon={<Filter className="w-4 h-4" />}
-                >
-                  Categories
-                </Button>
-
-                {/* Search */}
-                <div className="flex-1 min-w-[200px] max-w-md">
+            {/* Filters Bar - Mobile Optimized */}
+            <div className="sticky top-14 sm:top-16 z-30 bg-olive-900/95 backdrop-blur-sm border-b border-olive-700 mb-6 -mx-4 sm:-mx-6 lg:-mx-8 px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+              {/* Mobile Layout: Top Row - Search Full Width */}
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
+                {/* Search - Full width on mobile */}
+                <div className="flex-1 w-full lg:min-w-[200px] lg:max-w-md">
                   <Input
                     placeholder="Search parts..."
                     value={searchQuery}
@@ -187,8 +177,72 @@ function PartsPageContent() {
                   />
                 </div>
                 
-                {/* Quick Filters */}
-                <div className="hidden md:flex items-center gap-3">
+                {/* Mobile Action Buttons Row - Compact & Professional */}
+                <div className="flex items-center gap-2 lg:hidden">
+                  {/* Categories Button */}
+                  <Button
+                    variant={filters.category ? "primary" : "secondary"}
+                    size="sm"
+                    onClick={() => setShowSidebar(!showSidebar)}
+                    className="flex-1 min-h-[44px] touch-manipulation justify-center"
+                    icon={<Filter className="w-4 h-4" />}
+                  >
+                    <span className="hidden min-[380px]:inline">
+                      {filters.category ? getCategoryLabel(filters.category) : 'Categories'}
+                    </span>
+                    <span className="min-[380px]:hidden">Filter</span>
+                  </Button>
+                  
+                  {/* Filters/Advanced Button */}
+                  <Button
+                    variant={hasActiveFilters ? "primary" : "secondary"}
+                    size="sm"
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="flex-1 min-h-[44px] touch-manipulation justify-center"
+                    icon={<SlidersHorizontal className="w-4 h-4" />}
+                  >
+                    Filters
+                  </Button>
+                  
+                  {/* View Toggle - Compact Icon Only */}
+                  <div className="flex items-center bg-olive-800 rounded-md p-0.5 border border-olive-600">
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={cn(
+                        'p-2 rounded transition-colors touch-manipulation min-w-[40px] min-h-[40px] flex items-center justify-center',
+                        viewMode === 'grid' ? 'bg-olive-700 text-orange-400' : 'text-cream-400 hover:text-cream-100'
+                      )}
+                      aria-label="Grid view"
+                    >
+                      <Grid className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={cn(
+                        'p-2 rounded transition-colors touch-manipulation min-w-[40px] min-h-[40px] flex items-center justify-center',
+                        viewMode === 'list' ? 'bg-olive-700 text-orange-400' : 'text-cream-400 hover:text-cream-100'
+                      )}
+                      aria-label="List view"
+                    >
+                      <List className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Desktop Layout: Filters Row */}
+                <div className="hidden lg:flex items-center gap-3">
+                  {/* Categories - Hidden on mobile (using drawer) */}
+                  <Button
+                    variant={filters.category ? "primary" : "secondary"}
+                    size="sm"
+                    onClick={() => setShowSidebar(!showSidebar)}
+                    className="min-h-[44px]"
+                    icon={<Filter className="w-4 h-4" />}
+                  >
+                    {filters.category ? getCategoryLabel(filters.category) : 'Categories'}
+                  </Button>
+                  
+                  {/* Quick Filters */}
                   <Select
                     options={[
                       { value: '', label: 'All Brands' },
@@ -213,138 +267,198 @@ function PartsPageContent() {
                     }}
                     className="w-44"
                   />
-                </div>
-                
-                {/* View Mode Toggle */}
-                <div className="hidden sm:flex items-center bg-olive-800 rounded-md p-1">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={cn(
-                      'p-2 rounded transition-colors',
-                      viewMode === 'grid' ? 'bg-olive-700 text-orange-400' : 'text-cream-400 hover:text-cream-100'
-                    )}
-                  >
-                    <Grid className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={cn(
-                      'p-2 rounded transition-colors',
-                      viewMode === 'list' ? 'bg-olive-700 text-orange-400' : 'text-cream-400 hover:text-cream-100'
-                    )}
-                  >
-                    <List className="w-4 h-4" />
-                  </button>
-                </div>
-                
-                {/* Mobile Filter Toggle - 44px touch target */}
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="md:hidden min-h-[44px] touch-manipulation"
-                  icon={<SlidersHorizontal className="w-4 h-4" />}
-                >
-                  Filters
-                </Button>
-                
-                {/* Clear Filters */}
-                {hasActiveFilters && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearFilters}
-                    icon={<X className="w-4 h-4" />}
-                  >
-                    Clear
-                  </Button>
-                )}
-              </div>
-              
-              {/* Mobile Filters Panel */}
-              {showFilters && (
-                <div className="mt-4 p-4 bg-olive-800 rounded-lg border border-olive-600 md:hidden space-y-4">
-                  <Select
-                    label="Brand"
-                    options={[
-                      { value: '', label: 'All Brands' },
-                      ...(brands?.map((b) => ({ value: b, label: b })) || []),
-                    ]}
-                    value={filters.brand || ''}
-                    onChange={(e) => setFilters({ ...filters, brand: e.target.value || undefined })}
-                  />
                   
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input
-                      label="Min Price"
-                      type="number"
-                      placeholder="$0"
-                      value={filters.min_price || ''}
-                      onChange={(e) => setFilters({ ...filters, min_price: Number(e.target.value) || undefined })}
-                    />
-                    <Input
-                      label="Max Price"
-                      type="number"
-                      placeholder="$1000"
-                      value={filters.max_price || ''}
-                      onChange={(e) => setFilters({ ...filters, max_price: Number(e.target.value) || undefined })}
-                    />
+                  {/* View Mode Toggle */}
+                  <div className="flex items-center bg-olive-800 rounded-md p-1 border border-olive-600">
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={cn(
+                        'p-2 rounded transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center',
+                        viewMode === 'grid' ? 'bg-olive-700 text-orange-400' : 'text-cream-400 hover:text-cream-100'
+                      )}
+                      aria-label="Grid view"
+                    >
+                      <Grid className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={cn(
+                        'p-2 rounded transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center',
+                        viewMode === 'list' ? 'bg-olive-700 text-orange-400' : 'text-cream-400 hover:text-cream-100'
+                      )}
+                      aria-label="List view"
+                    >
+                      <List className="w-4 h-4" />
+                    </button>
                   </div>
                   
-                  <Select
-                    label="Sort By"
-                    options={[
-                      { value: 'created_at-desc', label: 'Newest First' },
-                      { value: 'price-asc', label: 'Price: Low to High' },
-                      { value: 'price-desc', label: 'Price: High to Low' },
-                    ]}
-                    value={`${filters.sort}-${filters.order}`}
-                    onChange={(e) => {
-                      const [sort, order] = e.target.value.split('-');
-                      setFilters({ ...filters, sort, order: order as 'asc' | 'desc' });
-                    }}
-                  />
+                  {/* Clear Filters */}
+                  {hasActiveFilters && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearFilters}
+                      icon={<X className="w-4 h-4" />}
+                      className="min-h-[44px]"
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+              </div>
+              
+              {/* Active Filters Display - Mobile */}
+              {(filters.category || hasActiveFilters || searchQuery) && (
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {filters.category && (
+                    <Badge variant="success" className="gap-1.5">
+                      {getCategoryLabel(filters.category)}
+                      <button
+                        onClick={() => setFilters({ ...filters, category: undefined })}
+                        className="hover:opacity-70 transition-opacity"
+                        aria-label={`Remove ${getCategoryLabel(filters.category)} filter`}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {searchQuery && (
+                    <Badge variant="default" className="gap-1.5">
+                      Search: {searchQuery}
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="hover:opacity-70 transition-opacity"
+                        aria-label="Clear search"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {hasActiveFilters && (
+                    <button
+                      onClick={clearFilters}
+                      className="text-xs text-orange-400 hover:text-orange-300 underline"
+                    >
+                      Clear all filters
+                    </button>
+                  )}
+                </div>
+              )}
+              
+              {/* Mobile Filters Panel - Slide Down Animation */}
+              {showFilters && (
+                <div className="mt-3 lg:hidden transition-all duration-200">
+                  <div className="bg-olive-800 rounded-lg border border-olive-600 p-4 space-y-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-sm font-semibold text-cream-100">Filter Options</h3>
+                      <button
+                        onClick={() => setShowFilters(false)}
+                        className="text-cream-400 hover:text-cream-100 transition-colors p-1"
+                        aria-label="Close filters"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    
+                    <Select
+                      label="Brand"
+                      options={[
+                        { value: '', label: 'All Brands' },
+                        ...(brands?.map((b) => ({ value: b, label: b })) || []),
+                      ]}
+                      value={filters.brand || ''}
+                      onChange={(e) => setFilters({ ...filters, brand: e.target.value || undefined })}
+                    />
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input
+                        label="Min Price"
+                        type="number"
+                        placeholder="$0"
+                        value={filters.min_price || ''}
+                        onChange={(e) => setFilters({ ...filters, min_price: Number(e.target.value) || undefined })}
+                      />
+                      <Input
+                        label="Max Price"
+                        type="number"
+                        placeholder="$1000"
+                        value={filters.max_price || ''}
+                        onChange={(e) => setFilters({ ...filters, max_price: Number(e.target.value) || undefined })}
+                      />
+                    </div>
+                    
+                    <Select
+                      label="Sort By"
+                      options={[
+                        { value: 'created_at-desc', label: 'Newest First' },
+                        { value: 'price-asc', label: 'Price: Low to High' },
+                        { value: 'price-desc', label: 'Price: High to Low' },
+                        { value: 'name-asc', label: 'Name: A to Z' },
+                      ]}
+                      value={`${filters.sort}-${filters.order}`}
+                      onChange={(e) => {
+                        const [sort, order] = e.target.value.split('-');
+                        setFilters({ ...filters, sort, order: order as 'asc' | 'desc' });
+                      }}
+                    />
+                    
+                    {hasActiveFilters && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearFilters}
+                        className="w-full mt-2"
+                        icon={<X className="w-4 h-4" />}
+                      >
+                        Clear All Filters
+                      </Button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Mobile Categories Drawer - 44px touch targets, closes on backdrop or category select */}
+            {/* Mobile Categories Drawer - Professional Slide-in */}
             {showSidebar && (
               <div className="lg:hidden fixed inset-0 z-50 flex" aria-modal="true" role="dialog" aria-label="Parts categories">
+                {/* Backdrop */}
                 <div 
-                  className="flex-1 bg-olive-900/80 backdrop-blur-sm touch-manipulation"
+                  className="flex-1 bg-black/60 backdrop-blur-sm touch-manipulation transition-opacity duration-200"
                   onClick={() => setShowSidebar(false)}
                   aria-hidden="true"
                 />
-                <aside className="w-72 max-w-[85vw] bg-olive-800 border-l border-olive-700 p-4 overflow-y-auto">
-                  <div className="flex items-center justify-between mb-4">
+                {/* Drawer Panel */}
+                <aside className="w-80 max-w-[90vw] bg-olive-800 border-l border-olive-700 shadow-xl transform transition-transform duration-300 ease-out">
+                  {/* Header */}
+                  <div className="sticky top-0 bg-olive-800 border-b border-olive-700 p-4 flex items-center justify-between z-10">
                     <h2 className="text-lg font-semibold text-cream-100 flex items-center gap-2">
                       <Filter className="w-5 h-5 text-orange-400" />
                       Categories
                     </h2>
                     <button
                       onClick={() => setShowSidebar(false)}
-                      className="min-w-[44px] min-h-[44px] flex items-center justify-center text-cream-400 hover:text-cream-100 hover:bg-olive-700 rounded-md touch-manipulation"
+                      className="min-w-[44px] min-h-[44px] flex items-center justify-center text-cream-400 hover:text-cream-100 hover:bg-olive-700 rounded-md touch-manipulation transition-colors"
                       aria-label="Close categories"
                     >
                       <X className="w-5 h-5" />
                     </button>
                   </div>
                   
-                  <nav className="space-y-1">
+                  {/* Categories List */}
+                  <nav className="p-4 space-y-1 overflow-y-auto safe-area-bottom">
                     <button
                       onClick={() => {
                         setFilters({ ...filters, category: undefined });
                         setShowSidebar(false);
                       }}
                       className={cn(
-                        'w-full text-left px-4 py-3 min-h-[44px] flex items-center text-sm font-medium rounded-md transition-colors touch-manipulation',
+                        'w-full text-left px-4 py-3 min-h-[48px] flex items-center text-sm font-medium rounded-lg transition-all touch-manipulation',
                         !filters.category
-                          ? 'bg-orange-500 text-cream-100'
+                          ? 'bg-orange-500 text-cream-100 shadow-md'
                           : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700 active:bg-olive-600'
                       )}
                     >
-                      All Parts
+                      <span className="font-semibold">All Parts</span>
                     </button>
                     {PART_CATEGORIES.map((category) => (
                       <button
@@ -354,9 +468,9 @@ function PartsPageContent() {
                           setShowSidebar(false);
                         }}
                         className={cn(
-                          'w-full text-left px-4 py-3 min-h-[44px] flex items-center text-sm font-medium rounded-md transition-colors touch-manipulation',
+                          'w-full text-left px-4 py-3 min-h-[48px] flex items-center text-sm font-medium rounded-lg transition-all touch-manipulation',
                           filters.category === category
-                            ? 'bg-orange-500 text-cream-100'
+                            ? 'bg-orange-500 text-cream-100 shadow-md'
                             : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700 active:bg-olive-600'
                         )}
                       >
