@@ -1,92 +1,73 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Download, Printer, FileSpreadsheet } from 'lucide-react';
+import { ChevronLeft, Download, Printer } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Select } from '@/components/ui/Select';
-
-// Torque specifications for common small engines
-const TORQUE_SPECS = {
-  predator_212: {
-    name: 'Predator 212',
-    specs: [
-      { component: 'Cylinder Head Bolts', torque: '12-15 ft-lb', notes: 'Tighten in crisscross pattern' },
-      { component: 'Connecting Rod Bolts', torque: '8-10 ft-lb', notes: 'Critical - do not over-tighten' },
-      { component: 'Flywheel Nut', torque: '50-55 ft-lb', notes: 'Use thread locker' },
-      { component: 'Spark Plug', torque: '10-12 ft-lb', notes: 'Hand tight + 1/4 turn' },
-      { component: 'Oil Drain Plug', torque: '8-10 ft-lb', notes: 'Replace crush washer' },
-      { component: 'Carburetor Mounting Bolts', torque: '5-7 ft-lb', notes: 'Even pressure' },
-      { component: 'Exhaust Mounting Bolts', torque: '8-10 ft-lb', notes: 'Check after first run' },
-      { component: 'Air Filter Cover Screws', torque: '3-5 ft-lb', notes: 'Snug only' },
-      { component: 'Governor Arm Screw', torque: '5-7 ft-lb', notes: 'If applicable' },
-      { component: 'Valve Cover Bolts', torque: '5-7 ft-lb', notes: 'Even pattern' },
-    ],
-  },
-  predator_224: {
-    name: 'Predator 224',
-    specs: [
-      { component: 'Cylinder Head Bolts', torque: '12-15 ft-lb', notes: 'Tighten in crisscross pattern' },
-      { component: 'Connecting Rod Bolts', torque: '8-10 ft-lb', notes: 'Critical - do not over-tighten' },
-      { component: 'Flywheel Nut', torque: '50-55 ft-lb', notes: 'Use thread locker' },
-      { component: 'Spark Plug', torque: '10-12 ft-lb', notes: 'Hand tight + 1/4 turn' },
-      { component: 'Oil Drain Plug', torque: '8-10 ft-lb', notes: 'Replace crush washer' },
-      { component: 'Carburetor Mounting Bolts', torque: '5-7 ft-lb', notes: 'Even pressure' },
-      { component: 'Exhaust Mounting Bolts', torque: '8-10 ft-lb', notes: 'Check after first run' },
-    ],
-  },
-  honda_gx200: {
-    name: 'Honda GX200',
-    specs: [
-      { component: 'Cylinder Head Bolts', torque: '14-16 ft-lb', notes: 'Tighten in sequence' },
-      { component: 'Connecting Rod Bolts', torque: '9-11 ft-lb', notes: 'Critical' },
-      { component: 'Flywheel Nut', torque: '55-60 ft-lb', notes: 'Use thread locker' },
-      { component: 'Spark Plug', torque: '11-13 ft-lb', notes: 'Hand tight + 1/4 turn' },
-      { component: 'Oil Drain Plug', torque: '9-11 ft-lb', notes: 'Replace crush washer' },
-      { component: 'Carburetor Mounting Bolts', torque: '6-8 ft-lb', notes: 'Even pressure' },
-      { component: 'Exhaust Mounting Bolts', torque: '9-11 ft-lb', notes: 'Check after first run' },
-    ],
-  },
-  generic_212: {
-    name: 'Generic 212cc Clone',
-    specs: [
-      { component: 'Cylinder Head Bolts', torque: '12-15 ft-lb', notes: 'Tighten in crisscross pattern' },
-      { component: 'Connecting Rod Bolts', torque: '8-10 ft-lb', notes: 'Critical - do not over-tighten' },
-      { component: 'Flywheel Nut', torque: '50-55 ft-lb', notes: 'Use thread locker' },
-      { component: 'Spark Plug', torque: '10-12 ft-lb', notes: 'Hand tight + 1/4 turn' },
-      { component: 'Oil Drain Plug', torque: '8-10 ft-lb', notes: 'Replace crush washer' },
-      { component: 'Carburetor Mounting Bolts', torque: '5-7 ft-lb', notes: 'Even pressure' },
-      { component: 'Exhaust Mounting Bolts', torque: '8-10 ft-lb', notes: 'Check after first run' },
-    ],
-  },
-};
+import { useEngines } from '@/hooks/use-engines';
+import { TORQUE_SPECS, getTorqueSpecs, type EngineTorqueSpecs } from '@/data/torque-specs';
 
 export default function TorqueSpecsPage() {
-  const [selectedEngine, setSelectedEngine] = useState<keyof typeof TORQUE_SPECS>('predator_212');
-  const currentSpecs = TORQUE_SPECS[selectedEngine];
+  const { data: engines } = useEngines();
+  
+  // Get available engines that have torque specs
+  const availableEngines = useMemo(() => {
+    if (!engines) return [];
+    return engines
+      .filter(engine => TORQUE_SPECS[engine.slug])
+      .map(engine => ({
+        slug: engine.slug,
+        name: engine.name,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [engines]);
+
+  // Default to first available engine, or fallback to predator-212-hemi
+  const defaultEngineSlug = availableEngines[0]?.slug || 'predator-212-hemi';
+  const [selectedEngineSlug, setSelectedEngineSlug] = useState<string>(defaultEngineSlug);
+  
+  const currentSpecs: EngineTorqueSpecs | null = getTorqueSpecs(selectedEngineSlug);
 
   const handleExportCSV = () => {
+    if (!currentSpecs) return;
+    
     const csvRows = [
-      ['Component', 'Torque Specification', 'Notes'],
-      ...currentSpecs.specs.map(spec => [spec.component, spec.torque, spec.notes]),
+      ['Component', 'Torque (ft-lb)', 'Torque (in-lb)', 'Notes'],
+      ...currentSpecs.specs.map(spec => [
+        spec.component,
+        spec.torqueFtLb,
+        spec.torqueInLb,
+        spec.notes
+      ]),
     ];
 
     const csv = csvRows.map(row => 
-      row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(',')
+      row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
     ).join('\n');
 
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `torque-specs-${selectedEngine}-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `torque-specs-${selectedEngineSlug}-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
   };
+
+  if (!currentSpecs) {
+    return (
+      <div className="min-h-screen bg-olive-900 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-cream-300">Loading torque specifications...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handlePrint = () => {
     window.print();
@@ -139,11 +120,11 @@ export default function TorqueSpecsPage() {
               Select Engine Type
             </label>
             <Select
-              value={selectedEngine}
-              onChange={(e) => setSelectedEngine(e.target.value as keyof typeof TORQUE_SPECS)}
-              options={Object.keys(TORQUE_SPECS).map(key => ({
-                value: key,
-                label: TORQUE_SPECS[key as keyof typeof TORQUE_SPECS].name,
+              value={selectedEngineSlug}
+              onChange={(e) => setSelectedEngineSlug(e.target.value)}
+              options={availableEngines.map(engine => ({
+                value: engine.slug,
+                label: engine.name,
               }))}
             />
           </CardContent>
@@ -165,7 +146,8 @@ export default function TorqueSpecsPage() {
                 <thead>
                   <tr className="border-b border-olive-600">
                     <th className="text-left py-3 px-4 text-sm font-semibold text-cream-100">Component</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-cream-100">Torque</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-cream-100">Torque (ft-lb)</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-cream-100">Torque (in-lb)</th>
                     <th className="text-left py-3 px-4 text-sm font-semibold text-cream-100">Notes</th>
                   </tr>
                 </thead>
@@ -177,7 +159,10 @@ export default function TorqueSpecsPage() {
                     >
                       <td className="py-3 px-4 text-cream-200 font-medium">{spec.component}</td>
                       <td className="py-3 px-4">
-                        <Badge variant="default">{spec.torque}</Badge>
+                        <Badge variant="default">{spec.torqueFtLb}</Badge>
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge variant="info">{spec.torqueInLb}</Badge>
                       </td>
                       <td className="py-3 px-4 text-cream-300 text-sm">{spec.notes}</td>
                     </tr>
