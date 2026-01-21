@@ -104,10 +104,14 @@
 
 /* Base Styles */
 html {
-  scroll-behavior: smooth;
+  /* scroll-behavior: smooth; - Moved to data attribute for Next.js compatibility */
   overflow-x: hidden;
   width: 100%;
   max-width: 100%;
+}
+
+html[data-scroll-behavior="smooth"] {
+  scroll-behavior: smooth;
 }
 
 body {

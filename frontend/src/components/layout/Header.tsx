@@ -96,15 +96,15 @@ export function Header() {
   
   return (
     <header className="sticky top-0 z-50 bg-olive-900/95 backdrop-blur-sm border-b border-olive-700 w-full safe-area-top">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-8">
+      <nav className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
         <div className="flex items-center h-14 sm:h-16 gap-2 lg:gap-4">
-          {/* Logo - min 44px touch target */}
+          {/* Logo - Icon only on mobile, text on tablet+ */}
           <Link 
             href="/" 
-            className="flex items-center gap-2 sm:gap-3 group flex-shrink-0 min-w-0 min-h-[44px]"
+            className="flex items-center gap-2 sm:gap-3 group flex-shrink-0 min-h-[44px]"
             onClick={() => setMobileMenuOpen(false)}
           >
-            <div className="relative w-9 h-9 sm:w-10 sm:h-10 overflow-hidden rounded-lg border-2 border-orange-500 group-hover:border-orange-400 transition-colors flex-shrink-0">
+            <div className="relative w-10 h-10 sm:w-11 sm:h-11 overflow-hidden rounded-lg border-2 border-orange-500 group-hover:border-orange-400 transition-colors flex-shrink-0">
               <Image
                 src="/brand/brand-iconmark-v1.svg"
                 alt="GoKartPartPicker"
@@ -113,11 +113,12 @@ export function Header() {
                 priority
               />
             </div>
-            <div className="hidden sm:block">
-              <span className="text-display text-xl text-cream-100 group-hover:text-orange-400 transition-colors">
+            {/* Hide text on mobile, show on md+ */}
+            <div className="hidden md:block">
+              <span className="text-display text-lg md:text-xl text-cream-100 group-hover:text-orange-400 transition-colors">
                 GoKart
               </span>
-              <span className="text-display text-xl text-orange-500">PartPicker</span>
+              <span className="text-display text-lg md:text-xl text-orange-500">PartPicker</span>
             </div>
           </Link>
 
@@ -145,37 +146,38 @@ export function Header() {
             })}
           </div>
           
-          {/* Mobile Search & User - Visible on mobile */}
-          <div className="flex md:hidden items-center gap-2 flex-shrink-0 ml-auto">
+          {/* Mobile Actions - Simplified: Just menu button, search/user in menu */}
+          <div className="flex md:hidden items-center gap-1.5 flex-shrink-0 ml-auto">
             {/* Search Icon Button - Mobile */}
             <button
               onClick={() => setSearchModalOpen(true)}
-              className="flex items-center justify-center min-w-[44px] min-h-[44px] text-cream-200 hover:text-orange-400 rounded-md hover:bg-olive-800 transition-colors flex-shrink-0 touch-manipulation"
+              className="flex items-center justify-center w-11 h-11 text-cream-200 hover:text-orange-400 rounded-lg hover:bg-olive-800 active:bg-olive-700 transition-colors touch-manipulation"
               aria-label="Search"
             >
               <Search className="w-5 h-5" />
             </button>
             
-            {/* User Profile - Mobile */}
+            {/* User Profile - Mobile (only if authenticated) */}
             {!isActuallyLoading && isAuthenticated && (
-              <div className="relative flex-shrink-0">
-                <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full bg-orange-500 text-cream-100 font-bold touch-manipulation"
-                  aria-label="User menu"
-                >
-                  {user?.email?.[0].toUpperCase()}
-                </button>
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center justify-center w-11 h-11 rounded-lg bg-orange-500 text-cream-100 font-bold text-sm hover:bg-orange-400 active:bg-orange-600 transition-colors touch-manipulation relative"
+                aria-label="User menu"
+              >
+                {user?.email?.[0].toUpperCase()}
                 {userMenuOpen && (
                   <>
                     <div 
                       className="fixed inset-0 z-10" 
                       onClick={() => setUserMenuOpen(false)} 
                     />
-                    <div className="absolute right-0 top-full mt-2 w-48 bg-olive-800 border border-olive-600 rounded-lg shadow-lg z-20 overflow-hidden">
+                    <div className="absolute right-0 top-full mt-2 w-56 bg-olive-800 border border-olive-600 rounded-lg shadow-xl z-20 overflow-hidden">
+                      <div className="px-4 py-3 border-b border-olive-600">
+                        <p className="text-sm font-medium text-cream-100 truncate">{user?.email}</p>
+                      </div>
                       <Link
                         href="/builds"
-                        className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation"
+                        className="flex items-center gap-3 px-4 py-3.5 min-h-[48px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation"
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <Bookmark className="w-4 h-4" />
@@ -183,7 +185,7 @@ export function Header() {
                       </Link>
                       <Link
                         href="/profile"
-                        className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation"
+                        className="flex items-center gap-3 px-4 py-3.5 min-h-[48px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation"
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <User className="w-4 h-4" />
@@ -192,7 +194,7 @@ export function Header() {
                       {!adminLoading && isAdmin && (
                         <Link
                           href="/admin"
-                          className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-orange-400 hover:bg-olive-700 hover:text-orange-300 transition-colors border-t border-olive-600 touch-manipulation"
+                          className="flex items-center gap-3 px-4 py-3.5 min-h-[48px] text-sm text-orange-400 hover:bg-olive-700 hover:text-orange-300 transition-colors border-t border-olive-600 touch-manipulation"
                           onClick={() => setUserMenuOpen(false)}
                         >
                           <Shield className="w-4 h-4" />
@@ -204,7 +206,7 @@ export function Header() {
                           setUserMenuOpen(false);
                           signOut();
                         }}
-                        className="flex items-center gap-2 w-full px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-[var(--error)] transition-colors border-t border-olive-600 touch-manipulation"
+                        className="flex items-center gap-3 w-full px-4 py-3.5 min-h-[48px] text-sm text-cream-200 hover:bg-olive-700 hover:text-[var(--error)] transition-colors border-t border-olive-600 touch-manipulation"
                       >
                         <LogOut className="w-4 h-4" />
                         Sign Out
@@ -212,7 +214,7 @@ export function Header() {
                     </div>
                   </>
                 )}
-              </div>
+              </button>
             )}
           </div>
 
@@ -303,10 +305,10 @@ export function Header() {
             )}
           </div>
           
-          {/* Mobile Menu Button - 44px touch target, show below lg so tablet can open nav */}
+          {/* Mobile Menu Button - Larger touch target */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden flex items-center justify-center min-w-[44px] min-h-[44px] text-cream-200 hover:text-orange-400 rounded-md hover:bg-olive-800 transition-colors touch-manipulation"
+            className="lg:hidden flex items-center justify-center w-11 h-11 text-cream-200 hover:text-orange-400 rounded-lg hover:bg-olive-800 active:bg-olive-700 transition-colors touch-manipulation"
             aria-label="Toggle menu"
             aria-expanded={mobileMenuOpen}
           >
@@ -342,9 +344,23 @@ export function Header() {
                 mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
               )}
             >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+            {/* Search Button in Menu - For easy access */}
+            <div className="mb-4 sm:mb-6">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setSearchModalOpen(true);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3.5 bg-olive-800 hover:bg-olive-700 rounded-lg transition-colors touch-manipulation min-h-[48px]"
+              >
+                <Search className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                <span className="text-cream-200 font-medium">Search engines, parts...</span>
+              </button>
+            </div>
+
             {/* Navigation Links */}
-            <nav className="space-y-1 sm:space-y-2 mb-6 sm:mb-8">
+            <nav className="space-y-1.5 sm:space-y-2 mb-6 sm:mb-8">
               {navigation.map((item) => {
                 const isActive = pathname === item.href || 
                   (item.href !== '/' && pathname.startsWith(item.href));
@@ -355,7 +371,7 @@ export function Header() {
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
-                      'flex items-center gap-3 px-4 sm:px-5 py-3.5 sm:py-4 text-base sm:text-lg font-medium uppercase tracking-wide rounded-lg transition-colors touch-manipulation min-h-[52px] sm:min-h-[56px]',
+                      'flex items-center gap-3 px-4 py-3.5 text-base font-medium uppercase tracking-wide rounded-lg transition-colors touch-manipulation min-h-[48px]',
                       isActive 
                         ? 'text-orange-400 bg-olive-800' 
                         : 'text-cream-200 hover:text-orange-400 hover:bg-olive-800 active:bg-olive-700'
@@ -378,11 +394,11 @@ export function Header() {
                 <div className="h-12 bg-olive-700 rounded-lg animate-pulse" />
               </div>
             ) : isAuthenticated ? (
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Link
                   href="/builds"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-4 text-base font-medium uppercase tracking-wide text-cream-200 hover:text-orange-400 hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[44px] active:bg-olive-700"
+                  className="flex items-center gap-3 px-4 py-3.5 text-base font-medium uppercase tracking-wide text-cream-200 hover:text-orange-400 hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[48px] active:bg-olive-700"
                 >
                   <Bookmark className="w-5 h-5 flex-shrink-0" />
                   <span>Saved Builds</span>
@@ -391,7 +407,7 @@ export function Header() {
                   <Link
                     href="/admin"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-4 text-base font-medium uppercase tracking-wide text-orange-400 hover:text-orange-300 hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[44px] active:bg-olive-700"
+                    className="flex items-center gap-3 px-4 py-3.5 text-base font-medium uppercase tracking-wide text-orange-400 hover:text-orange-300 hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[48px] active:bg-olive-700"
                   >
                     <Shield className="w-5 h-5 flex-shrink-0" />
                     <span>Admin Panel</span>
@@ -402,7 +418,7 @@ export function Header() {
                     setMobileMenuOpen(false);
                     signOut();
                   }}
-                  className="flex items-center gap-3 w-full px-4 py-4 text-base font-medium uppercase tracking-wide text-cream-200 hover:text-[var(--error)] hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[44px] active:bg-olive-700"
+                  className="flex items-center gap-3 w-full px-4 py-3.5 text-base font-medium uppercase tracking-wide text-cream-200 hover:text-[var(--error)] hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[48px] active:bg-olive-700"
                 >
                   <LogOut className="w-5 h-5 flex-shrink-0" />
                   <span>Sign Out</span>
@@ -415,7 +431,7 @@ export function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full"
                 >
-                  <Button variant="secondary" size="lg" className="w-full touch-manipulation min-h-[44px]">
+                  <Button variant="secondary" size="lg" className="w-full touch-manipulation min-h-[48px]">
                     Login
                   </Button>
                 </Link>
@@ -424,7 +440,7 @@ export function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full"
                 >
-                  <Button variant="primary" size="lg" className="w-full touch-manipulation min-h-[44px]">
+                  <Button variant="primary" size="lg" className="w-full touch-manipulation min-h-[48px]">
                     Sign Up
                   </Button>
                 </Link>

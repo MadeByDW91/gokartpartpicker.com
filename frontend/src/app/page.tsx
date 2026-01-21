@@ -107,7 +107,7 @@ export default function HomePage() {
             fill
             className="object-cover opacity-40 md:hidden"
             priority
-            sizes="100vw"
+            sizes="(max-width: 768px) 100vw, 0vw"
           />
         </div>
         {/* Overlay */}
