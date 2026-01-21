@@ -268,7 +268,7 @@ export function Header() {
               <Search className="w-4 h-4" />
             </button>
             
-            {/* User Profile - Mobile (same dropdown, positioned automatically) */}
+            {/* User Profile - Mobile (shares same ref and dropdown as desktop) */}
             {!isActuallyLoading && isAuthenticated && (
               <div className="relative flex-shrink-0">
                 <button
@@ -286,66 +286,6 @@ export function Header() {
                 >
                   {user?.email?.[0].toUpperCase()}
                 </button>
-              </div>
-            )}
-            
-            {/* Mobile User Menu Dropdown - Rendered as Portal (same as desktop) */}
-            {mounted && userMenuOpen && !isActuallyLoading && isAuthenticated && userMenuPosition.current && createPortal(
-              <>
-                <div 
-                  className="fixed inset-0 z-[9998]" 
-                  onClick={() => setUserMenuOpen(false)} 
-                  aria-hidden="true"
-                />
-                <div 
-                  className="fixed w-56 bg-olive-800 border border-olive-600 rounded-lg shadow-xl z-[9999] overflow-hidden"
-                  style={{
-                    top: `${userMenuPosition.current.top}px`,
-                    right: `${userMenuPosition.current.right}px`,
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                      <div className="px-4 py-3 border-b border-olive-600">
-                        <p className="text-sm font-medium text-cream-100 truncate">{user?.email}</p>
-                      </div>
-                      <Link
-                        href="/builds"
-                        className="flex items-center gap-3 px-4 py-3.5 min-h-[48px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <Bookmark className="w-4 h-4" />
-                        Saved Builds
-                      </Link>
-                      <Link
-                        href="/profile"
-                        className="flex items-center gap-3 px-4 py-3.5 min-h-[48px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <User className="w-4 h-4" />
-                        Profile
-                      </Link>
-                      {!adminLoading && isAdmin && (
-                        <Link
-                          href="/admin"
-                          className="flex items-center gap-3 px-4 py-3.5 min-h-[48px] text-sm text-orange-400 hover:bg-olive-700 hover:text-orange-300 transition-colors border-t border-olive-600 touch-manipulation"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          <Shield className="w-4 h-4" />
-                          Admin Panel
-                        </Link>
-                      )}
-                      <button
-                        onClick={() => {
-                          setUserMenuOpen(false);
-                          signOut();
-                        }}
-                        className="flex items-center gap-3 w-full px-4 py-3.5 min-h-[48px] text-sm text-cream-200 hover:bg-olive-700 hover:text-[var(--error)] transition-colors border-t border-olive-600 touch-manipulation"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Sign Out
-                      </button>
-                    </div>
-                )}
               </div>
             )}
           </div>
@@ -387,66 +327,7 @@ export function Header() {
                   )} />
                 </button>
               </div>
-            ) : null}
-            
-            {/* User Menu Dropdown - Rendered as Portal */}
-            {mounted && userMenuOpen && isAuthenticated && userMenuPosition.current && createPortal(
-              <>
-                <div 
-                  className="fixed inset-0 z-[9998]" 
-                  onClick={() => setUserMenuOpen(false)} 
-                  aria-hidden="true"
-                />
-                <div 
-                  className="fixed w-48 bg-olive-800 border border-olive-600 rounded-lg shadow-xl z-[9999] overflow-hidden"
-                  style={{
-                    top: `${userMenuPosition.current.top}px`,
-                    right: `${userMenuPosition.current.right}px`,
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                      <Link
-                        href="/builds"
-                        className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <Bookmark className="w-4 h-4" />
-                        Saved Builds
-                      </Link>
-                      <Link
-                        href="/profile"
-                        className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <User className="w-4 h-4" />
-                        Profile
-                      </Link>
-                      {!adminLoading && isAdmin && (
-                        <Link
-                          href="/admin"
-                          className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-orange-400 hover:bg-olive-700 hover:text-orange-300 transition-colors border-t border-olive-600 touch-manipulation"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          <Shield className="w-4 h-4" />
-                          Admin Panel
-                        </Link>
-                      )}
-                      <button
-                        onClick={() => {
-                          setUserMenuOpen(false);
-                          signOut();
-                        }}
-                        className="flex items-center gap-2 w-full px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-[var(--error)] transition-colors border-t border-olive-600 touch-manipulation"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Sign Out
-                      </button>
-                    </div>
-              </>,
-              document.body
-            ) : null}
-            
-            {isAuthenticated ? null : (
+            ) : (
               <div className="flex items-center gap-2 flex-shrink-0">
                 <Link href="/auth/login">
                   <Button variant="ghost" size="sm" className="whitespace-nowrap">Login</Button>
@@ -478,6 +359,68 @@ export function Header() {
           isOpen={searchModalOpen} 
           onClose={() => setSearchModalOpen(false)} 
         />
+        
+        {/* User Menu Dropdown - Rendered as Portal (works for both desktop and mobile) */}
+        {mounted && userMenuOpen && isAuthenticated && userMenuPosition.current && createPortal(
+          <>
+            <div 
+              className="fixed inset-0 z-[9998]" 
+              onClick={() => setUserMenuOpen(false)} 
+              aria-hidden="true"
+            />
+            <div 
+              className="fixed bg-olive-800 border border-olive-600 rounded-lg shadow-xl z-[9999] overflow-hidden"
+              style={{
+                top: `${userMenuPosition.current.top}px`,
+                right: `${userMenuPosition.current.right}px`,
+                width: '14rem',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* User email header - only on mobile */}
+              <div className="md:hidden px-4 py-3 border-b border-olive-600">
+                <p className="text-sm font-medium text-cream-100 truncate">{user?.email}</p>
+              </div>
+              <Link
+                href="/builds"
+                className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation"
+                onClick={() => setUserMenuOpen(false)}
+              >
+                <Bookmark className="w-4 h-4" />
+                Saved Builds
+              </Link>
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation"
+                onClick={() => setUserMenuOpen(false)}
+              >
+                <User className="w-4 h-4" />
+                Profile
+              </Link>
+              {!adminLoading && isAdmin && (
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-orange-400 hover:bg-olive-700 hover:text-orange-300 transition-colors border-t border-olive-600 touch-manipulation"
+                  onClick={() => setUserMenuOpen(false)}
+                >
+                  <Shield className="w-4 h-4" />
+                  Admin Panel
+                </Link>
+              )}
+              <button
+                onClick={() => {
+                  setUserMenuOpen(false);
+                  signOut();
+                }}
+                className="flex items-center gap-2 w-full px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-[var(--error)] transition-colors border-t border-olive-600 touch-manipulation"
+              >
+                <LogOut className="w-4 h-4" />
+                Sign Out
+              </button>
+            </div>
+          </>,
+          document.body
+        )}
         
         {/* Mobile Menu - Slide Animation */}
         {mobileMenuOpen && (
