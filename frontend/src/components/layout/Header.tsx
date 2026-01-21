@@ -250,21 +250,27 @@ export function Header() {
             
             {/* User Profile - Mobile (only if authenticated, compact) */}
             {!isActuallyLoading && isAuthenticated && (
-              <div className="relative flex-shrink-0">
+              <div className="relative flex-shrink-0 z-50">
                 <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setUserMenuOpen(!userMenuOpen);
+                  }}
                   className="flex items-center justify-center w-9 h-9 rounded-lg bg-orange-500 text-cream-100 font-bold text-xs hover:bg-orange-400 active:bg-orange-600 transition-colors touch-manipulation"
                   aria-label="User menu"
+                  aria-expanded={userMenuOpen}
+                  aria-haspopup="true"
                 >
                   {user?.email?.[0].toUpperCase()}
                 </button>
                 {userMenuOpen && (
                   <>
                     <div 
-                      className="fixed inset-0 z-10" 
+                      className="fixed inset-0 z-[40]" 
                       onClick={() => setUserMenuOpen(false)} 
+                      aria-hidden="true"
                     />
-                    <div className="absolute right-0 top-full mt-2 w-56 bg-olive-800 border border-olive-600 rounded-lg shadow-xl z-20 overflow-hidden">
+                    <div className="absolute right-0 top-full mt-2 w-56 bg-olive-800 border border-olive-600 rounded-lg shadow-xl z-[50] overflow-hidden">
                       <div className="px-4 py-3 border-b border-olive-600">
                         <p className="text-sm font-medium text-cream-100 truncate">{user?.email}</p>
                       </div>
@@ -325,10 +331,15 @@ export function Header() {
             {isActuallyLoading ? (
               <div className="w-24 h-9 bg-olive-700 rounded-md animate-pulse flex-shrink-0" />
             ) : isAuthenticated ? (
-              <div className="relative flex-shrink-0">
+              <div className="relative flex-shrink-0 z-50">
                 <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setUserMenuOpen(!userMenuOpen);
+                  }}
                   className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-cream-200 hover:text-orange-400 rounded-md hover:bg-olive-800 transition-colors whitespace-nowrap"
+                  aria-expanded={userMenuOpen}
+                  aria-haspopup="true"
                 >
                   <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-cream-100 font-bold flex-shrink-0">
                     {user?.email?.[0].toUpperCase()}
@@ -342,10 +353,11 @@ export function Header() {
                 {userMenuOpen && (
                   <>
                     <div 
-                      className="fixed inset-0 z-10" 
+                      className="fixed inset-0 z-[40]" 
                       onClick={() => setUserMenuOpen(false)} 
+                      aria-hidden="true"
                     />
-                    <div className="absolute right-0 mt-2 w-48 bg-olive-800 border border-olive-600 rounded-lg shadow-lg z-20 overflow-hidden">
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-olive-800 border border-olive-600 rounded-lg shadow-xl z-[50] overflow-hidden">
                       <Link
                         href="/builds"
                         className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation"

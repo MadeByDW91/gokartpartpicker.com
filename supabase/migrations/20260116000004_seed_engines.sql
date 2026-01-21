@@ -198,18 +198,9 @@ ON CONFLICT (slug) DO UPDATE SET
   model = EXCLUDED.model;
 
 -- ============================================================================
--- VERIFICATION QUERY (can be run to check seed data)
+-- VERIFICATION QUERY (can be run separately to check seed data)
 -- ============================================================================
--- Run this in Supabase SQL editor to verify:
-/*
-SELECT 
-  slug,
-  name,
-  brand,
-  displacement_cc,
-  horsepower,
-  shaft_diameter
-FROM engines
-ORDER BY brand, displacement_cc;
-*/
+-- SELECT slug, name, brand, displacement_cc, horsepower, shaft_diameter
+-- FROM engines
+-- ORDER BY brand, displacement_cc;
 
