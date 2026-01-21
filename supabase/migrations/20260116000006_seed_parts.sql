@@ -45,7 +45,11 @@ INSERT INTO parts (
     44.99,
     true
   )
-ON CONFLICT (slug) DO NOTHING;
+ON CONFLICT (slug) DO UPDATE SET 
+  is_active = true,
+  name = EXCLUDED.name,
+  brand = EXCLUDED.brand,
+  price = EXCLUDED.price;
 
 -- ============================================================================
 -- TORQUE CONVERTERS
@@ -74,7 +78,11 @@ INSERT INTO parts (
     249.99,
     true
   )
-ON CONFLICT (slug) DO NOTHING;
+ON CONFLICT (slug) DO UPDATE SET 
+  is_active = true,
+  name = EXCLUDED.name,
+  brand = EXCLUDED.brand,
+  price = EXCLUDED.price;
 
 -- ============================================================================
 -- CHAINS
@@ -113,7 +121,11 @@ INSERT INTO parts (
     19.99,
     true
   )
-ON CONFLICT (slug) DO NOTHING;
+ON CONFLICT (slug) DO UPDATE SET 
+  is_active = true,
+  name = EXCLUDED.name,
+  brand = EXCLUDED.brand,
+  price = EXCLUDED.price;
 
 -- ============================================================================
 -- SPROCKETS
@@ -152,7 +164,11 @@ INSERT INTO parts (
     14.99,
     true
   )
-ON CONFLICT (slug) DO NOTHING;
+ON CONFLICT (slug) DO UPDATE SET 
+  is_active = true,
+  name = EXCLUDED.name,
+  brand = EXCLUDED.brand,
+  price = EXCLUDED.price;
 
 -- ============================================================================
 -- BRAKES
@@ -181,7 +197,11 @@ INSERT INTO parts (
     59.99,
     true
   )
-ON CONFLICT (slug) DO NOTHING;
+ON CONFLICT (slug) DO UPDATE SET 
+  is_active = true,
+  name = EXCLUDED.name,
+  brand = EXCLUDED.brand,
+  price = EXCLUDED.price;
 
 -- ============================================================================
 -- VERIFICATION QUERY (can be run to check seed data)

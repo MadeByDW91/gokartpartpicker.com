@@ -112,16 +112,16 @@ export function Header() {
   }
   
   return (
-    <header className="sticky top-0 z-50 bg-olive-900/95 backdrop-blur-sm border-b border-olive-700 w-full safe-area-top overflow-x-hidden">
-      <nav className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 w-full overflow-x-hidden">
-        <div className="flex items-center h-14 sm:h-16 gap-1.5 sm:gap-2 lg:gap-4 w-full min-w-0 max-w-full">
+    <header className="sticky top-0 z-50 bg-olive-900/95 backdrop-blur-sm border-b border-olive-700 w-full safe-area-top overflow-x-hidden max-w-full">
+      <nav className="max-w-7xl mx-auto px-2 sm:px-3 lg:px-8 w-full overflow-x-hidden max-w-full">
+        <div className="flex items-center h-14 sm:h-16 gap-1 sm:gap-1.5 lg:gap-4 w-full min-w-0 max-w-full overflow-hidden">
           {/* Logo - Icon only on mobile, text on tablet+ */}
           <Link 
             href="/" 
-            className="flex items-center gap-1.5 sm:gap-3 group flex-shrink-0 min-h-[44px] min-w-0"
+            className="flex items-center gap-1 sm:gap-3 group flex-shrink-0 min-h-[44px] min-w-0"
             onClick={() => setMobileMenuOpen(false)}
           >
-            <div className="relative w-9 h-9 sm:w-10 sm:h-10 lg:w-11 lg:h-11 overflow-hidden rounded-lg border-2 border-orange-500 group-hover:border-orange-400 transition-colors flex-shrink-0">
+            <div className="relative w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-11 lg:h-11 overflow-hidden rounded-lg border-2 border-orange-500 group-hover:border-orange-400 transition-colors flex-shrink-0">
               <Image
                 src="/brand/brand-iconmark-v1.svg"
                 alt="GoKartPartPicker"
@@ -237,23 +237,23 @@ export function Header() {
             })}
           </div>
           
-          {/* Mobile Actions - Simplified: Just menu button, search/user in menu */}
-          <div className="flex md:hidden items-center gap-1 flex-shrink-0 ml-auto min-w-0">
-            {/* Search Icon Button - Mobile (smaller on mobile) */}
+          {/* Mobile Actions - Minimal: Only essential buttons */}
+          <div className="flex md:hidden items-center gap-0.5 flex-shrink-0 ml-auto min-w-0 max-w-none">
+            {/* Search Icon Button - Mobile (compact) */}
             <button
               onClick={() => setSearchModalOpen(true)}
-              className="flex items-center justify-center w-10 h-10 text-cream-200 hover:text-orange-400 rounded-lg hover:bg-olive-800 active:bg-olive-700 transition-colors touch-manipulation flex-shrink-0"
+              className="flex items-center justify-center w-9 h-9 text-cream-200 hover:text-orange-400 rounded-lg hover:bg-olive-800 active:bg-olive-700 transition-colors touch-manipulation flex-shrink-0"
               aria-label="Search"
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-4 h-4" />
             </button>
             
-            {/* User Profile - Mobile (only if authenticated) */}
+            {/* User Profile - Mobile (only if authenticated, compact) */}
             {!isActuallyLoading && isAuthenticated && (
               <div className="relative flex-shrink-0">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center justify-center w-10 h-10 rounded-lg bg-orange-500 text-cream-100 font-bold text-sm hover:bg-orange-400 active:bg-orange-600 transition-colors touch-manipulation"
+                  className="flex items-center justify-center w-9 h-9 rounded-lg bg-orange-500 text-cream-100 font-bold text-xs hover:bg-orange-400 active:bg-orange-600 transition-colors touch-manipulation"
                   aria-label="User menu"
                 >
                   {user?.email?.[0].toUpperCase()}
@@ -398,17 +398,17 @@ export function Header() {
             )}
           </div>
           
-          {/* Mobile Menu Button - Properly sized */}
+          {/* Mobile Menu Button - Compact */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden flex items-center justify-center w-10 h-10 text-cream-200 hover:text-orange-400 rounded-lg hover:bg-olive-800 active:bg-olive-700 transition-colors touch-manipulation flex-shrink-0"
+            className="lg:hidden flex items-center justify-center w-9 h-9 text-cream-200 hover:text-orange-400 rounded-lg hover:bg-olive-800 active:bg-olive-700 transition-colors touch-manipulation flex-shrink-0"
             aria-label="Toggle menu"
             aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? (
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             ) : (
-              <Menu className="w-5 h-5" />
+              <Menu className="w-4 h-4" />
             )}
           </button>
         </div>

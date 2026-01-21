@@ -210,20 +210,38 @@ select {
   }
 }
 
-/* Prevent horizontal scroll on header */
+/* Prevent horizontal scroll on header - AGGRESSIVE */
 header {
-  max-width: 100vw;
+  max-width: 100vw !important;
+  width: 100% !important;
   overflow-x: hidden !important;
+  position: relative;
 }
 
 header nav {
-  max-width: 100%;
+  max-width: 100% !important;
+  width: 100% !important;
   overflow-x: hidden !important;
+  position: relative;
 }
 
 header nav > div {
-  max-width: 100%;
+  max-width: 100% !important;
+  width: 100% !important;
   overflow-x: hidden !important;
+  position: relative;
+}
+
+/* Prevent any element from causing overflow */
+header * {
+  max-width: 100%;
+}
+
+/* Specifically target mobile actions */
+header nav > div > div:last-child {
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: fit-content;
 }
 
 /* Custom Scrollbar */
