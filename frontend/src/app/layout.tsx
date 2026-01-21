@@ -48,6 +48,12 @@ export const metadata: Metadata = {
     icon: '/brand/favicon.svg',
     apple: '/brand/apple-touch-icon.svg',
   },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',

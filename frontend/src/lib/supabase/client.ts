@@ -76,12 +76,12 @@ function handleSupabaseError(error: unknown, context: string): void {
   lastFailureTime = now;
   
   // Only log if it's not excessive (to avoid spam)
-  if (networkFailureCount <= MAX_NETWORK_FAILURES) {
-    console.warn(`[Supabase] Network error in ${context}:`, {
-      message: typeof error === 'object' && 'message' in error 
-        ? (error as { message?: unknown }).message 
-        : String(error),
-      failureCount: networkFailureCount,
+    if (networkFailureCount <= MAX_NETWORK_FAILURES) {
+      console.warn(`[Supabase] Network error in ${context}:`, {
+        message: error && typeof error === 'object' && 'message' in error 
+          ? (error as { message?: unknown }).message 
+          : String(error),
+        failureCount: networkFailureCount,
       hint: networkFailureCount >= MAX_NETWORK_FAILURES 
         ? 'Network issues detected. Auto-refresh may be disabled temporarily.' 
         : undefined

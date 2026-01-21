@@ -24,7 +24,8 @@ import {
   Calculator,
   MessageSquare,
   Command,
-  Search
+  Search,
+  MoreHorizontal
 } from 'lucide-react';
 import { AdvancedSearch } from '@/components/search/AdvancedSearch';
 import { SearchModal } from '@/components/search/SearchModal';
@@ -46,6 +47,7 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   
   // Safety timeout: if loading takes too long, assume not authenticated
   const [loadingTimeout, setLoadingTimeout] = useState(false);
@@ -88,6 +90,21 @@ export function Header() {
     };
   }, [mobileMenuOpen]);
 
+  // Close more menu when clicking outside
+  useEffect(() => {
+    if (!moreMenuOpen) return;
+    
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-more-menu]')) {
+        setMoreMenuOpen(false);
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [moreMenuOpen]);
+
   
   // Debug: Log admin status
   if (isAuthenticated && !adminLoading) {
@@ -95,16 +112,16 @@ export function Header() {
   }
   
   return (
-    <header className="sticky top-0 z-50 bg-olive-900/95 backdrop-blur-sm border-b border-olive-700 w-full safe-area-top">
-      <nav className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-        <div className="flex items-center h-14 sm:h-16 gap-2 lg:gap-4">
+    <header className="sticky top-0 z-50 bg-olive-900/95 backdrop-blur-sm border-b border-olive-700 w-full safe-area-top overflow-x-hidden">
+      <nav className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 w-full overflow-x-hidden">
+        <div className="flex items-center h-14 sm:h-16 gap-1.5 sm:gap-2 lg:gap-4 w-full min-w-0 max-w-full">
           {/* Logo - Icon only on mobile, text on tablet+ */}
           <Link 
             href="/" 
-            className="flex items-center gap-2 sm:gap-3 group flex-shrink-0 min-h-[44px]"
+            className="flex items-center gap-1.5 sm:gap-3 group flex-shrink-0 min-h-[44px] min-w-0"
             onClick={() => setMobileMenuOpen(false)}
           >
-            <div className="relative w-10 h-10 sm:w-11 sm:h-11 overflow-hidden rounded-lg border-2 border-orange-500 group-hover:border-orange-400 transition-colors flex-shrink-0">
+            <div className="relative w-9 h-9 sm:w-10 sm:h-10 lg:w-11 lg:h-11 overflow-hidden rounded-lg border-2 border-orange-500 group-hover:border-orange-400 transition-colors flex-shrink-0">
               <Image
                 src="/brand/brand-iconmark-v1.svg"
                 alt="GoKartPartPicker"
@@ -122,8 +139,82 @@ export function Header() {
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-1 flex-1 min-w-0 overflow-hidden justify-center">
+          {/* Desktop Navigation - Responsive with More Menu */}
+          <div className="hidden md:flex lg:hidden items-center gap-1 flex-1 min-w-0 overflow-hidden justify-center max-w-none">
+            {/* Show first 4 items on medium screens */}
+            {navigation.slice(0, 4).map((item) => {
+              const isActive = pathname === item.href || 
+                (item.href !== '/' && pathname.startsWith(item.href));
+              
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={cn(
+                    'flex items-center gap-1.5 px-2.5 py-2 text-xs font-medium uppercase tracking-wide rounded-md transition-all duration-200 whitespace-nowrap flex-shrink-0',
+                    isActive 
+                      ? 'text-orange-400 bg-olive-800' 
+                      : 'text-cream-200 hover:text-orange-400 hover:bg-olive-800'
+                  )}
+                >
+                  <item.icon className="w-4 h-4 flex-shrink-0" />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
+            
+            {/* More Menu for remaining items */}
+            <div className="relative flex-shrink-0" data-more-menu>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMoreMenuOpen(!moreMenuOpen);
+                }}
+                className={cn(
+                  'flex items-center gap-1.5 px-2.5 py-2 text-xs font-medium uppercase tracking-wide rounded-md transition-all duration-200 whitespace-nowrap',
+                  moreMenuOpen
+                    ? 'text-orange-400 bg-olive-800'
+                    : 'text-cream-200 hover:text-orange-400 hover:bg-olive-800'
+                )}
+              >
+                <MoreHorizontal className="w-4 h-4 flex-shrink-0" />
+                <span>More</span>
+              </button>
+              
+              {moreMenuOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-10" 
+                    onClick={() => setMoreMenuOpen(false)} 
+                  />
+                  <div className="absolute left-0 top-full mt-2 w-48 bg-olive-800 border border-olive-600 rounded-lg shadow-xl z-20 overflow-hidden">
+                    {navigation.slice(4).map((item) => {
+                      const isActive = pathname === item.href || 
+                        (item.href !== '/' && pathname.startsWith(item.href));
+                      
+                      return (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          onClick={() => setMoreMenuOpen(false)}
+                          className={cn(
+                            'flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation',
+                            isActive && 'text-orange-400 bg-olive-700'
+                          )}
+                        >
+                          <item.icon className="w-4 h-4 flex-shrink-0" />
+                          <span>{item.name}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+          
+          {/* Large Desktop Navigation - Show all items */}
+          <div className="hidden lg:flex items-center gap-1 flex-1 min-w-0 overflow-hidden justify-center max-w-none">
             {navigation.map((item) => {
               const isActive = pathname === item.href || 
                 (item.href !== '/' && pathname.startsWith(item.href));
@@ -147,11 +238,11 @@ export function Header() {
           </div>
           
           {/* Mobile Actions - Simplified: Just menu button, search/user in menu */}
-          <div className="flex md:hidden items-center gap-1.5 flex-shrink-0 ml-auto">
-            {/* Search Icon Button - Mobile */}
+          <div className="flex md:hidden items-center gap-1 flex-shrink-0 ml-auto min-w-0">
+            {/* Search Icon Button - Mobile (smaller on mobile) */}
             <button
               onClick={() => setSearchModalOpen(true)}
-              className="flex items-center justify-center w-11 h-11 text-cream-200 hover:text-orange-400 rounded-lg hover:bg-olive-800 active:bg-olive-700 transition-colors touch-manipulation"
+              className="flex items-center justify-center w-10 h-10 text-cream-200 hover:text-orange-400 rounded-lg hover:bg-olive-800 active:bg-olive-700 transition-colors touch-manipulation flex-shrink-0"
               aria-label="Search"
             >
               <Search className="w-5 h-5" />
@@ -159,12 +250,14 @@ export function Header() {
             
             {/* User Profile - Mobile (only if authenticated) */}
             {!isActuallyLoading && isAuthenticated && (
-              <button
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center justify-center w-11 h-11 rounded-lg bg-orange-500 text-cream-100 font-bold text-sm hover:bg-orange-400 active:bg-orange-600 transition-colors touch-manipulation relative"
-                aria-label="User menu"
-              >
-                {user?.email?.[0].toUpperCase()}
+              <div className="relative flex-shrink-0">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center justify-center w-10 h-10 rounded-lg bg-orange-500 text-cream-100 font-bold text-sm hover:bg-orange-400 active:bg-orange-600 transition-colors touch-manipulation"
+                  aria-label="User menu"
+                >
+                  {user?.email?.[0].toUpperCase()}
+                </button>
                 {userMenuOpen && (
                   <>
                     <div 
@@ -214,12 +307,12 @@ export function Header() {
                     </div>
                   </>
                 )}
-              </button>
+              </div>
             )}
           </div>
 
-          {/* Search & Auth Section - Desktop (ml-auto when < lg so nav + menu align right) */}
-          <div className="hidden md:flex items-center gap-2 lg:gap-3 flex-shrink-0 ml-auto lg:ml-0">
+          {/* Search & Auth Section - Desktop Only */}
+          <div className="hidden lg:flex items-center gap-2 xl:gap-3 flex-shrink-0">
             {/* Search Icon Button - 44px touch target */}
             <button
               onClick={() => setSearchModalOpen(true)}
@@ -305,17 +398,17 @@ export function Header() {
             )}
           </div>
           
-          {/* Mobile Menu Button - Larger touch target */}
+          {/* Mobile Menu Button - Properly sized */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden flex items-center justify-center w-11 h-11 text-cream-200 hover:text-orange-400 rounded-lg hover:bg-olive-800 active:bg-olive-700 transition-colors touch-manipulation"
+            className="lg:hidden flex items-center justify-center w-10 h-10 text-cream-200 hover:text-orange-400 rounded-lg hover:bg-olive-800 active:bg-olive-700 transition-colors touch-manipulation flex-shrink-0"
             aria-label="Toggle menu"
             aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? (
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             ) : (
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5" />
             )}
           </button>
         </div>
