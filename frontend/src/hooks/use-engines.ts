@@ -14,15 +14,12 @@ export function useEngines(filters?: EngineFilters) {
     queryFn: async (): Promise<Engine[]> => {
       const supabase = createClient();
       
-      // Check if Supabase is properly configured
-      if (!supabase || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      // Check if Supabase client was created successfully
+      if (!supabase) {
         throw new Error('Supabase is not configured. Please check your environment variables.');
       }
       
       try {
-        if (!supabase) {
-          throw new Error('Supabase client is not available. Please check your environment variables.');
-        }
 
         let query = supabase
           .from('engines')
@@ -130,14 +127,11 @@ export function useEngine(id: string) {
     queryFn: async (): Promise<Engine> => {
       const supabase = createClient();
       
-      if (!supabase || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      if (!supabase) {
         throw new Error('Supabase is not configured. Please check your environment variables.');
       }
       
       try {
-        if (!supabase) {
-          throw new Error('Supabase client is not available. Please check your environment variables.');
-        }
 
         const { data, error } = await supabase
           .from('engines')
@@ -218,14 +212,11 @@ export function useEngineBrands() {
     queryFn: async (): Promise<string[]> => {
       const supabase = createClient();
       
-      if (!supabase || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      if (!supabase) {
         throw new Error('Supabase is not configured. Please check your environment variables.');
       }
       
       try {
-        if (!supabase) {
-          throw new Error('Supabase client is not available. Please check your environment variables.');
-        }
 
         const { data, error } = await supabase
           .from('engines')

@@ -14,15 +14,12 @@ export function useParts(filters?: PartFilters) {
     queryFn: async (): Promise<Part[]> => {
       const supabase = createClient();
       
-      // Check if Supabase is properly configured
-      if (!supabase || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      // Check if Supabase client was created successfully
+      if (!supabase) {
         throw new Error('Supabase is not configured. Please check your environment variables.');
       }
       
       try {
-        if (!supabase) {
-          throw new Error('Supabase client is not available. Please check your environment variables.');
-        }
 
         let query = supabase
           .from('parts')
@@ -131,14 +128,11 @@ export function usePart(id: string) {
     queryFn: async (): Promise<Part> => {
       const supabase = createClient();
       
-      if (!supabase || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      if (!supabase) {
         throw new Error('Supabase is not configured. Please check your environment variables.');
       }
       
       try {
-        if (!supabase) {
-          throw new Error('Supabase client is not available. Please check your environment variables.');
-        }
 
         const { data, error } = await supabase
           .from('parts')
@@ -219,14 +213,11 @@ export function usePartBrands(category?: PartCategory) {
     queryFn: async (): Promise<string[]> => {
       const supabase = createClient();
       
-      if (!supabase || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      if (!supabase) {
         throw new Error('Supabase is not configured. Please check your environment variables.');
       }
       
       try {
-        if (!supabase) {
-          throw new Error('Supabase client is not available. Please check your environment variables.');
-        }
 
         let query = supabase
           .from('parts')
