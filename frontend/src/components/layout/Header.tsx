@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -48,6 +49,9 @@ export function Header() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const userMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const userMenuPosition = useRef<{ top: number; right: number } | null>(null);
+  const [mounted, setMounted] = useState(false);
   
   // Safety timeout: if loading takes too long, assume not authenticated
   const [loadingTimeout, setLoadingTimeout] = useState(false);
@@ -77,6 +81,22 @@ export function Header() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Client-side mounting check
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Update dropdown position when opened
+  useEffect(() => {
+    if (userMenuOpen && userMenuButtonRef.current && mounted) {
+      const rect = userMenuButtonRef.current.getBoundingClientRect();
+      userMenuPosition.current = {
+        top: rect.bottom + 8, // mt-2 = 8px
+        right: window.innerWidth - rect.right,
+      };
+    }
+  }, [userMenuOpen, mounted]);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -248,29 +268,43 @@ export function Header() {
               <Search className="w-4 h-4" />
             </button>
             
-            {/* User Profile - Mobile (only if authenticated, compact) */}
+            {/* User Profile - Mobile (same dropdown, positioned automatically) */}
             {!isActuallyLoading && isAuthenticated && (
-              <div className="relative flex-shrink-0 z-50">
+              <div className="relative flex-shrink-0">
                 <button
+                  ref={userMenuButtonRef}
+                  type="button"
                   onClick={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
-                    setUserMenuOpen(!userMenuOpen);
+                    setUserMenuOpen((prev) => !prev);
                   }}
-                  className="flex items-center justify-center w-9 h-9 rounded-lg bg-orange-500 text-cream-100 font-bold text-xs hover:bg-orange-400 active:bg-orange-600 transition-colors touch-manipulation"
+                  className="flex items-center justify-center w-9 h-9 rounded-lg bg-orange-500 text-cream-100 font-bold text-xs hover:bg-orange-400 active:bg-orange-600 transition-colors touch-manipulation cursor-pointer"
                   aria-label="User menu"
                   aria-expanded={userMenuOpen}
                   aria-haspopup="true"
                 >
                   {user?.email?.[0].toUpperCase()}
                 </button>
-                {userMenuOpen && (
-                  <>
-                    <div 
-                      className="fixed inset-0 z-[40]" 
-                      onClick={() => setUserMenuOpen(false)} 
-                      aria-hidden="true"
-                    />
-                    <div className="absolute right-0 top-full mt-2 w-56 bg-olive-800 border border-olive-600 rounded-lg shadow-xl z-[50] overflow-hidden">
+              </div>
+            )}
+            
+            {/* Mobile User Menu Dropdown - Rendered as Portal (same as desktop) */}
+            {mounted && userMenuOpen && !isActuallyLoading && isAuthenticated && userMenuPosition.current && createPortal(
+              <>
+                <div 
+                  className="fixed inset-0 z-[9998]" 
+                  onClick={() => setUserMenuOpen(false)} 
+                  aria-hidden="true"
+                />
+                <div 
+                  className="fixed w-56 bg-olive-800 border border-olive-600 rounded-lg shadow-xl z-[9999] overflow-hidden"
+                  style={{
+                    top: `${userMenuPosition.current.top}px`,
+                    right: `${userMenuPosition.current.right}px`,
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
                       <div className="px-4 py-3 border-b border-olive-600">
                         <p className="text-sm font-medium text-cream-100 truncate">{user?.email}</p>
                       </div>
@@ -311,7 +345,6 @@ export function Header() {
                         Sign Out
                       </button>
                     </div>
-                  </>
                 )}
               </div>
             )}
@@ -331,15 +364,19 @@ export function Header() {
             {isActuallyLoading ? (
               <div className="w-24 h-9 bg-olive-700 rounded-md animate-pulse flex-shrink-0" />
             ) : isAuthenticated ? (
-              <div className="relative flex-shrink-0 z-50">
+              <div className="relative flex-shrink-0">
                 <button
+                  ref={userMenuButtonRef}
+                  type="button"
                   onClick={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
-                    setUserMenuOpen(!userMenuOpen);
+                    setUserMenuOpen((prev) => !prev);
                   }}
-                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-cream-200 hover:text-orange-400 rounded-md hover:bg-olive-800 transition-colors whitespace-nowrap"
+                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-cream-200 hover:text-orange-400 rounded-md hover:bg-olive-800 transition-colors whitespace-nowrap cursor-pointer"
                   aria-expanded={userMenuOpen}
                   aria-haspopup="true"
+                  aria-label="User menu"
                 >
                   <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-cream-100 font-bold flex-shrink-0">
                     {user?.email?.[0].toUpperCase()}
@@ -349,15 +386,25 @@ export function Header() {
                     userMenuOpen && 'rotate-180'
                   )} />
                 </button>
-                
-                {userMenuOpen && (
-                  <>
-                    <div 
-                      className="fixed inset-0 z-[40]" 
-                      onClick={() => setUserMenuOpen(false)} 
-                      aria-hidden="true"
-                    />
-                    <div className="absolute right-0 top-full mt-2 w-48 bg-olive-800 border border-olive-600 rounded-lg shadow-xl z-[50] overflow-hidden">
+              </div>
+            ) : null}
+            
+            {/* User Menu Dropdown - Rendered as Portal */}
+            {mounted && userMenuOpen && isAuthenticated && userMenuPosition.current && createPortal(
+              <>
+                <div 
+                  className="fixed inset-0 z-[9998]" 
+                  onClick={() => setUserMenuOpen(false)} 
+                  aria-hidden="true"
+                />
+                <div 
+                  className="fixed w-48 bg-olive-800 border border-olive-600 rounded-lg shadow-xl z-[9999] overflow-hidden"
+                  style={{
+                    top: `${userMenuPosition.current.top}px`,
+                    right: `${userMenuPosition.current.right}px`,
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
                       <Link
                         href="/builds"
                         className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation"
@@ -395,10 +442,11 @@ export function Header() {
                         Sign Out
                       </button>
                     </div>
-                  </>
-                )}
-              </div>
-            ) : (
+              </>,
+              document.body
+            ) : null}
+            
+            {isAuthenticated ? null : (
               <div className="flex items-center gap-2 flex-shrink-0">
                 <Link href="/auth/login">
                   <Button variant="ghost" size="sm" className="whitespace-nowrap">Login</Button>
