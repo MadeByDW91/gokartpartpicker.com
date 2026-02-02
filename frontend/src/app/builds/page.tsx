@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRequireAuth } from '@/hooks/use-auth';
+import { useImpersonation } from '@/hooks/use-impersonation';
 import { useUserBuilds, useDeleteBuild } from '@/hooks/use-builds';
 import { BuildCard } from '@/components/BuildCard';
 import { BuildCardSkeleton } from '@/components/ui/Skeleton';
@@ -20,10 +21,12 @@ import {
 
 export default function SavedBuildsPage() {
   const { user, loading: authLoading } = useRequireAuth();
+  const { active: impersonating } = useImpersonation();
   const { data: builds, isLoading, error } = useUserBuilds();
   const deleteBuild = useDeleteBuild();
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  
+  const viewOnly = impersonating;
+
   const handleDelete = async (id: string) => {
     await deleteBuild.mutateAsync(id);
     setDeleteConfirm(null);
@@ -57,22 +60,26 @@ export default function SavedBuildsPage() {
                 </h1>
               </div>
               <p className="text-cream-400">
-                Your saved go-kart builds. Edit, share, or continue building.
+                {viewOnly
+                  ? 'Viewing this user’s builds (view-only). Exit view-as to make changes.'
+                  : 'Your saved go-kart builds. Edit, share, or continue building.'}
               </p>
             </div>
             
-            <div className="flex items-center gap-2">
-              <Link href="/builds/compare">
-                <Button variant="secondary" icon={<GitCompare className="w-4 h-4" />}>
-                  Compare Builds
-                </Button>
-              </Link>
-              <Link href="/builder">
-                <Button variant="primary" icon={<Plus className="w-4 h-4" />}>
-                  New Build
-                </Button>
-              </Link>
-            </div>
+            {!viewOnly && (
+              <div className="flex items-center gap-2">
+                <Link href="/builds/compare">
+                  <Button variant="secondary" icon={<GitCompare className="w-4 h-4" />}>
+                    Compare Builds
+                  </Button>
+                </Link>
+                <Link href="/builder">
+                  <Button variant="primary" icon={<Plus className="w-4 h-4" />}>
+                    New Build
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -104,15 +111,21 @@ export default function SavedBuildsPage() {
               height={200}
               className="mx-auto mb-6"
             />
-            <h2 className="text-2xl text-cream-100 mb-2">No Builds Yet</h2>
+            <h2 className="text-2xl text-cream-100 mb-2">
+              {viewOnly ? 'No Builds' : 'No Builds Yet'}
+            </h2>
             <p className="text-cream-400 mb-6 max-w-md mx-auto">
-              Start building your first go-kart! Choose an engine and add compatible parts.
+              {viewOnly
+                ? 'This user has no saved builds.'
+                : 'Start building your first go-kart! Choose an engine and add compatible parts.'}
             </p>
-            <Link href="/builder">
-              <Button variant="primary" size="lg" icon={<Plus className="w-5 h-5" />}>
-                Create Your First Build
-              </Button>
-            </Link>
+            {!viewOnly && (
+              <Link href="/builder">
+                <Button variant="primary" size="lg" icon={<Plus className="w-5 h-5" />}>
+                  Create Your First Build
+                </Button>
+              </Link>
+            )}
           </div>
         )}
         
@@ -123,19 +136,22 @@ export default function SavedBuildsPage() {
               <BuildCard
                 key={build.id}
                 build={build}
-                onDelete={(id) => setDeleteConfirm(id)}
-                onEdit={(build) => {
-                  // Navigate to builder with this build loaded
-                  window.location.href = `/builder?load=${build.id}`;
-                }}
+                onDelete={viewOnly ? undefined : (id) => setDeleteConfirm(id)}
+                onEdit={
+                  viewOnly
+                    ? undefined
+                    : (b) => {
+                        window.location.href = `/builder?load=${b.id}`;
+                      }
+                }
               />
             ))}
           </div>
         )}
       </div>
       
-      {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
+      {/* Delete Confirmation Modal (hidden when view-only) */}
+      {!viewOnly && deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div 
             className="absolute inset-0 bg-olive-900/80 backdrop-blur-sm"

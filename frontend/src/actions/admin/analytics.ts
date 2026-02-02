@@ -16,24 +16,40 @@ import {
 interface AnalyticsMetrics {
   catalog: {
     totalEngines: number;
+    totalMotors: number;
     totalParts: number;
     activeEngines: number;
+    activeMotors: number;
     activeParts: number;
+    enginesWithPrice: number;
+    motorsWithPrice: number;
     partsWithPrice: number;
+    enginesWithImages: number;
+    motorsWithImages: number;
     partsWithImages: number;
+    enginesWithAffiliate: number;
+    motorsWithAffiliate: number;
     partsWithAffiliate: number;
   };
   topEngines: Array<{ id: string; name: string; views: number }>;
+  topMotors: Array<{ id: string; name: string; views: number }>;
   topParts: Array<{ id: string; name: string; views: number }>;
   builds: {
     totalBuilds: number;
     publicBuilds: number;
     totalLikes: number;
     averagePartsPerBuild: number;
+    evBuilds: number;
+    gasBuilds: number;
   };
   users: {
     totalUsers: number;
     activeUsers: number;
+    newUsersLast30Days: number;
+  };
+  revenue: {
+    potentialRevenue: number; // Sum of all prices with affiliate links
+    coverage: number; // Percentage of items with affiliate links
   };
 }
 
@@ -52,22 +68,26 @@ export async function getAnalyticsMetrics(): Promise<ActionResult<AnalyticsMetri
     // Catalog metrics
     const [
       enginesResult,
+      motorsResult,
       partsResult,
       buildsResult,
       usersResult,
     ] = await Promise.all([
       supabase.from('engines').select('id, name, is_active, price, image_url, affiliate_url'),
+      supabase.from('electric_motors').select('id, name, is_active, price, image_url, affiliate_url'),
       supabase.from('parts').select('id, name, is_active, price, image_url, affiliate_url'),
-      supabase.from('builds').select('id, parts, likes_count, is_public'),
+      supabase.from('builds').select('id, parts, likes_count, is_public, power_source_type'),
       supabase.from('profiles').select('id, created_at'),
     ]);
 
     if (enginesResult.error) return error('Failed to fetch engines');
+    if (motorsResult.error) return error('Failed to fetch motors');
     if (partsResult.error) return error('Failed to fetch parts');
     if (buildsResult.error) return error('Failed to fetch builds');
     if (usersResult.error) return error('Failed to fetch users');
 
     const engines = enginesResult.data || [];
+    const motors = motorsResult.data || [];
     const parts = partsResult.data || [];
     const builds = buildsResult.data || [];
     const users = usersResult.data || [];
@@ -75,11 +95,19 @@ export async function getAnalyticsMetrics(): Promise<ActionResult<AnalyticsMetri
     // Calculate catalog metrics
     const catalog = {
       totalEngines: engines.length,
+      totalMotors: motors.length,
       totalParts: parts.length,
       activeEngines: engines.filter((e: any) => e.is_active).length,
+      activeMotors: motors.filter((m: any) => m.is_active).length,
       activeParts: parts.filter((p: any) => p.is_active).length,
+      enginesWithPrice: engines.filter((e: any) => e.price && e.price > 0).length,
+      motorsWithPrice: motors.filter((m: any) => m.price && m.price > 0).length,
       partsWithPrice: parts.filter((p: any) => p.price && p.price > 0).length,
+      enginesWithImages: engines.filter((e: any) => e.image_url).length,
+      motorsWithImages: motors.filter((m: any) => m.image_url).length,
       partsWithImages: parts.filter((p: any) => p.image_url).length,
+      enginesWithAffiliate: engines.filter((e: any) => e.affiliate_url).length,
+      motorsWithAffiliate: motors.filter((m: any) => m.affiliate_url).length,
       partsWithAffiliate: parts.filter((p: any) => p.affiliate_url).length,
     };
 
@@ -88,6 +116,15 @@ export async function getAnalyticsMetrics(): Promise<ActionResult<AnalyticsMetri
       .map((e: any) => ({
         id: e.id,
         name: e.name,
+        views: 0, // Placeholder - views tracking not implemented yet
+      }))
+      .slice(0, 10);
+
+    // Top motors
+    const topMotors = motors
+      .map((m: any) => ({
+        id: m.id,
+        name: m.name,
         views: 0, // Placeholder - views tracking not implemented yet
       }))
       .slice(0, 10);
@@ -105,6 +142,8 @@ export async function getAnalyticsMetrics(): Promise<ActionResult<AnalyticsMetri
     const totalBuilds = builds.length;
     const publicBuilds = builds.filter((b: any) => b.is_public).length;
     const totalLikes = builds.reduce((sum: number, b: any) => sum + (b.likes_count || 0), 0);
+    const evBuilds = builds.filter((b: any) => b.power_source_type === 'electric').length;
+    const gasBuilds = builds.filter((b: any) => b.power_source_type === 'gas' || !b.power_source_type).length;
     
     // Calculate average parts per build
     const buildParts = builds.map((b: any) => {
@@ -121,20 +160,44 @@ export async function getAnalyticsMetrics(): Promise<ActionResult<AnalyticsMetri
     const activeUsers = users.filter((u: any) => 
       new Date(u.created_at) >= thirtyDaysAgo
     ).length;
+    const newUsersLast30Days = users.filter((u: any) => 
+      new Date(u.created_at) >= thirtyDaysAgo
+    ).length;
+
+    // Revenue metrics
+    const allItems = [
+      ...engines.map((e: any) => ({ price: e.price || 0, hasAffiliate: !!e.affiliate_url })),
+      ...motors.map((m: any) => ({ price: m.price || 0, hasAffiliate: !!m.affiliate_url })),
+      ...parts.map((p: any) => ({ price: p.price || 0, hasAffiliate: !!p.affiliate_url })),
+    ];
+    const potentialRevenue = allItems
+      .filter((item: any) => item.hasAffiliate && item.price > 0)
+      .reduce((sum: number, item: any) => sum + item.price, 0);
+    const totalItems = allItems.length;
+    const itemsWithAffiliate = allItems.filter((item: any) => item.hasAffiliate).length;
+    const coverage = totalItems > 0 ? (itemsWithAffiliate / totalItems) * 100 : 0;
 
     const metrics: AnalyticsMetrics = {
       catalog,
       topEngines,
+      topMotors,
       topParts,
       builds: {
         totalBuilds,
         publicBuilds,
         totalLikes,
         averagePartsPerBuild: Math.round(averagePartsPerBuild * 10) / 10,
+        evBuilds,
+        gasBuilds,
       },
       users: {
         totalUsers: users.length,
         activeUsers,
+        newUsersLast30Days,
+      },
+      revenue: {
+        potentialRevenue,
+        coverage: Math.round(coverage * 10) / 10,
       },
     };
 

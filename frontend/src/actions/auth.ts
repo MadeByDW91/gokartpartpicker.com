@@ -2,10 +2,13 @@
 
 /**
  * Server actions for authentication
+ * Phase 2: Rate limiting on resend verification
  */
 
 import { createClient } from '@/lib/supabase/server';
 import { ActionResult, success, error, handleError } from '@/lib/api/types';
+import { secureError } from '@/lib/secure-logging';
+import { checkRateLimitByIp } from '@/lib/rate-limit';
 
 /**
  * Resend verification email
@@ -15,6 +18,11 @@ export async function resendVerificationEmail(
   email: string
 ): Promise<ActionResult<boolean>> {
   try {
+    const rateLimit = await checkRateLimitByIp('auth-relaxed');
+    if (!rateLimit.allowed) {
+      return error(rateLimit.error ?? 'Too many requests. Please wait before requesting another email.');
+    }
+
     if (!email || typeof email !== 'string' || !email.includes('@')) {
       return error('Valid email address is required');
     }
@@ -30,7 +38,7 @@ export async function resendVerificationEmail(
     });
 
     if (resendError) {
-      console.error('[resendVerificationEmail] Error:', resendError);
+      secureError('[resendVerificationEmail] Error:', resendError);
       
       // Provide user-friendly error messages
       if (resendError.message.includes('rate limit')) {

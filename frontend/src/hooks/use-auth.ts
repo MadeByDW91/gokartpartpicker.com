@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
@@ -13,7 +13,7 @@ export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   
   useEffect(() => {
     // If Supabase is not configured, stop loading immediately
@@ -102,7 +102,7 @@ export function useAuth() {
         subscription.unsubscribe();
       }
     };
-  }, [supabase]);
+  }, []);
   
   const signIn = async (email: string, password: string) => {
     if (!supabase) {
@@ -116,10 +116,15 @@ export function useAuth() {
     setLoading(false);
     
     if (error) throw error;
-    router.push('/builds');
+    router.push('/dashboard');
   };
   
-  const signUp = async (email: string, password: string, username: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    username: string,
+    captchaToken?: string
+  ) => {
     if (!supabase) {
       throw new Error('Authentication is not available. Please check your configuration.');
     }
@@ -133,13 +138,16 @@ export function useAuth() {
       if (usernameLower.length < 3 || usernameLower.length > 30) {
         throw new Error('Username must be between 3 and 30 characters');
       }
-      
+
+      const signUpOptions: { data: { username: string }; captchaToken?: string } = {
+        data: { username: usernameLower },
+      };
+      if (captchaToken) signUpOptions.captchaToken = captchaToken;
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: { username: usernameLower },
-        },
+        options: signUpOptions,
       });
       
       if (error) {
@@ -160,7 +168,7 @@ export function useAuth() {
       // No manual insert needed - trigger handles it with SECURITY DEFINER
       
       setLoading(false);
-      router.push('/builds');
+      router.push('/dashboard');
     } catch (err) {
       setLoading(false);
       throw err;

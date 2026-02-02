@@ -8,14 +8,15 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Package, ChevronRight } from 'lucide-react';
 import { useMemo } from 'react';
-import { getCategoryLabel, cn } from '@/lib/utils';
-import type { PartCategory, Part, Engine } from '@/types/database';
+import { getCategoryLabel, GAS_ONLY_CATEGORIES, ELECTRIC_ONLY_CATEGORIES, cn } from '@/lib/utils';
+import type { PartCategory, Part, Engine, PowerSourceType } from '@/types/database';
 
 interface CategoryPartsListProps {
   category: PartCategory;
   selectedPart: Part | null;
   onSelectPart: (part: Part) => void;
   selectedEngine?: Engine | null;
+  powerSourceType?: PowerSourceType;
 }
 
 /**
@@ -26,15 +27,23 @@ export function CategoryPartsList({
   category, 
   selectedPart, 
   onSelectPart,
-  selectedEngine 
+  selectedEngine,
+  powerSourceType = 'gas'
 }: CategoryPartsListProps) {
   const { data: allParts, isLoading } = useParts({ category });
 
-  // Filter and sort parts based on compatibility with selected engine
+  // Filter and sort parts based on compatibility with selected engine and power source
   const parts = useMemo(() => {
     if (!allParts) return [];
     
-    let filtered = [...allParts];
+    // Filter by power source compatibility
+    let filtered = allParts.filter((part) => {
+      // Filter out gas-only parts when power source is electric
+      if (powerSourceType === 'electric' && GAS_ONLY_CATEGORIES.includes(category)) return false;
+      // Filter out electric-only parts when power source is gas
+      if (powerSourceType === 'gas' && ELECTRIC_ONLY_CATEGORIES.includes(category)) return false;
+      return true;
+    });
     
     // If engine is selected, prioritize compatible parts (matching shaft diameter for clutches/torque converters)
     if (selectedEngine && (category === 'clutch' || category === 'torque_converter')) {
@@ -51,7 +60,7 @@ export function CategoryPartsList({
     }
     
     return filtered;
-  }, [allParts, category, selectedEngine]);
+  }, [allParts, category, selectedEngine, powerSourceType]);
 
   if (isLoading) {
     return (
@@ -78,7 +87,7 @@ export function CategoryPartsList({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 stagger-children">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 stagger-children items-stretch">
         {parts.slice(0, 8).map((part) => (
           <PartCard
             key={part.id}

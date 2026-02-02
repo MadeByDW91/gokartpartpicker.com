@@ -11,18 +11,18 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = 'default', hoverable = false, children, ...props }, ref) => {
     const variants = {
-      default: 'bg-olive-700 border border-olive-600',
-      accent: 'bg-olive-700 border-2 border-orange-500 shadow-[0_0_20px_rgba(201,106,36,0.3)]',
-      ghost: 'bg-transparent border border-olive-600',
+      default: 'bg-olive-800/50 border border-olive-700/50',
+      accent: 'bg-olive-800/50 border-2 border-orange-500/50',
+      ghost: 'bg-transparent border border-olive-700/30',
     };
     
     return (
       <div
         ref={ref}
         className={cn(
-          'rounded-lg transition-all duration-200',
+          'rounded-xl transition-colors duration-200',
           variants[variant],
-          hoverable && 'hover:border-orange-500 hover:shadow-md cursor-pointer',
+          hoverable && 'hover:border-orange-500/50 cursor-pointer',
           className
         )}
         {...props}

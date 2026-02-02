@@ -31,7 +31,7 @@ export function SelectEngineButton({ engine }: SelectEngineButtonProps) {
       size="lg"
       onClick={handleClick}
       icon={isSelected ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-      className="flex-1 sm:flex-none min-w-[200px]"
+      className="w-full"
     >
       {isSelected ? 'Selected for Build' : 'Select This Engine'}
     </Button>

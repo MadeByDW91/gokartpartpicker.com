@@ -15,6 +15,8 @@ export const PART_CATEGORIES = [
   'axle',
   'wheel',
   'tire',
+  'tire_front',
+  'tire_rear',
   'brake',
   'throttle',
   'frame',
@@ -35,6 +37,16 @@ export const PART_CATEGORIES = [
   'gasket',
   'hardware',
   'other',
+  // EV-specific categories
+  'battery',
+  'motor_controller',
+  'bms',
+  'charger',
+  'throttle_controller',
+  'voltage_converter',
+  'battery_mount',
+  'wiring_harness',
+  'fuse_kill_switch',
 ] as const;
 
 export type PartCategory = (typeof PART_CATEGORIES)[number];
@@ -42,6 +54,9 @@ export type PartCategory = (typeof PART_CATEGORIES)[number];
 // Shaft types
 export const SHAFT_TYPES = ['straight', 'tapered', 'threaded'] as const;
 export type ShaftType = (typeof SHAFT_TYPES)[number];
+
+// Power source types
+export type PowerSourceType = 'gas' | 'electric';
 
 // Engine type
 export interface Engine {
@@ -59,10 +74,45 @@ export interface Engine {
   weight_lbs: number | null;
   price: number | null;
   image_url: string | null;
+  schematic_url: string | null;
+  manual_url: string | null;
   affiliate_url: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+// Electric Motor type
+export interface ElectricMotor {
+  id: string;
+  slug: string;
+  name: string;
+  brand: string;
+  model: string | null;
+  variant: string | null;
+  voltage: number; // 12, 24, 36, 48, 72, 96 (volts)
+  power_kw: number; // Continuous power in kW
+  peak_power_kw: number | null; // Peak/burst power in kW
+  horsepower: number; // Calculated/converted for display
+  torque_lbft: number; // Torque in lb-ft (imperial)
+  rpm_max: number | null; // Maximum RPM
+  rpm_rated: number | null; // Rated/continuous RPM
+  efficiency: number | null; // 0.85 = 85% efficiency
+  shaft_diameter: number | null; // inches (for chain drive motors)
+  shaft_length: number | null; // inches
+  shaft_type: ShaftType; // straight, tapered, threaded (NO 'direct_drive' in Phase 1)
+  mount_type: string | null;
+  controller_required: boolean;
+  cooling_type: string | null; // 'air', 'liquid', 'passive'
+  weight_lbs: number | null;
+  price: number | null;
+  image_url: string | null;
+  affiliate_url: string | null;
+  is_active: boolean;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  created_by: string | null;
 }
 
 // Part type
@@ -88,6 +138,8 @@ export interface Build {
   name: string;
   description: string | null;
   engine_id: string | null;
+  motor_id: string | null; // For electric builds
+  power_source_type: PowerSourceType; // 'gas' or 'electric'
   parts: { [category: string]: string };
   total_price: number;
   is_public: boolean;
@@ -97,11 +149,12 @@ export interface Build {
   updated_at: string;
   // Joined data
   engine?: Engine;
+  motor?: ElectricMotor; // For electric builds
   profile?: Profile;
 }
 
 // Template goal types
-export const TEMPLATE_GOALS = ['speed', 'torque', 'budget', 'beginner', 'competition', 'kids'] as const;
+export const TEMPLATE_GOALS = ['speed', 'torque', 'budget', 'beginner', 'competition', 'kids', 'offroad', 'onroad', 'racing'] as const;
 export type TemplateGoal = (typeof TEMPLATE_GOALS)[number];
 
 // Template approval status
@@ -183,6 +236,35 @@ export interface CompatibilityRule {
 // Build parts selection
 export type BuildParts = Partial<Record<PartCategory, string>>;
 
+// Merchant type (for price comparison)
+export interface Merchant {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// Product Price type (for price comparison)
+export interface ProductPrice {
+  id: string;
+  part_id: string;
+  merchant_id: string;
+  price: number;
+  shipping_cost: number;
+  total_price: number; // Generated column (price + shipping_cost)
+  availability_status: 'in_stock' | 'out_of_stock';
+  product_url: string;
+  affiliate_url: string | null;
+  last_updated_at: string;
+  created_at: string;
+  // Joined data
+  merchant?: Merchant;
+  part?: Part;
+}
+
 // Filter types
 export interface EngineFilters {
   brand?: string;
@@ -192,6 +274,17 @@ export interface EngineFilters {
   max_cc?: number;
   shaft_type?: ShaftType;
   sort?: 'price' | 'horsepower' | 'displacement_cc';
+  order?: 'asc' | 'desc';
+}
+
+export interface MotorFilters {
+  brand?: string;
+  voltage?: number;
+  min_hp?: number;
+  max_hp?: number;
+  min_power_kw?: number;
+  max_power_kw?: number;
+  sort?: 'price' | 'horsepower' | 'power_kw' | 'voltage';
   order?: 'asc' | 'desc';
 }
 

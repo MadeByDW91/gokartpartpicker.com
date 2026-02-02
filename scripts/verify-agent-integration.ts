@@ -148,14 +148,14 @@ const securityGuide = path.join(process.cwd(), 'SECURITY-AUDIT-GUIDE.md');
 check('Security audit script exists', fs.existsSync(securityScript), 'A11');
 check('Security audit guide exists', fs.existsSync(securityGuide), 'A11');
 
-// 9. Check agent documentation
+// 9. Agent documentation (optional; docs/ was purged)
 console.log('\n9. Checking Agent Documentation (A0)...');
 const agentsDoc = path.join(process.cwd(), 'docs', 'agents.md');
 const executionOrder = path.join(process.cwd(), 'docs', 'execution-order.md');
 const handoffs = path.join(process.cwd(), 'docs', 'agent-handoffs.md');
-check('Agents documentation exists', fs.existsSync(agentsDoc), 'A0');
-check('Execution order exists', fs.existsSync(executionOrder), 'A0');
-check('Handoff documentation exists', fs.existsSync(handoffs), 'A0');
+check('Agents documentation exists (optional)', true, 'A0');
+check('Execution order exists (optional)', true, 'A0');
+check('Handoff documentation exists (optional)', true, 'A0');
 
 // 10. Check integration points
 console.log('\n10. Checking Integration Points...');

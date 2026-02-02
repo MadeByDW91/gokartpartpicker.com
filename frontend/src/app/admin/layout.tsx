@@ -7,7 +7,9 @@ import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAdmin } from '@/hooks/use-admin';
 import { GlobalSearch } from '@/components/admin/GlobalSearch';
+import { AdminNotifications } from '@/components/admin/AdminNotifications';
 import { getPendingApprovalsCount } from '@/actions/admin/approvals';
+import { useSwipe } from '@/hooks/use-swipe';
 import { 
   LayoutDashboard, 
   Cog, 
@@ -38,7 +40,13 @@ import {
   Flag,
   FolderTree,
   Share2,
-  Clock
+  Clock,
+  Menu,
+  X,
+  Upload,
+  Search,
+  Link2,
+  CheckCircle,
 } from 'lucide-react';
 
 // Navigation groups
@@ -70,6 +78,17 @@ const navigationGroups: NavGroup[] = [
     ],
   },
   {
+    name: 'Product Ingestion',
+    icon: Upload,
+    defaultOpen: false,
+    items: [
+      { name: 'Overview', href: '/admin/ingestion', icon: Upload },
+      { name: 'Amazon Links', href: '/admin/ingestion/amazon-links', icon: Link2 },
+      { name: 'Amazon Search', href: '/admin/ingestion/amazon-search', icon: Search },
+      { name: 'Review Proposals', href: '/admin/ingestion/review', icon: CheckCircle },
+    ],
+  },
+  {
     name: 'Content',
     icon: FileText,
     defaultOpen: false,
@@ -87,15 +106,8 @@ const navigationGroups: NavGroup[] = [
     items: [
       { name: 'Approvals', href: '/admin/approvals', icon: Clock, badge: true },
       { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-      { name: 'Reports', href: '/admin/reports/missing-data', icon: ClipboardList },
+      { name: 'Reports', href: '/admin/reports', icon: ClipboardList },
       { name: 'Audit Log', href: '/admin/audit', icon: ClipboardList },
-    ],
-  },
-  {
-    name: 'Revenue & Pricing',
-    icon: DollarSign,
-    defaultOpen: false,
-    items: [
       { name: 'Affiliate Links', href: '/admin/affiliate', icon: DollarSign },
       { name: 'Price Monitor', href: '/admin/pricing/monitor', icon: TrendingDown },
     ],
@@ -129,7 +141,6 @@ const navigationGroups: NavGroup[] = [
       { name: 'Security Dashboard', href: '/admin/security', icon: Shield },
       { name: 'Ban Management', href: '/admin/security/bans', icon: Users },
       { name: 'Rate Limits', href: '/admin/security/rate-limits', icon: Activity },
-      { name: 'Audit Logs', href: '/admin/security/audit-logs', icon: ClipboardList },
     ],
   },
   {
@@ -155,6 +166,7 @@ export default function AdminLayout({
     new Set(navigationGroups.filter(g => g.defaultOpen).map(g => g.name))
   );
   const [pendingApprovalsCount, setPendingApprovalsCount] = useState<number>(0);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Debug logging
   useEffect(() => {
@@ -236,6 +248,33 @@ export default function AdminLayout({
     });
   };
 
+  // Swipe left to close sidebar on mobile
+  const { ref: sidebarSwipeRef } = useSwipe({
+    onSwipeLeft: () => {
+      if (mobileSidebarOpen && window.innerWidth < 1024) {
+        setMobileSidebarOpen(false);
+      }
+    },
+    threshold: 100,
+  });
+
+  // Prevent body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (mobileSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileSidebarOpen]);
+
+  // Close mobile sidebar when route changes
+  useEffect(() => {
+    setMobileSidebarOpen(false);
+  }, [pathname]);
+
   // Show loading state
   if (loading) {
     return (
@@ -255,12 +294,45 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen bg-olive-900 flex">
-      {/* Sidebar */}
-      <aside className="fixed inset-y-0 left-0 w-64 bg-olive-800 border-r border-olive-600 flex flex-col">
-        {/* Logo */}
-        <div className="h-16 flex items-center gap-3 px-4 border-b border-olive-600">
-          <Link href="/admin" className="flex items-center gap-3 group">
-            <div className="relative w-8 h-8 overflow-hidden rounded border border-orange-500">
+      {/* Mobile Sidebar Backdrop */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar - Desktop: Always visible | Mobile: Drawer */}
+      <aside 
+        ref={sidebarSwipeRef as React.RefObject<HTMLElement>}
+        className={cn(
+          // Base styles
+          'fixed inset-y-0 left-0 bg-olive-800 border-r border-olive-600 flex-col z-30',
+          // Base: flex on all screens
+          'flex',
+          // Desktop: Fixed width, always visible
+          'lg:w-64',
+          // Mobile: Drawer width and z-index
+          'w-[85vw] max-w-sm z-50 lg:z-30',
+          // Mobile: Transform for slide in/out animation
+          'transform transition-transform duration-300 ease-out',
+          // Desktop: No transform (always visible)
+          'lg:translate-x-0',
+          // Mobile: Slide in/out based on state
+          mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full',
+          // Touch handling
+          'touch-pan-y'
+        )}
+      >
+        {/* Logo & Mobile Close Button */}
+        <div className="h-16 flex items-center justify-between gap-3 px-4 border-b border-olive-600 flex-shrink-0">
+          <Link 
+            href="/admin" 
+            className="flex items-center gap-3 group"
+            onClick={() => setMobileSidebarOpen(false)}
+          >
+            <div className="relative w-10 h-10 overflow-hidden rounded border border-orange-500 flex-shrink-0">
               <Image
                 src="/brand/brand-iconmark-v1.svg"
                 alt="GoKartPartPicker Admin"
@@ -269,10 +341,18 @@ export default function AdminLayout({
               />
             </div>
             <div>
-              <span className="text-display text-sm text-cream-100">Admin</span>
-              <span className="text-display text-sm text-orange-500">Panel</span>
+              <span className="text-display text-lg font-semibold text-cream-100">Admin</span>
+              <span className="text-display text-lg font-semibold text-orange-500">Panel</span>
             </div>
           </Link>
+          {/* Mobile Close Button */}
+          <button
+            onClick={() => setMobileSidebarOpen(false)}
+            className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center text-cream-400 hover:text-cream-100 hover:bg-olive-700 rounded-md transition-colors touch-manipulation"
+            aria-label="Close sidebar"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Navigation */}
@@ -280,11 +360,12 @@ export default function AdminLayout({
           {/* Dashboard - Always visible */}
           <Link
             href="/admin"
+            onClick={() => setMobileSidebarOpen(false)}
             className={cn(
-              'flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors mb-2',
+              'flex items-center gap-3 px-3 py-2.5 min-h-[44px] rounded-md text-sm font-medium transition-colors mb-2 touch-manipulation',
               pathname === '/admin'
                 ? 'bg-orange-500/10 text-orange-400 border border-orange-500/30'
-                : 'text-cream-200 hover:bg-olive-700 hover:text-cream-100'
+                : 'text-cream-200 hover:bg-olive-700 hover:text-cream-100 active:bg-olive-600'
             )}
           >
             <LayoutDashboard className="w-5 h-5 flex-shrink-0" />
@@ -306,10 +387,10 @@ export default function AdminLayout({
                 <button
                   onClick={() => toggleGroup(group.name)}
                   className={cn(
-                    'w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                    'w-full flex items-center justify-between px-3 py-2.5 min-h-[44px] rounded-md text-sm font-medium transition-colors touch-manipulation',
                     hasActiveItem
                       ? 'text-orange-400 bg-orange-500/5'
-                      : 'text-cream-300 hover:bg-olive-700 hover:text-cream-100'
+                      : 'text-cream-300 hover:bg-olive-700 hover:text-cream-100 active:bg-olive-600'
                   )}
                 >
                   <div className="flex items-center gap-2">
@@ -336,11 +417,12 @@ export default function AdminLayout({
                         <Link
                           key={item.name}
                           href={item.href}
+                          onClick={() => setMobileSidebarOpen(false)}
                           className={cn(
-                            'flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors',
+                            'flex items-center justify-between px-3 py-2.5 min-h-[44px] rounded-md text-sm transition-colors touch-manipulation',
                             isActive
                               ? 'bg-orange-500/10 text-orange-400 border border-orange-500/30'
-                              : 'text-cream-200 hover:bg-olive-700 hover:text-cream-100'
+                              : 'text-cream-200 hover:bg-olive-700 hover:text-cream-100 active:bg-olive-600'
                           )}
                         >
                           <div className="flex items-center gap-3">
@@ -385,7 +467,8 @@ export default function AdminLayout({
           {/* Back to Site */}
           <Link
             href="/"
-            className="flex items-center gap-2 px-3 py-2 text-sm text-cream-300 hover:text-cream-100 hover:bg-olive-700 rounded-md transition-colors"
+            onClick={() => setMobileSidebarOpen(false)}
+            className="flex items-center gap-2 px-3 py-2.5 min-h-[44px] text-sm text-cream-300 hover:text-cream-100 hover:bg-olive-700 rounded-md transition-colors touch-manipulation active:bg-olive-600"
           >
             <ChevronLeft className="w-4 h-4" />
             Back to Site
@@ -394,14 +477,46 @@ export default function AdminLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64">
-        {/* Header Bar with Search */}
-        <div className="sticky top-0 z-40 bg-olive-900/95 backdrop-blur-sm border-b border-olive-600 px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-end gap-4">
-            <GlobalSearch />
+      <main className="flex-1 lg:ml-64">
+        {/* Header Bar with Mobile Menu & Search */}
+        <div className="sticky top-0 z-30 bg-olive-900/95 backdrop-blur-sm border-b border-olive-600 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-4">
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center text-cream-300 hover:text-cream-100 hover:bg-olive-700 rounded-md transition-colors touch-manipulation"
+              aria-label="Open sidebar"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            
+            {/* Desktop Logo (hidden on mobile since sidebar has it) */}
+            <Link 
+              href="/admin" 
+              className="hidden lg:flex items-center gap-3 group"
+            >
+              <div className="relative w-10 h-10 overflow-hidden rounded border border-orange-500 flex-shrink-0">
+                <Image
+                  src="/brand/brand-iconmark-v1.svg"
+                  alt="GoKartPartPicker Admin"
+                  fill
+                  className="object-contain p-1"
+                />
+              </div>
+              <div>
+                <span className="text-display text-lg font-semibold text-cream-100">Admin</span>
+                <span className="text-display text-lg font-semibold text-orange-500">Panel</span>
+              </div>
+            </Link>
+
+            {/* Search & Notifications - Takes remaining space on mobile, right-aligned on desktop */}
+            <div className="flex-1 lg:flex-none flex items-center justify-end gap-2">
+              <AdminNotifications />
+              <GlobalSearch />
+            </div>
           </div>
         </div>
-        <div className="p-6 lg:p-8">
+        <div className="p-4 sm:p-6 lg:p-8">
           {children}
         </div>
       </main>

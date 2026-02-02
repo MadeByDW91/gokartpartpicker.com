@@ -1,0 +1,18 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Brake disc -->
+  <circle cx="12" cy="12" r="8" stroke="#f5f0e6" stroke-width="1.5" fill="none"/>
+  <!-- Ventilation holes (radial pattern) -->
+  <g stroke="#c96a24" stroke-width="1" opacity="0.5">
+    <circle cx="12" cy="6" r="0.8" fill="#c96a24"/>
+    <circle cx="12" cy="18" r="0.8" fill="#c96a24"/>
+    <circle cx="6" cy="12" r="0.8" fill="#c96a24"/>
+    <circle cx="18" cy="12" r="0.8" fill="#c96a24"/>
+    <circle cx="9.51" cy="9.51" r="0.8" fill="#c96a24"/>
+    <circle cx="14.49" cy="9.51" r="0.8" fill="#c96a24"/>
+    <circle cx="9.51" cy="14.49" r="0.8" fill="#c96a24"/>
+    <circle cx="14.49" cy="14.49" r="0.8" fill="#c96a24"/>
+  </g>
+  <!-- Center hub -->
+  <circle cx="12" cy="12" r="3" stroke="#f5f0e6" stroke-width="1.5" fill="none"/>
+  <circle cx="12" cy="12" r="1.5" fill="#c96a24" opacity="0.6"/>
+</svg>

@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { Bebas_Neue, DM_Sans, JetBrains_Mono } from 'next/font/google';
+import { Toaster } from 'sonner';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { ImpersonationBanner } from '@/components/ImpersonationBanner';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider';
 import { AffiliateLinkTracker } from '@/components/analytics/AffiliateLinkTracker';
@@ -99,10 +101,12 @@ export default function RootLayout({
           <AnalyticsProvider>
             <AffiliateLinkTracker />
             <div className="w-full max-w-full overflow-x-hidden">
+              <ImpersonationBanner />
               <Header />
               <main className="flex-1 w-full max-w-full overflow-x-hidden">{children}</main>
               <Footer />
             </div>
+            <Toaster richColors position="top-center" closeButton />
           </AnalyticsProvider>
         </QueryProvider>
       </body>

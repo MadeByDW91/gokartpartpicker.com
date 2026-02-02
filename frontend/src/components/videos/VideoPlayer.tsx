@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, VideoOff } from 'lucide-react';
 import type { Video } from '@/types/database';
-import { isEmbeddableVideoUrl } from '@/lib/video-utils';
+import { isEmbeddableVideoUrl, getYouTubeVideoId } from '@/lib/video-utils';
 
 interface VideoPlayerProps {
   video: Video;
@@ -11,134 +12,151 @@ interface VideoPlayerProps {
 }
 
 /**
- * Convert various YouTube/Vimeo URLs to embed format
+ * Convert various YouTube/Vimeo URLs to embed format.
+ * Uses the same regex pattern as video-utils.ts for consistency.
+ * YouTube: autoplay=1 for better UX when modal opens.
+ * Returns null if URL cannot be converted to a valid embed URL.
  */
-function getEmbedUrl(videoUrl: string): string {
-  // YouTube formats
-  if (videoUrl.includes('youtube.com/watch?v=')) {
-    const videoId = videoUrl.split('v=')[1]?.split('&')[0];
-    if (videoId) {
-      return `https://www.youtube.com/embed/${videoId}`;
-    }
-  }
-  if (videoUrl.includes('youtu.be/')) {
-    const videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
-    if (videoId) {
-      return `https://www.youtube.com/embed/${videoId}`;
-    }
-  }
-  if (videoUrl.includes('youtube.com/embed/')) {
-    return videoUrl;
+function getEmbedUrl(videoUrl: string): string | null {
+  const autoplay = 'autoplay=1';
+  
+  // Try to extract YouTube video ID using the same regex as video-utils.ts
+  const youtubeId = getYouTubeVideoId(videoUrl);
+  if (youtubeId) {
+    return `https://www.youtube-nocookie.com/embed/${youtubeId}?${autoplay}`;
   }
   
+  // Handle YouTube embed URLs (already in embed format)
+  if (videoUrl.includes('youtube.com/embed/') || videoUrl.includes('youtube-nocookie.com/embed/')) {
+    const base = videoUrl.split('?')[0];
+    const existing = videoUrl.includes('?') ? videoUrl.split('?')[1] : '';
+    const params = new URLSearchParams(existing);
+    params.set('autoplay', '1');
+    return `${base}?${params.toString()}`;
+  }
+
   // Vimeo formats
   if (videoUrl.includes('vimeo.com/')) {
     const videoId = videoUrl.split('vimeo.com/')[1]?.split('?')[0];
-    if (videoId) {
-      return `https://player.vimeo.com/video/${videoId}`;
+    if (videoId && !videoId.includes('/')) {
+      return `https://player.vimeo.com/video/${videoId}?autoplay=1`;
     }
   }
   if (videoUrl.includes('player.vimeo.com/video/')) {
-    return videoUrl;
+    const hasParams = videoUrl.includes('?');
+    return hasParams ? `${videoUrl}&autoplay=1` : `${videoUrl}?autoplay=1`;
   }
-  
+
   // Direct video file - return as-is
   if (videoUrl.match(/\.(mp4|webm|ogg)$/i)) {
     return videoUrl;
   }
-  
-  // Fallback - return original URL
-  return videoUrl;
+
+  // If we can't convert it, return null (not the original URL)
+  return null;
 }
 
 export function VideoPlayer({ video, onClose }: VideoPlayerProps) {
   useEffect(() => {
-    // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     };
   }, []);
 
   useEffect(() => {
-    // Close on Escape key
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
+      if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [onClose]);
 
   const canEmbed = isEmbeddableVideoUrl(video.video_url);
-  const embedUrl = canEmbed ? getEmbedUrl(video.video_url) : '';
-  const isDirectVideo = embedUrl.match(/\.(mp4|webm|ogg)$/i);
+  const embedUrl = canEmbed ? getEmbedUrl(video.video_url || '') : null;
+  const isDirectVideo = embedUrl ? embedUrl.match(/\.(mp4|webm|ogg)$/i) : false;
+  
+  // embedUrl is null if getEmbedUrl couldn't convert the URL to a valid embed format
+  const isValidEmbedUrl = embedUrl !== null && (
+    embedUrl.includes('youtube-nocookie.com/embed/') ||
+    embedUrl.includes('player.vimeo.com/video/') ||
+    isDirectVideo
+  );
 
-  return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+  const modal = (
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Video player"
     >
-      <div 
-        className="relative w-full max-w-6xl mx-4 bg-olive-800 rounded-lg overflow-hidden shadow-2xl"
+      <div
+        className="relative w-full max-w-4xl bg-olive-900 rounded-xl overflow-hidden shadow-2xl border border-olive-600 flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
+        {/* Close */}
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/70 hover:bg-black/90 rounded-full flex items-center justify-center text-cream-100 transition-colors"
-          aria-label="Close video player"
+          className="absolute top-3 right-3 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-cream-100 transition-colors"
+          aria-label="Close video"
         >
-          <X className="w-6 h-6" />
+          <X className="w-5 h-5" />
         </button>
 
-        {/* Video container */}
-        <div className="relative w-full aspect-video bg-black">
-          {!canEmbed ? (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-4 p-8 text-center">
-              <VideoOff className="w-16 h-16 text-olive-500" />
-              <div>
-                <p className="text-cream-200 font-medium">This video link isn&apos;t set up yet</p>
-                <p className="text-cream-500 text-sm mt-2 max-w-md">
-                  The video URL is still a placeholder. In Admin → Videos, replace it with a real YouTube or Vimeo link to enable playback.
-                </p>
-              </div>
+        {/* Video area: fixed 16:9, no thumbnail overlay */}
+        <div className="relative w-full flex-shrink-0" style={{ aspectRatio: '16/9' }}>
+          {!canEmbed || !isValidEmbedUrl ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 bg-olive-800 text-center">
+              <VideoOff className="w-14 h-14 text-olive-500" />
+              <p className="text-cream-200 font-medium">This video link isn&apos;t set up yet</p>
+              <p className="text-cream-500 text-sm max-w-sm">
+                Replace the placeholder URL in Admin → Videos with a real YouTube or Vimeo link.
+              </p>
             </div>
-          ) : isDirectVideo ? (
+          ) : isDirectVideo && embedUrl ? (
             <video
               src={embedUrl}
               controls
-              className="w-full h-full"
               autoPlay
+              className="absolute inset-0 w-full h-full object-contain bg-black"
             />
-          ) : (
+          ) : embedUrl ? (
             <iframe
               src={embedUrl}
-              className="w-full h-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
               title={video.title}
+              className="absolute inset-0 w-full h-full border-0 bg-black"
             />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 bg-olive-800 text-center">
+              <VideoOff className="w-14 h-14 text-olive-500" />
+              <p className="text-cream-200 font-medium">This video link isn&apos;t set up yet</p>
+              <p className="text-cream-500 text-sm max-w-sm">
+                Replace the placeholder URL in Admin → Videos with a real YouTube or Vimeo link.
+              </p>
+            </div>
           )}
         </div>
 
-        {/* Video info */}
-        <div className="p-6">
-          <h2 className="text-2xl font-bold text-cream-100 mb-2">{video.title}</h2>
+        {/* Info strip */}
+        <div className="flex-shrink-0 p-4 sm:p-5 bg-olive-800/80 border-t border-olive-600">
+          <h2 className="text-lg sm:text-xl font-bold text-cream-100 mb-1 line-clamp-2">
+            {video.title}
+          </h2>
           {video.description && (
-            <p className="text-cream-400 mb-4">{video.description}</p>
+            <p className="text-sm text-cream-400 mb-3 line-clamp-2">{video.description}</p>
           )}
-          {video.channel_name && (
-            <div className="flex items-center gap-4 text-sm text-cream-500">
-              <span>Channel: {video.channel_name}</span>
-              {video.view_count > 0 && (
+          {(video.channel_name || video.view_count || video.published_date) && (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-cream-500">
+              {video.channel_name && <span>Channel: {video.channel_name}</span>}
+              {video.view_count != null && video.view_count > 0 && (
                 <span>{video.view_count.toLocaleString()} views</span>
               )}
               {video.published_date && (
-                <span>
-                  {new Date(video.published_date).toLocaleDateString()}
-                </span>
+                <span>{new Date(video.published_date).toLocaleDateString()}</span>
               )}
             </div>
           )}
@@ -146,4 +164,7 @@ export function VideoPlayer({ video, onClose }: VideoPlayerProps) {
       </div>
     </div>
   );
+
+  if (typeof document === 'undefined') return null;
+  return createPortal(modal, document.body);
 }

@@ -21,7 +21,7 @@ interface Recommendation {
  */
 export function useRecommendations(
   selectedEngine: Engine | null,
-  selectedParts: Map<PartCategory, Part>,
+  selectedParts: Map<PartCategory, Part[]>,
   category?: PartCategory
 ): Recommendation[] {
   const { data: allParts = [] } = useParts();
@@ -43,8 +43,8 @@ export function useRecommendations(
 
     // Filter out already selected parts
     candidateParts = candidateParts.filter((part) => {
-      const selectedPart = selectedParts.get(part.category);
-      return !selectedPart || selectedPart.id !== part.id;
+      const selectedInCategory = selectedParts.get(part.category) || [];
+      return !selectedInCategory.some((p) => p.id === part.id);
     });
 
     // Recommendation 1: Same brand parts (popular combinations)

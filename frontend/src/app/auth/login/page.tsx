@@ -1,38 +1,110 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useRef, Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
+import { useAdmin } from '@/hooks/use-admin';
+import { secureSignIn, getIsAdmin } from '@/actions/auth-secure';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Wrench, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import {
+  HCaptchaWidget,
+  useCaptchaEnabled,
+  type HCaptchaRef,
+} from '@/components/auth/HCaptchaWidget';
+import { createClient } from '@/lib/supabase/client';
 
 function LoginPageContent() {
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/builds';
-  
-  const { signIn, signInWithMagicLink, loading } = useAuth();
+  const redirectTo = searchParams.get('redirect') || '/dashboard';
+  const router = useRouter();
+  const captchaEnabled = useCaptchaEnabled();
+  const captchaRef = useRef<HCaptchaRef>(null);
+  const supabase = createClient();
+
+  const { signInWithMagicLink, user, loading: authLoading } = useAuth();
+  const { isAdmin, loading: adminLoading } = useAdmin();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [mode, setMode] = useState<'password' | 'magic'>('password');
-  
+
+  // Redirect if user is already logged in: admins → /admin, others → redirectTo
+  useEffect(() => {
+    if (authLoading || adminLoading || !user) return;
+    router.replace(isAdmin ? '/admin' : redirectTo);
+  }, [user, authLoading, adminLoading, isAdmin, redirectTo, router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     
     try {
       if (mode === 'magic') {
         await signInWithMagicLink(email);
         setMagicLinkSent(true);
+        setLoading(false);
       } else {
-        await signIn(email, password);
+        if (captchaEnabled && !captchaToken) {
+          setError('Please complete the verification challenge before signing in.');
+          setLoading(false);
+          return;
+        }
+
+        // Phase 1 Security: Use secure login with lockout protection
+        const result = await secureSignIn(
+          email,
+          password,
+          captchaToken ?? undefined
+        );
+
+        if (!result.success) {
+          if (captchaEnabled) {
+            setCaptchaToken(null);
+            captchaRef.current?.resetCaptcha();
+          }
+          setError(result.error || 'Login failed');
+          setLoading(false);
+          return;
+        }
+
+        // If email verification required, show message
+        if (result.data?.requiresEmailVerification) {
+          setError(
+            'Please verify your email address before logging in. Check your inbox for the verification link.'
+          );
+          setLoading(false);
+          return;
+        }
+
+        // Success - session cookies are set by Supabase server action
+        // The server action sets cookies via the server client, but the client-side
+        // browser client needs to read those cookies. A full page reload ensures
+        // all cookies are read and all hooks re-initialize with the new session.
+        setLoading(false);
+        
+        // Small delay to ensure server response and cookies are fully set
+        // Then force a full page reload to ensure session cookies are read
+        // This is necessary because server actions set cookies server-side,
+        // and the client-side Supabase client needs to read them on page load
+        await new Promise(resolve => setTimeout(resolve, 150));
+        window.location.href = redirectTo;
       }
     } catch (err) {
+      if (mode === 'password' && captchaEnabled) {
+        setCaptchaToken(null);
+        captchaRef.current?.resetCaptcha();
+      }
       setError(err instanceof Error ? err.message : 'An error occurred');
+      setLoading(false);
     }
   };
   
@@ -77,7 +149,7 @@ function LoginPageContent() {
             </div>
           </Link>
           <h1 className="text-display text-3xl text-cream-100">Welcome Back</h1>
-          <p className="text-cream-400 mt-2">Sign in to access your saved builds</p>
+          <p className="text-cream-400 mt-2">Sign in to access your dashboard</p>
         </div>
         
         <Card className="animate-fade-in">
@@ -85,20 +157,29 @@ function LoginPageContent() {
             {/* Mode Tabs */}
             <div className="flex bg-olive-600 rounded-lg p-1">
               <button
-                onClick={() => setMode('password')}
+                type="button"
+                onClick={() => {
+                  setMode('password');
+                  setError('');
+                }}
                 className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
-                  mode === 'password' 
-                    ? 'bg-olive-700 text-cream-100' 
+                  mode === 'password'
+                    ? 'bg-olive-700 text-cream-100'
                     : 'text-cream-400 hover:text-cream-200'
                 }`}
               >
                 Password
               </button>
               <button
-                onClick={() => setMode('magic')}
+                type="button"
+                onClick={() => {
+                  setMode('magic');
+                  setCaptchaToken(null);
+                  setError('');
+                }}
                 className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
-                  mode === 'magic' 
-                    ? 'bg-olive-700 text-cream-100' 
+                  mode === 'magic'
+                    ? 'bg-olive-700 text-cream-100'
                     : 'text-cream-400 hover:text-cream-200'
                 }`}
               >
@@ -130,7 +211,18 @@ function LoginPageContent() {
                   required
                 />
               )}
-              
+
+              {mode === 'password' && captchaEnabled && (
+                <div>
+                  <HCaptchaWidget
+                    captchaRef={captchaRef}
+                    onVerify={setCaptchaToken}
+                    onExpire={() => setCaptchaToken(null)}
+                    theme="dark"
+                  />
+                </div>
+              )}
+
               {error && (
                 <p className="text-sm text-[var(--error)] bg-[rgba(166,61,64,0.1)] p-3 rounded-md">
                   {error}
@@ -153,7 +245,7 @@ function LoginPageContent() {
               <p className="text-sm text-cream-400">
                 Don&apos;t have an account?{' '}
                 <Link 
-                  href={`/auth/register${redirectTo !== '/builds' ? `?redirect=${redirectTo}` : ''}`}
+                  href={`/auth/register${redirectTo !== '/dashboard' ? `?redirect=${redirectTo}` : ''}`}
                   className="text-orange-400 hover:text-orange-300 font-medium"
                 >
                   Sign up

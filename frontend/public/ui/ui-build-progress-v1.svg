@@ -1,0 +1,43 @@
+<svg width="300" height="60" viewBox="0 0 300 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Step 1: Engine Selection -->
+  <g id="step1">
+    <!-- Step circle -->
+    <circle cx="30" cy="30" r="18" stroke="#f5f0e6" stroke-width="2" fill="none" class="step-circle"/>
+    <!-- Engine icon inside -->
+    <rect x="20" y="22" width="10" height="8" rx="1" stroke="#f5f0e6" stroke-width="1.5" fill="none"/>
+    <rect x="22" y="24" width="2" height="4" fill="#c96a24" opacity="0.6"/>
+    <rect x="26" y="24" width="2" height="4" fill="#c96a24" opacity="0.6"/>
+    <!-- Step label -->
+    <text x="30" y="55" text-anchor="middle" fill="#f5f0e6" font-size="10" font-family="sans-serif" font-weight="500">Engine</text>
+  </g>
+  
+  <!-- Connector Line 1 -->
+  <line x1="48" y1="30" x2="82" y2="30" stroke="#5d634d" stroke-width="2" stroke-dasharray="4 4" opacity="0.5"/>
+  
+  <!-- Step 2: Parts Selection -->
+  <g id="step2" transform="translate(110, 0)">
+    <!-- Step circle -->
+    <circle cx="30" cy="30" r="18" stroke="#f5f0e6" stroke-width="2" fill="none" class="step-circle"/>
+    <!-- Parts icon (box/package) -->
+    <rect x="22" y="22" width="16" height="12" rx="1" stroke="#f5f0e6" stroke-width="1.5" fill="none"/>
+    <path d="M22 22 L30 26 L38 22" stroke="#f5f0e6" stroke-width="1.5" fill="none"/>
+    <line x1="27" y1="26" x2="27" y2="34" stroke="#c96a24" stroke-width="1" opacity="0.6"/>
+    <line x1="33" y1="26" x2="33" y2="34" stroke="#c96a24" stroke-width="1" opacity="0.6"/>
+    <!-- Step label -->
+    <text x="30" y="55" text-anchor="middle" fill="#f5f0e6" font-size="10" font-family="sans-serif" font-weight="500">Parts</text>
+  </g>
+  
+  <!-- Connector Line 2 -->
+  <line x1="128" y1="30" x2="162" y2="30" stroke="#5d634d" stroke-width="2" stroke-dasharray="4 4" opacity="0.5"/>
+  
+  <!-- Step 3: Review & Save -->
+  <g id="step3" transform="translate(190, 0)">
+    <!-- Step circle -->
+    <circle cx="30" cy="30" r="18" stroke="#f5f0e6" stroke-width="2" fill="none" class="step-circle"/>
+    <!-- Checkmark icon -->
+    <circle cx="30" cy="30" r="12" stroke="#f5f0e6" stroke-width="2" fill="none"/>
+    <path d="M24 30 L28 34 L36 26" stroke="#4a7c59" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <!-- Step label -->
+    <text x="30" y="55" text-anchor="middle" fill="#f5f0e6" font-size="10" font-family="sans-serif" font-weight="500">Review</text>
+  </g>
+</svg>

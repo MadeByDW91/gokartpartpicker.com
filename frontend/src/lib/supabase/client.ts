@@ -91,21 +91,25 @@ function handleSupabaseError(error: unknown, context: string): void {
 
 /**
  * Create Supabase client for browser/client components
- * Returns null if credentials are not configured
+ * Returns null if credentials are not configured or when running on server (SSR).
+ * createBrowserClient uses window/localStorage and throws during SSR.
  */
 export function createClient() {
+  if (typeof window === 'undefined') {
+    return null as ReturnType<typeof createBrowserClient>;
+  }
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  
+
   if (!url || !key) {
     console.error('[Supabase Client] Missing credentials:', {
       hasUrl: !!url,
       hasKey: !!key,
     });
-    // Return null instead of mock to fail fast
-    return null as any;
+    return null as ReturnType<typeof createBrowserClient>;
   }
-  
+
   try {
     const client = createBrowserClient(url, key, {
       auth: {

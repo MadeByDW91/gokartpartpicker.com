@@ -16,7 +16,7 @@ import {
 } from '@/lib/api/types';
 
 export type BulkOperationType = 'update' | 'delete' | 'activate' | 'deactivate' | 'publish' | 'unpublish' | 'approve' | 'reject';
-export type BulkEntityType = 'engine' | 'part' | 'build' | 'template' | 'guide' | 'video';
+export type BulkEntityType = 'engine' | 'motor' | 'part' | 'build' | 'template' | 'guide' | 'video';
 export type BulkOperationStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
 
 export interface BulkOperation {
@@ -79,10 +79,18 @@ export async function previewBulkOperation(
 
     const supabase = await createClient();
     const warnings: string[] = [];
-    let query = supabase.from(entityType === 'engine' ? 'engines' : entityType === 'part' ? 'parts' : 'builds').select('id, name');
+    const tableName = 
+      entityType === 'engine' ? 'engines' :
+      entityType === 'motor' ? 'electric_motors' :
+      entityType === 'part' ? 'parts' :
+      entityType === 'build' ? 'builds' :
+      entityType === 'template' ? 'build_templates' :
+      entityType === 'guide' ? 'content' :
+      'videos';
+    let query = supabase.from(tableName).select('id, name');
 
     // Apply filters
-    if (entityType === 'engine' || entityType === 'part') {
+    if (entityType === 'engine' || entityType === 'motor' || entityType === 'part') {
       if (filters.is_active !== undefined) {
         query = query.eq('is_active', filters.is_active);
       }
@@ -91,6 +99,9 @@ export async function previewBulkOperation(
       }
       if (entityType === 'part' && filters.category) {
         query = query.eq('category', filters.category);
+      }
+      if (entityType === 'motor' && filters.voltage) {
+        query = query.eq('voltage', filters.voltage);
       }
     }
 
@@ -107,11 +118,11 @@ export async function previewBulkOperation(
 
     // Build count query with same filters
     let countQuery = supabase
-      .from(entityType === 'engine' ? 'engines' : entityType === 'part' ? 'parts' : 'builds')
+      .from(tableName)
       .select('id', { count: 'exact', head: true });
 
     // Apply same filters for count
-    if (entityType === 'engine' || entityType === 'part') {
+    if (entityType === 'engine' || entityType === 'motor' || entityType === 'part') {
       if (filters.is_active !== undefined) {
         countQuery = countQuery.eq('is_active', filters.is_active);
       }
@@ -120,6 +131,9 @@ export async function previewBulkOperation(
       }
       if (entityType === 'part' && filters.category) {
         countQuery = countQuery.eq('category', filters.category);
+      }
+      if (entityType === 'motor' && filters.voltage) {
+        countQuery = countQuery.eq('voltage', filters.voltage);
       }
     }
 
@@ -202,7 +216,14 @@ export async function executeBulkOperation(
     const { userId } = authResult as { userId: string };
 
     const supabase = await createClient();
-    const table = entityType === 'engine' ? 'engines' : entityType === 'part' ? 'parts' : 'builds';
+    const table = 
+      entityType === 'engine' ? 'engines' :
+      entityType === 'motor' ? 'electric_motors' :
+      entityType === 'part' ? 'parts' :
+      entityType === 'build' ? 'builds' :
+      entityType === 'template' ? 'build_templates' :
+      entityType === 'guide' ? 'content' :
+      'videos';
 
     // Fetch affected IDs based on filters if not provided
     let finalAffectedIds = affectedIds;
@@ -210,7 +231,7 @@ export async function executeBulkOperation(
       let query = supabase.from(table).select('id');
 
       // Apply filters (same logic as preview)
-      if (entityType === 'engine' || entityType === 'part') {
+      if (entityType === 'engine' || entityType === 'motor' || entityType === 'part') {
         if (filters.is_active !== undefined) {
           query = query.eq('is_active', filters.is_active);
         }
@@ -219,6 +240,9 @@ export async function executeBulkOperation(
         }
         if (entityType === 'part' && filters.category) {
           query = query.eq('category', filters.category);
+        }
+        if (entityType === 'motor' && filters.voltage) {
+          query = query.eq('voltage', filters.voltage);
         }
       }
 
@@ -290,7 +314,15 @@ export async function executeBulkOperation(
     }
 
     revalidatePath('/admin/bulk-operations');
-    revalidatePath(`/admin/${entityType === 'engine' ? 'engines' : entityType === 'part' ? 'parts' : 'builds'}`);
+    const adminPath = 
+      entityType === 'engine' ? 'engines' :
+      entityType === 'motor' ? 'motors' :
+      entityType === 'part' ? 'parts' :
+      entityType === 'build' ? 'builds' :
+      entityType === 'template' ? 'templates' :
+      entityType === 'guide' ? 'guides' :
+      'videos';
+    revalidatePath(`/admin/${adminPath}`);
 
     return success(operation as BulkOperation);
   } catch (err) {

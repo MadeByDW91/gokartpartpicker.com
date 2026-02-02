@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Exclude problematic packages from server bundling
+  serverExternalPackages: ['paapi5-nodejs-sdk'],
   async headers() {
     return [
       {
@@ -13,12 +15,12 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://plausible.io",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://plausible.io https://js.hcaptcha.com https://*.hcaptcha.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https: blob:",
-              "connect-src 'self' https://*.supabase.co https://*.supabase.in https://www.google-analytics.com https://plausible.io https://api.allorigins.win",
-              "frame-src 'self' https://www.youtube.com https://player.vimeo.com",
+              "connect-src 'self' https://*.supabase.co https://*.supabase.in https://www.google-analytics.com https://plausible.io https://api.allorigins.win https://hcaptcha.com https://*.hcaptcha.com",
+              "frame-src 'self' https://www.youtube.com https://player.vimeo.com https://newassets.hcaptcha.com https://*.hcaptcha.com",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { DataTable, TableActions } from '@/components/admin/DataTable';
 import { Badge } from '@/components/ui/Badge';
 import { formatDate } from '@/lib/utils';
-import { Search, Eye, Shield, Users } from 'lucide-react';
+import { Search, Eye, Users } from 'lucide-react';
 import { getUsers } from '@/actions/admin/users';
 import type { AdminProfile } from '@/types/admin';
 
@@ -113,8 +113,9 @@ export default function AdminUsersPage() {
       className: 'w-24',
       render: (user: UserWithBuilds) => (
         <TableActions>
-          <Link href={`/admin/users/${user.id}`}>
-            <button 
+          <Link href={`/admin/users/${user.id}`} onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
               className="p-2 text-cream-400 hover:text-orange-400 hover:bg-olive-600 rounded transition-colors"
               title="View Details"
             >

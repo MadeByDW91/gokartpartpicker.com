@@ -1,0 +1,36 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer ring background -->
+  <circle cx="100" cy="100" r="85" stroke="#3d4233" stroke-width="12" fill="none" opacity="0.4"/>
+  
+  <!-- Score arc (0-100%) - Green for good compatibility -->
+  <circle 
+    cx="100" 
+    cy="100" 
+    r="85" 
+    stroke="#4a7c59" 
+    stroke-width="12" 
+    fill="none"
+    stroke-dasharray="534.07"
+    stroke-dashoffset="0"
+    stroke-linecap="round"
+    transform="rotate(-90 100 100)"
+    opacity="0.9"
+  />
+  
+  <!-- Inner circle background -->
+  <circle cx="100" cy="100" r="65" fill="#2d3226" stroke="#5d634d" stroke-width="2"/>
+  
+  <!-- Score text -->
+  <text x="100" y="95" text-anchor="middle" fill="#4a7c59" font-size="48" font-family="sans-serif" font-weight="700">100</text>
+  <text x="100" y="115" text-anchor="middle" fill="#5d634d" font-size="14" font-family="sans-serif" font-weight="500">% COMPATIBLE</text>
+  
+  <!-- Center indicator dot -->
+  <circle cx="100" cy="100" r="4" fill="#4a7c59"/>
+  
+  <!-- Status indicator marks (optional) -->
+  <g opacity="0.3">
+    <!-- High compatibility mark (top) -->
+    <path d="M100 15 L102 22 L100 25 L98 22 Z" fill="#4a7c59"/>
+    <text x="100" y="12" text-anchor="middle" fill="#4a7c59" font-size="9" font-family="sans-serif">100%</text>
+  </g>
+</svg>

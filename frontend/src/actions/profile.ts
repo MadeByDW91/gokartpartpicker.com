@@ -13,6 +13,8 @@ import {
 } from '@/lib/api/types';
 import type { Profile } from '@/types/database';
 import { z } from 'zod';
+import { secureError } from '@/lib/secure-logging';
+import { getImpersonationContext } from '@/lib/impersonation';
 
 // Validation schema for profile updates
 const updateProfileSchema = z.object({
@@ -31,25 +33,24 @@ const updateProfileSchema = z.object({
 });
 
 /**
- * Get current user's profile
+ * Get current user's profile (or impersonated user when admin view-as)
  */
 export async function getProfile(): Promise<ActionResult<Profile>> {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
+    const ctx = await getImpersonationContext();
+    if (!ctx.realUser || !ctx.effectiveUserId) {
       return error('Must be logged in');
     }
 
+    const supabase = await createClient();
     const { data, error: dbError } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', user.id)
+      .eq('id', ctx.effectiveUserId)
       .single();
 
     if (dbError) {
-      console.error('[getProfile] Error:', dbError);
+      secureError('[getProfile] Error:', dbError);
       return error('Failed to fetch profile');
     }
 
@@ -121,7 +122,7 @@ export async function updateProfile(
       .single();
 
     if (dbError) {
-      console.error('[updateProfile] Error:', dbError);
+      secureError('[updateProfile] Error:', dbError);
       return error('Failed to update profile');
     }
 
@@ -132,7 +133,7 @@ export async function updateProfile(
 }
 
 /**
- * Get user statistics
+ * Get user statistics (for current or impersonated user when admin view-as)
  */
 export async function getUserStats(): Promise<ActionResult<{
   totalBuilds: number;
@@ -142,36 +143,35 @@ export async function getUserStats(): Promise<ActionResult<{
   totalViews: number;
 }>> {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
+    const ctx = await getImpersonationContext();
+    if (!ctx.realUser || !ctx.effectiveUserId) {
       return error('Must be logged in');
     }
 
-    // Get build counts
+    const supabase = await createClient();
+    const uid = ctx.effectiveUserId;
+
     const { count: totalBuilds } = await supabase
       .from('builds')
       .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id);
+      .eq('user_id', uid);
 
     const { count: publicBuilds } = await supabase
       .from('builds')
       .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
+      .eq('user_id', uid)
       .eq('is_public', true);
 
     const { count: privateBuilds } = await supabase
       .from('builds')
       .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
+      .eq('user_id', uid)
       .eq('is_public', false);
 
-    // Get total likes and views from user's builds
     const { data: builds } = await supabase
       .from('builds')
       .select('likes_count, views_count')
-      .eq('user_id', user.id);
+      .eq('user_id', uid);
 
     const totalLikes = builds?.reduce((sum: number, build: { likes_count?: number }) => sum + (build.likes_count || 0), 0) || 0;
     const totalViews = builds?.reduce((sum: number, build: { views_count?: number }) => sum + (build.views_count || 0), 0) || 0;

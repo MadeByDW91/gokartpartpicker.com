@@ -5,7 +5,11 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import { formatDate } from '@/lib/utils';
+import { StatCard } from '@/components/admin/StatCard';
+import { HealthIndicator } from '@/components/admin/HealthIndicator';
+import { MiniChart } from '@/components/admin/MiniChart';
 import { 
   Cog, 
   Package, 
@@ -31,6 +35,7 @@ import type { AuditLogEntry } from '@/types/admin';
 
 interface DashboardStats {
   engines: number;
+  motors: number;
   parts: number;
   builds: number;
   users: number;
@@ -39,6 +44,7 @@ interface DashboardStats {
   templates: number;
   publishedGuides: number;
   activeEngines: number;
+  activeMotors: number;
   activeParts: number;
   partsWithImages: number;
   partsWithAffiliateLinks: number;
@@ -47,6 +53,7 @@ interface DashboardStats {
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats>({
     engines: 0,
+    motors: 0,
     parts: 0,
     builds: 0,
     users: 0,
@@ -55,6 +62,7 @@ export default function AdminDashboardPage() {
     templates: 0,
     publishedGuides: 0,
     activeEngines: 0,
+    activeMotors: 0,
     activeParts: 0,
     partsWithImages: 0,
     partsWithAffiliateLinks: 0,
@@ -68,7 +76,8 @@ export default function AdminDashboardPage() {
       try {
         // Fetch counts in parallel
         const [
-          enginesRes, 
+          enginesRes,
+          motorsRes,
           partsRes, 
           buildsRes, 
           usersRes, 
@@ -77,12 +86,14 @@ export default function AdminDashboardPage() {
           videosRes,
           templatesRes,
           activeEnginesRes,
+          activeMotorsRes,
           activePartsRes,
           partsWithImagesRes,
           partsWithAffiliateRes,
           activityRes
         ] = await Promise.all([
           supabase.from('engines').select('id', { count: 'exact', head: true }),
+          supabase.from('electric_motors').select('id', { count: 'exact', head: true }),
           supabase.from('parts').select('id', { count: 'exact', head: true }),
           supabase.from('builds').select('id', { count: 'exact', head: true }),
           supabase.from('profiles').select('id', { count: 'exact', head: true }),
@@ -91,6 +102,7 @@ export default function AdminDashboardPage() {
           supabase.from('videos').select('id', { count: 'exact', head: true }).eq('is_active', true),
           supabase.from('builds').select('id', { count: 'exact', head: true }).eq('is_template', true),
           supabase.from('engines').select('id', { count: 'exact', head: true }).eq('is_active', true),
+          supabase.from('electric_motors').select('id', { count: 'exact', head: true }).eq('is_active', true),
           supabase.from('parts').select('id', { count: 'exact', head: true }).eq('is_active', true),
           supabase.from('parts').select('id', { count: 'exact', head: true }).not('image_url', 'is', null),
           supabase.from('parts').select('id', { count: 'exact', head: true }).not('affiliate_url', 'is', null),
@@ -103,6 +115,7 @@ export default function AdminDashboardPage() {
 
         setStats({
           engines: enginesRes.count || 0,
+          motors: motorsRes.count || 0,
           parts: partsRes.count || 0,
           builds: buildsRes.count || 0,
           users: usersRes.count || 0,
@@ -111,6 +124,7 @@ export default function AdminDashboardPage() {
           videos: videosRes.count || 0,
           templates: templatesRes.count || 0,
           activeEngines: activeEnginesRes.count || 0,
+          activeMotors: activeMotorsRes.count || 0,
           activeParts: activePartsRes.count || 0,
           partsWithImages: partsWithImagesRes.count || 0,
           partsWithAffiliateLinks: partsWithAffiliateRes.count || 0,
@@ -135,6 +149,14 @@ export default function AdminDashboardPage() {
       href: '/admin/engines',
       color: 'text-orange-400',
       bgColor: 'bg-orange-500/10',
+    },
+    { 
+      label: 'Electric Motors', 
+      value: stats.motors, 
+      icon: Cog, 
+      href: '/admin/motors',
+      color: 'text-blue-400',
+      bgColor: 'bg-blue-500/10',
     },
     { 
       label: 'Parts', 
@@ -174,59 +196,98 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-display text-3xl text-cream-100">Dashboard</h1>
-          <p className="text-cream-300 mt-1">Manage your go-kart catalog</p>
+          <h1 className="text-display text-2xl sm:text-3xl text-cream-100">Dashboard</h1>
+          <p className="text-cream-300 mt-1 text-sm sm:text-base">Manage your go-kart catalog</p>
         </div>
-        <div className="flex gap-3">
-          <Link href="/admin/engines/new">
-            <Button size="sm" icon={<Plus className="w-4 h-4" />}>
-              Add Engine
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <Link href="/admin/engines/new" className="w-full sm:w-auto">
+            <Button size="sm" icon={<Plus className="w-4 h-4" />} className="w-full sm:w-auto min-h-[44px] touch-manipulation">
+              <span className="hidden sm:inline">Add Engine</span>
+              <span className="sm:hidden">Engine</span>
             </Button>
           </Link>
-          <Link href="/admin/parts/new">
-            <Button size="sm" variant="secondary" icon={<Plus className="w-4 h-4" />}>
-              Add Part
+          <Link href="/admin/parts/new" className="w-full sm:w-auto">
+            <Button size="sm" variant="secondary" icon={<Plus className="w-4 h-4" />} className="w-full sm:w-auto min-h-[44px] touch-manipulation">
+              <span className="hidden sm:inline">Add Part</span>
+              <span className="sm:hidden">Part</span>
             </Button>
           </Link>
         </div>
       </div>
 
-      {/* Primary Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((stat) => (
-          <Link key={stat.label} href={stat.href}>
-            <Card hoverable className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-cream-400 uppercase tracking-wide">{stat.label}</p>
-                  <p className="text-3xl font-bold text-cream-100 mt-1">
-                    {loading ? '—' : stat.value.toLocaleString()}
-                  </p>
-                </div>
-                <div className={`p-3 rounded-lg ${stat.bgColor}`}>
-                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
-                </div>
-              </div>
-            </Card>
-          </Link>
-        ))}
+      {/* Primary Stats Grid - Enhanced */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <StatCard
+          label="Engines"
+          value={stats.engines}
+          icon={Cog}
+          href="/admin/engines"
+          color="text-orange-400"
+          bgColor="bg-orange-500/10"
+          subtitle={`${stats.activeEngines} active`}
+          loading={loading}
+          trend={[stats.engines - 2, stats.engines - 1, stats.engines]} // Mock trend data
+        />
+        <StatCard
+          label="Electric Motors"
+          value={stats.motors}
+          icon={Cog}
+          href="/admin/motors"
+          color="text-blue-400"
+          bgColor="bg-blue-500/10"
+          subtitle={`${stats.activeMotors} active`}
+          loading={loading}
+          trend={[stats.motors - 1, stats.motors, stats.motors]} // Mock trend data
+        />
+        <StatCard
+          label="Parts"
+          value={stats.parts}
+          icon={Package}
+          href="/admin/parts"
+          color="text-cyan-400"
+          bgColor="bg-cyan-500/10"
+          subtitle={`${stats.activeParts} active`}
+          loading={loading}
+          trend={[stats.parts - 3, stats.parts - 1, stats.parts]} // Mock trend data
+        />
+        <StatCard
+          label="Builds"
+          value={stats.builds}
+          icon={Wrench}
+          href="/admin/builds"
+          color="text-green-400"
+          bgColor="bg-green-500/10"
+          subtitle="User builds"
+          loading={loading}
+        />
+        <StatCard
+          label="Users"
+          value={stats.users}
+          icon={Users}
+          href="/admin/users"
+          color="text-purple-400"
+          bgColor="bg-purple-500/10"
+          subtitle="Total registered"
+          loading={loading}
+        />
       </div>
 
-      {/* Content Stats */}
+      {/* Content Stats - Enhanced */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link href="/admin/guides">
-          <Card hoverable className="p-5">
-            <div className="flex items-center justify-between">
+          <Card hoverable className="p-5 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative z-10 flex items-center justify-between">
               <div>
-                <p className="text-sm text-cream-400 uppercase tracking-wide">Guides</p>
+                <p className="text-xs text-cream-400 uppercase tracking-wide">Guides</p>
                 <p className="text-2xl font-bold text-cream-100 mt-1">
                   {loading ? '—' : `${stats.publishedGuides}/${stats.guides}`}
                 </p>
                 <p className="text-xs text-cream-500 mt-1">Published / Total</p>
               </div>
-              <div className="p-3 rounded-lg bg-purple-500/10">
+              <div className="p-3 rounded-xl bg-purple-500/10 group-hover:scale-110 transition-transform">
                 <BookOpen className="w-6 h-6 text-purple-400" />
               </div>
             </div>
@@ -234,16 +295,17 @@ export default function AdminDashboardPage() {
         </Link>
 
         <Link href="/admin/videos">
-          <Card hoverable className="p-5">
-            <div className="flex items-center justify-between">
+          <Card hoverable className="p-5 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative z-10 flex items-center justify-between">
               <div>
-                <p className="text-sm text-cream-400 uppercase tracking-wide">Videos</p>
+                <p className="text-xs text-cream-400 uppercase tracking-wide">Videos</p>
                 <p className="text-2xl font-bold text-cream-100 mt-1">
                   {loading ? '—' : stats.videos.toLocaleString()}
                 </p>
                 <p className="text-xs text-cream-500 mt-1">Active videos</p>
               </div>
-              <div className="p-3 rounded-lg bg-red-500/10">
+              <div className="p-3 rounded-xl bg-red-500/10 group-hover:scale-110 transition-transform">
                 <Video className="w-6 h-6 text-red-400" />
               </div>
             </div>
@@ -251,121 +313,179 @@ export default function AdminDashboardPage() {
         </Link>
 
         <Link href="/admin/templates">
-          <Card hoverable className="p-5">
-            <div className="flex items-center justify-between">
+          <Card hoverable className="p-5 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative z-10 flex items-center justify-between">
               <div>
-                <p className="text-sm text-cream-400 uppercase tracking-wide">Templates</p>
+                <p className="text-xs text-cream-400 uppercase tracking-wide">Templates</p>
                 <p className="text-2xl font-bold text-cream-100 mt-1">
                   {loading ? '—' : stats.templates.toLocaleString()}
                 </p>
                 <p className="text-xs text-cream-500 mt-1">Build templates</p>
               </div>
-              <div className="p-3 rounded-lg bg-blue-500/10">
+              <div className="p-3 rounded-xl bg-blue-500/10 group-hover:scale-110 transition-transform">
                 <FileText className="w-6 h-6 text-blue-400" />
               </div>
             </div>
           </Card>
         </Link>
 
-        <Card className="p-5">
-          <div className="flex items-center justify-between">
+        <Card className="p-5 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent" />
+          <div className="relative z-10 flex items-center justify-between">
             <div>
-              <p className="text-sm text-cream-400 uppercase tracking-wide">Catalog Health</p>
+              <p className="text-xs text-cream-400 uppercase tracking-wide">Catalog Health</p>
               <p className="text-2xl font-bold text-cream-100 mt-1">
-                {loading ? '—' : `${stats.activeEngines + stats.activeParts}`}
+                {loading ? '—' : `${stats.activeEngines + stats.activeMotors + stats.activeParts}`}
               </p>
               <p className="text-xs text-cream-500 mt-1">Active items</p>
             </div>
-            <div className="p-3 rounded-lg bg-green-500/10">
+            <div className="p-3 rounded-xl bg-green-500/10">
               <TrendingUp className="w-6 h-6 text-green-400" />
             </div>
           </div>
         </Card>
       </div>
 
-      {/* Content Quality Metrics */}
+      {/* Content Quality Metrics - Enhanced */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader>
-            <h2 className="text-lg font-semibold text-cream-100 flex items-center gap-2">
-              <ImageIcon className="w-5 h-5 text-orange-400" />
-              Parts Image Coverage
-            </h2>
+        <Card className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent" />
+          <CardHeader className="relative z-10">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-cream-100 flex items-center gap-2">
+                <ImageIcon className="w-5 h-5 text-orange-400" />
+                Parts Image Coverage
+              </h2>
+              {!loading && stats.parts > 0 && (
+                <HealthIndicator
+                  score={Math.round((stats.partsWithImages / stats.parts) * 100)}
+                  size="sm"
+                />
+              )}
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             {loading ? (
               <div className="h-8 bg-olive-600 rounded-full animate-pulse" />
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-cream-300">Parts with images</span>
                   <span className="text-cream-100 font-semibold">
                     {stats.partsWithImages} / {stats.parts}
                   </span>
                 </div>
-                <div className="w-full bg-olive-700 rounded-full h-3">
+                <div className="relative w-full bg-olive-700 rounded-full h-4 overflow-hidden">
                   <div
-                    className="bg-orange-500 h-3 rounded-full transition-all"
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-1000 ease-out shadow-lg shadow-orange-500/50"
                     style={{
                       width: `${stats.parts > 0 ? (stats.partsWithImages / stats.parts) * 100 : 0}%`,
                     }}
                   />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xs font-semibold text-cream-100 z-10">
+                      {stats.parts > 0
+                        ? `${Math.round((stats.partsWithImages / stats.parts) * 100)}%`
+                        : '0%'}
+                    </span>
+                  </div>
                 </div>
-                <p className="text-sm text-cream-400">
-                  {stats.parts > 0
-                    ? `${Math.round((stats.partsWithImages / stats.parts) * 100)}% coverage`
-                    : 'No parts'}
-                </p>
+                <div className="flex items-center gap-2 text-sm">
+                  <Badge
+                    variant={stats.parts > 0 && (stats.partsWithImages / stats.parts) * 100 >= 80 ? 'success' : 'warning'}
+                    size="sm"
+                  >
+                    {stats.parts > 0 && (stats.partsWithImages / stats.parts) * 100 >= 80
+                      ? 'Good Coverage'
+                      : 'Needs Improvement'}
+                  </Badge>
+                  {stats.parts > 0 && (stats.partsWithImages / stats.parts) * 100 < 80 && (
+                    <Link href="/admin/reports/missing-data" className="text-xs text-orange-400 hover:text-orange-300">
+                      View missing images →
+                    </Link>
+                  )}
+                </div>
               </div>
             )}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <h2 className="text-lg font-semibold text-cream-100 flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-yellow-400" />
-              Affiliate Link Coverage
-            </h2>
+        <Card className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent" />
+          <CardHeader className="relative z-10">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-cream-100 flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-yellow-400" />
+                Affiliate Link Coverage
+              </h2>
+              {!loading && stats.parts > 0 && (
+                <HealthIndicator
+                  score={Math.round((stats.partsWithAffiliateLinks / stats.parts) * 100)}
+                  size="sm"
+                />
+              )}
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             {loading ? (
               <div className="h-8 bg-olive-600 rounded-full animate-pulse" />
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-cream-300">Parts with affiliate links</span>
                   <span className="text-cream-100 font-semibold">
                     {stats.partsWithAffiliateLinks} / {stats.parts}
                   </span>
                 </div>
-                <div className="w-full bg-olive-700 rounded-full h-3">
+                <div className="relative w-full bg-olive-700 rounded-full h-4 overflow-hidden">
                   <div
-                    className="bg-yellow-500 h-3 rounded-full transition-all"
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-all duration-1000 ease-out shadow-lg shadow-yellow-500/50"
                     style={{
                       width: `${stats.parts > 0 ? (stats.partsWithAffiliateLinks / stats.parts) * 100 : 0}%`,
                     }}
                   />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xs font-semibold text-cream-100 z-10">
+                      {stats.parts > 0
+                        ? `${Math.round((stats.partsWithAffiliateLinks / stats.parts) * 100)}%`
+                        : '0%'}
+                    </span>
+                  </div>
                 </div>
-                <p className="text-sm text-cream-400">
-                  {stats.parts > 0
-                    ? `${Math.round((stats.partsWithAffiliateLinks / stats.parts) * 100)}% coverage`
-                    : 'No parts'}
-                </p>
+                <div className="flex items-center gap-2 text-sm">
+                  <Badge
+                    variant={stats.parts > 0 && (stats.partsWithAffiliateLinks / stats.parts) * 100 >= 50 ? 'success' : 'warning'}
+                    size="sm"
+                  >
+                    {stats.parts > 0 && (stats.partsWithAffiliateLinks / stats.parts) * 100 >= 50
+                      ? 'Good Coverage'
+                      : 'Needs Improvement'}
+                  </Badge>
+                  {stats.parts > 0 && (stats.partsWithAffiliateLinks / stats.parts) * 100 < 50 && (
+                    <Link href="/admin/affiliate" className="text-xs text-yellow-400 hover:text-yellow-300">
+                      Add affiliate links →
+                    </Link>
+                  )}
+                </div>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Quick Actions & Recent Activity */}
+      {/* Quick Actions & Recent Activity - Enhanced */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Quick Actions */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <h2 className="text-lg font-semibold text-cream-100">Quick Actions</h2>
+        <Card className="lg:col-span-1 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-olive-800/50 to-transparent opacity-50" />
+          <CardHeader className="relative z-10">
+            <h2 className="text-lg font-semibold text-cream-100 flex items-center gap-2">
+              <Activity className="w-5 h-5 text-orange-400" />
+              Quick Actions
+            </h2>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="relative z-10 space-y-2">
             <Link 
               href="/admin/engines" 
               className="flex items-center justify-between p-3 rounded-md hover:bg-olive-600 transition-colors group"
@@ -440,14 +560,18 @@ export default function AdminDashboardPage() {
         </Card>
 
         {/* Recent Activity */}
-        <Card className="lg:col-span-2">
-          <CardHeader className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-cream-100">Recent Activity</h2>
-            <Link href="/admin/audit" className="text-sm text-orange-400 hover:text-orange-300">
-              View All
+        <Card className="lg:col-span-2 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-olive-800/30 to-transparent opacity-50" />
+          <CardHeader className="relative z-10 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-cream-100 flex items-center gap-2">
+              <Activity className="w-5 h-5 text-blue-400" />
+              Recent Activity
+            </h2>
+            <Link href="/admin/audit" className="text-sm text-orange-400 hover:text-orange-300 font-medium transition-colors">
+              View All →
             </Link>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             {loading ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
@@ -455,23 +579,26 @@ export default function AdminDashboardPage() {
                 ))}
               </div>
             ) : recentActivity.length === 0 ? (
-              <p className="text-cream-400 text-center py-8">No recent activity</p>
+              <div className="text-center py-12">
+                <Activity className="w-12 h-12 text-cream-600 mx-auto mb-3 opacity-50" />
+                <p className="text-cream-400">No recent activity</p>
+              </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {recentActivity.slice(0, 5).map((entry) => (
                   <div 
                     key={entry.id} 
-                    className="flex items-center justify-between p-3 rounded-md bg-olive-700/50"
+                    className="flex items-center justify-between p-3 rounded-lg bg-olive-700/50 hover:bg-olive-700/70 transition-colors border border-olive-600/50 group"
                   >
                     <div className="flex items-center gap-3">
-                      <span className={`px-2 py-0.5 text-xs font-medium uppercase rounded border ${getActionBadge(entry.action)}`}>
+                      <span className={`px-2.5 py-1 text-xs font-semibold uppercase rounded-md border ${getActionBadge(entry.action)}`}>
                         {entry.action}
                       </span>
-                      <span className="text-cream-200">
+                      <span className="text-cream-200 font-medium group-hover:text-cream-100 transition-colors">
                         {entry.table_name}
                       </span>
                     </div>
-                    <span className="text-sm text-cream-400">
+                    <span className="text-xs text-cream-500 group-hover:text-cream-400 transition-colors">
                       {formatDate(entry.created_at)}
                     </span>
                   </div>

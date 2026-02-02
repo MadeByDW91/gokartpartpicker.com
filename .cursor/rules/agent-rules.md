@@ -35,10 +35,8 @@
 
 ```yaml
 owns:
-  - /docs/*
   - /.cursor/*
   - /README.md
-  - /CONVENTIONS.md
 
 can_create:
   - Documentation files
@@ -239,7 +237,6 @@ rules:
 owns:
   - /src/lib/compatibility/*
   - /src/db/schema/compatibility.ts
-  - /docs/compatibility-rules.md
 
 can_create:
   - Rule evaluator
@@ -304,7 +301,6 @@ owns:
   - /tests/*
   - /playwright.config.ts
   - /vitest.config.ts
-  - /docs/qa-reports/*
 
 can_create:
   - Unit tests
@@ -336,7 +332,6 @@ rules:
 owns:
   - /.github/*
   - /vercel.json
-  - /docs/deployment.md
 
 can_create:
   - CI/CD workflows
@@ -380,7 +375,7 @@ When completing a task that another agent depends on:
 If two agents need to modify the same file:
 
 1. STOP — Do not make conflicting changes
-2. Document conflict in `/docs/conflicts.md`
+2. Document conflict in PR or commit message
 3. Wait for A0 (Architect) resolution
 4. Proceed only after resolution
 
@@ -404,7 +399,6 @@ All code must be reviewed before merge:
 
 | Path | Owner | Co-Owners |
 |------|-------|-----------|
-| /docs/* | A0 | — |
 | /src/db/* | A1 | — |
 | /src/lib/auth/* | A2 | — |
 | /src/components/ui/* | A3 | — |

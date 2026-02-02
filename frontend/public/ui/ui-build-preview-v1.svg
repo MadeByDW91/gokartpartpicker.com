@@ -1,0 +1,67 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Build card background -->
+  <rect x="0" y="0" width="400" height="300" rx="8" fill="#2d3226" stroke="#5d634d" stroke-width="2"/>
+  
+  <!-- Header section -->
+  <rect x="0" y="0" width="400" height="80" rx="8" fill="#1a1e15"/>
+  <line x1="0" y1="80" x2="400" y2="80" stroke="#5d634d" stroke-width="1"/>
+  
+  <!-- Engine badge (top left) -->
+  <rect x="20" y="15" width="50" height="50" rx="6" fill="#c96a24" opacity="0.2" stroke="#c96a24" stroke-width="2"/>
+  <g transform="translate(45, 40)">
+    <!-- Engine icon -->
+    <rect x="-8" y="-6" width="16" height="12" rx="1" stroke="#c96a24" stroke-width="1.5" fill="none"/>
+    <rect x="-6" y="-4" width="3" height="8" fill="#c96a24" opacity="0.8"/>
+    <rect x="3" y="-4" width="3" height="8" fill="#c96a24" opacity="0.8"/>
+    <circle cx="-8" cy="-6" r="2" stroke="#c96a24" stroke-width="1" fill="none"/>
+  </g>
+  
+  <!-- Build name placeholder -->
+  <rect x="85" y="25" width="200" height="16" rx="4" fill="#3d4233" opacity="0.6"/>
+  <text x="90" y="37" fill="#f5f0e6" font-size="14" font-family="sans-serif" font-weight="600">Build Name</text>
+  
+  <!-- Price (top right) -->
+  <text x="320" y="45" text-anchor="end" fill="#c96a24" font-size="24" font-family="sans-serif" font-weight="700">$0.00</text>
+  <text x="320" y="65" text-anchor="end" fill="#5d634d" font-size="10" font-family="sans-serif">Total Price</text>
+  
+  <!-- Main content area -->
+  <!-- Compatibility status (left side) -->
+  <g transform="translate(40, 120)">
+    <circle cx="0" cy="0" r="35" stroke="#4a7c59" stroke-width="4" fill="none" opacity="0.8"/>
+    <circle cx="0" cy="0" r="28" stroke="#5d634d" stroke-width="2" fill="none" opacity="0.4"/>
+    <text x="0" y="-5" text-anchor="middle" fill="#4a7c59" font-size="24" font-family="sans-serif" font-weight="700">100%</text>
+    <text x="0" y="15" text-anchor="middle" fill="#5d634d" font-size="10" font-family="sans-serif">COMPATIBLE</text>
+  </g>
+  
+  <!-- Part count (center) -->
+  <g transform="translate(200, 120)">
+    <circle cx="0" cy="0" r="25" fill="#3d4233" opacity="0.6"/>
+    <text x="0" y="8" text-anchor="middle" fill="#f5f0e6" font-size="32" font-family="sans-serif" font-weight="700">0</text>
+    <text x="0" y="45" text-anchor="middle" fill="#5d634d" font-size="12" font-family="sans-serif">PARTS</text>
+  </g>
+  
+  <!-- HP/Torque (right side) -->
+  <g transform="translate(360, 120)">
+    <text x="0" y="-15" text-anchor="end" fill="#f5f0e6" font-size="20" font-family="sans-serif" font-weight="600">0</text>
+    <text x="0" y="0" text-anchor="end" fill="#5d634d" font-size="10" font-family="sans-serif">HP</text>
+    <text x="0" y="20" text-anchor="end" fill="#f5f0e6" font-size="20" font-family="sans-serif" font-weight="600">0</text>
+    <text x="0" y="35" text-anchor="end" fill="#5d634d" font-size="10" font-family="sans-serif">Lb-Ft</text>
+  </g>
+  
+  <!-- Bottom section - Part categories icons -->
+  <g transform="translate(40, 220)">
+    <text x="0" y="0" fill="#5d634d" font-size="11" font-family="sans-serif" font-weight="600">SELECTED PARTS:</text>
+    <!-- Category icons row -->
+    <g transform="translate(0, 15)">
+      <!-- Placeholder category icons -->
+      <rect x="0" y="0" width="24" height="24" rx="4" fill="#3d4233" opacity="0.4"/>
+      <rect x="32" y="0" width="24" height="24" rx="4" fill="#3d4233" opacity="0.4"/>
+      <rect x="64" y="0" width="24" height="24" rx="4" fill="#3d4233" opacity="0.4"/>
+      <rect x="96" y="0" width="24" height="24" rx="4" fill="#3d4233" opacity="0.4"/>
+      <rect x="128" y="0" width="24" height="24" rx="4" fill="#3d4233" opacity="0.4"/>
+    </g>
+  </g>
+  
+  <!-- Decorative accent line -->
+  <line x1="40" y1="260" x2="360" y2="260" stroke="#c96a24" stroke-width="2" opacity="0.3"/>
+</svg>

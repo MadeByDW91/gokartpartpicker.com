@@ -28,7 +28,7 @@ import {
 } from '@/lib/api/types';
 import type { Video } from '@/types/database';
 import { requireAdmin } from '../admin';
-import { getYouTubeThumbnailUrl, isEmbeddableVideoUrl } from '@/lib/video-utils';
+import { getYouTubeThumbnailUrl, getYouTubeVideoId, isEmbeddableVideoUrl } from '@/lib/video-utils';
 import { youtubeSearchFirst } from '@/lib/youtube-api';
 
 /**
@@ -646,5 +646,126 @@ export async function reorderVideos(
     return success(data ?? []);
   } catch (err) {
     return handleError(err, 'reorderVideos');
+  }
+}
+
+/**
+ * Search YouTube for videos related to a product (engine or part)
+ * Returns search results that admin can review before adding
+ */
+export async function searchYouTubeVideos(
+  query: string,
+  maxResults: number = 10
+): Promise<ActionResult<import('@/lib/youtube-api').YouTubeSearchResult[]>> {
+  try {
+    const authResult = await requireAdmin();
+    if ('success' in authResult && !authResult.success) {
+      return authResult as ActionResult<import('@/lib/youtube-api').YouTubeSearchResult[]>;
+    }
+
+    const apiKey = process.env.YOUTUBE_API_KEY;
+    if (!apiKey?.trim()) {
+      return error(
+        'YOUTUBE_API_KEY is not set. Add it to .env.local and enable YouTube Data API v3 in Google Cloud.'
+      );
+    }
+
+    const { youtubeSearch } = await import('@/lib/youtube-api');
+    const results = await youtubeSearch(query, apiKey, maxResults);
+
+    return success(results);
+  } catch (err) {
+    return handleError(err, 'searchYouTubeVideos');
+  }
+}
+
+/**
+ * Bulk create videos from YouTube search results
+ * Used when admin selects multiple videos to add at once
+ */
+export async function bulkCreateVideosFromYouTube(
+  productType: 'engine' | 'part',
+  productId: string,
+  videoData: Array<{
+    videoUrl: string;
+    title: string;
+    description?: string;
+    category?: string;
+    thumbnailUrl?: string;
+    channelName?: string;
+    channelUrl?: string;
+    publishedDate?: string;
+  }>
+): Promise<ActionResult<{ created: number; failed: number; errors: string[] }>> {
+  try {
+    const authResult = await requireAdmin();
+    if ('success' in authResult && !authResult.success) {
+      return authResult as ActionResult<{ created: number; failed: number; errors: string[] }>;
+    }
+
+    const supabase = await createClient();
+    
+    // Get existing YouTube IDs to prevent duplicates
+    const { data: allVideos } = await supabase.from('videos').select('video_url');
+    const usedYouTubeIds = new Set<string>();
+    for (const row of allVideos ?? []) {
+      const id = getYouTubeVideoId(row.video_url);
+      if (id) usedYouTubeIds.add(id);
+    }
+
+    let created = 0;
+    let failed = 0;
+    const errors: string[] = [];
+
+    for (const video of videoData) {
+      const ytId = getYouTubeVideoId(video.videoUrl);
+      if (ytId && usedYouTubeIds.has(ytId)) {
+        errors.push(`Video already exists: ${video.title}`);
+        failed++;
+        continue;
+      }
+
+      if (ytId) usedYouTubeIds.add(ytId);
+
+      const result = await createVideo({
+        title: video.title,
+        description: video.description || '',
+        video_url: video.videoUrl,
+        thumbnail_url: video.thumbnailUrl || getYouTubeThumbnailUrl(video.videoUrl) || null,
+        duration_seconds: null,
+        category: (video.category as any) || 'tutorial',
+        language: 'en',
+        engine_id: productType === 'engine' ? productId : null,
+        part_id: productType === 'part' ? productId : null,
+        channel_name: video.channelName || null,
+        channel_url: video.channelUrl || null,
+        published_date: video.publishedDate ? new Date(video.publishedDate) : null,
+        is_active: true,
+        is_featured: created === 0, // First video is featured
+        display_order: created,
+      });
+
+      if (result.success) {
+        created++;
+      } else {
+        failed++;
+        errors.push(`${video.title}: ${result.error || 'Failed to create'}`);
+        if (ytId) usedYouTubeIds.delete(ytId); // Release the ID if creation failed
+      }
+    }
+
+    // Revalidate paths
+    if (productType === 'engine') {
+      revalidatePath('/engines');
+      revalidatePath('/engines/[slug]', 'page');
+    } else {
+      revalidatePath('/parts');
+      revalidatePath('/parts/[slug]', 'page');
+    }
+    revalidatePath('/admin/videos');
+
+    return success({ created, failed, errors: errors.slice(0, 10) }); // Limit errors
+  } catch (err) {
+    return handleError(err, 'bulkCreateVideosFromYouTube');
   }
 }

@@ -1,0 +1,12 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Exhaust header pipe -->
+  <path d="M4 12 Q8 8, 12 12 Q16 16, 20 12" stroke="#f5f0e6" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Header collector -->
+  <rect x="2" y="10.5" width="4" height="3" rx="1.5" fill="#c96a24" opacity="0.6"/>
+  <rect x="2" y="10.5" width="4" height="3" rx="1.5" stroke="#f5f0e6" stroke-width="1.5" fill="none"/>
+  <!-- Muffler -->
+  <rect x="18" y="10.5" width="4" height="3" rx="1.5" fill="#5d634d" opacity="0.6"/>
+  <rect x="18" y="10.5" width="4" height="3" rx="1.5" stroke="#f5f0e6" stroke-width="1.5" fill="none"/>
+  <!-- Exhaust tips -->
+  <rect x="20" y="11" width="1" height="2" fill="#f5f0e6" opacity="0.4"/>
+</svg>

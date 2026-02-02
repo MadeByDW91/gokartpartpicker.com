@@ -42,7 +42,7 @@ export function RecommendationsPanel({
   const [goal, setGoal] = useState<RecommendationGoal>('speed');
   
   const engineId = selectedEngine?.id || null;
-  const currentParts = Array.from(selectedParts.values());
+  const currentParts = Array.from(selectedParts.values()).flat();
   
   const { data: recommendations = [], isLoading: recsLoading } = useRecommendations(
     engineId,
@@ -134,7 +134,8 @@ export function RecommendationsPanel({
               <div className="space-y-3">
                 {recommendations.slice(0, 5).map((part) => {
                   const hpGain = (part.specifications?.hp_contribution as number) || 0;
-                  const isSelected = selectedParts.get(category)?.id === part.id;
+                  const partsArray = selectedParts.get(category) || [];
+                  const isSelected = partsArray.some(p => p.id === part.id);
                   
                   return (
                     <div

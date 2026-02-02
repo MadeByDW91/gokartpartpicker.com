@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Play, Clock, Film } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import type { Video, VideoCategory } from '@/types/database';
 import { VideoPlayer } from './VideoPlayer';
 import { getYouTubeThumbnailUrl } from '@/lib/video-utils';
@@ -26,9 +25,6 @@ const CATEGORY_LABELS: Record<VideoCategory, string> = {
   tips: 'Tips',
 };
 
-/**
- * Format duration from seconds to MM:SS
- */
 function formatDuration(seconds: number | null): string {
   if (!seconds) return '';
   const mins = Math.floor(seconds / 60);
@@ -44,7 +40,6 @@ export function VideoCard({ video, onClick, compact = false }: VideoCardProps) {
   const thumbUrl = video.thumbnail_url || getYouTubeThumbnailUrl(video.video_url) || null;
   const showThumb = !!thumbUrl && !thumbError;
 
-  // Sync img src when video or thumbUrl changes; reset error state
   useEffect(() => {
     setImgSrc(thumbUrl);
     setThumbError(false);
@@ -74,99 +69,108 @@ export function VideoCard({ video, onClick, compact = false }: VideoCardProps) {
     }
   };
 
+  const categoryLabel = CATEGORY_LABELS[video.category];
+
   return (
     <>
-      <Card 
-        variant="default" 
-        hoverable 
-        className="overflow-hidden group cursor-pointer bg-olive-800 border-olive-600 shadow-md hover:shadow-lg hover:border-orange-500/50 transition-all duration-300"
+      <Card
+        variant="default"
+        hoverable
+        className="overflow-hidden group cursor-pointer rounded-xl border border-olive-600/60 bg-olive-800/80 shadow-sm hover:shadow-md hover:border-orange-500/40 transition-all duration-300"
         onClick={handleClick}
       >
-        {/* Thumbnail: use thumbnail_url, or derive from YouTube video_url, or placeholder. Plain img for reliable loading. */}
-        <div className={`relative bg-olive-800 overflow-hidden ${compact ? 'h-28' : 'h-40'}`}>
+        {/* 16:9 thumbnail container */}
+        <div className="relative w-full aspect-video bg-olive-700 overflow-hidden">
           {showThumb ? (
             <img
               src={imgSrc ?? thumbUrl}
-              alt={video.title}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
               referrerPolicy="no-referrer"
               loading="lazy"
               onError={handleThumbError}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-olive-700">
-              <Film className={`text-olive-500 ${compact ? 'w-8 h-8' : 'w-12 h-12'}`} />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Film className="w-12 h-12 text-olive-500" />
             </div>
           )}
-          
-          {/* Gradient overlay for better text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-olive-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          
-          {/* Play button overlay */}
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className={`bg-orange-500/90 rounded-full flex items-center justify-center shadow-lg ${compact ? 'w-10 h-10' : 'w-14 h-14'}`}>
-              <Play className={`text-cream-100 ml-0.5 fill-current ${compact ? 'w-5 h-5' : 'w-7 h-7'}`} fill="currentColor" />
+
+          {/* Subtle bottom gradient for duration readability */}
+          <div
+            className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/70 to-transparent pointer-events-none"
+            aria-hidden
+          />
+
+          {/* Play overlay on hover */}
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div className="rounded-full bg-orange-500 p-4 shadow-lg ring-4 ring-white/20 group-hover:scale-110 transition-transform duration-200">
+              <Play className="w-6 h-6 text-white fill-white ml-0.5" />
             </div>
           </div>
-          
-          {/* Featured badge */}
+
+          {/* Featured: only when true, subtle */}
           {video.is_featured && (
-            <Badge className="absolute top-1.5 left-1.5 z-10" variant="warning" size="sm">
+            <span
+              className="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-orange-500/90 text-white shadow"
+              aria-hidden
+            >
               Featured
-            </Badge>
+            </span>
           )}
-          
-          {/* Category badge */}
-          <Badge className={`absolute z-10 bg-olive-800/90 backdrop-blur-sm border border-olive-600 ${compact ? 'top-1.5 right-1.5' : 'top-2 right-2'}`} size="sm">
-            {CATEGORY_LABELS[video.category]}
-          </Badge>
-          
-          {/* Duration badge */}
+
+          {/* Duration — bottom-right only */}
           {video.duration_seconds && (
-            <div className={`absolute flex items-center gap-1 bg-black/80 backdrop-blur-sm rounded text-cream-100 font-medium ${compact ? 'bottom-1 right-1 px-1.5 py-0.5 text-[10px]' : 'bottom-2 right-2 px-2 py-1 text-xs'}`}>
-              <Clock className={compact ? 'w-2.5 h-2.5' : 'w-3 h-3'} />
+            <span
+              className="absolute bottom-2 right-2 flex items-center gap-1 rounded px-2 py-1 text-xs font-medium bg-black/75 text-cream-100"
+              aria-hidden
+            >
+              <Clock className="w-3 h-3 opacity-80" />
               {formatDuration(video.duration_seconds)}
-            </div>
+            </span>
           )}
         </div>
-        
-        {/* Card Content with distinct background */}
-        <CardContent className={`bg-olive-700/50 border-t border-olive-600/50 ${compact ? 'p-3' : 'p-4'}`}>
-          {/* Title */}
-          <h3 className={`font-bold text-cream-100 group-hover:text-orange-400 transition-colors leading-tight ${compact ? 'text-sm line-clamp-1 mb-1' : 'text-base line-clamp-2 mb-2'}`}>
+
+        {/* Card body — category moved here, no thumbnail clutter */}
+        <CardContent
+          className={`border-t border-olive-600/40 bg-olive-800/60 ${compact ? 'p-3' : 'p-4'}`}
+        >
+          <h3
+            className={`font-semibold text-cream-100 group-hover:text-orange-400 transition-colors leading-snug ${compact ? 'text-sm line-clamp-1' : 'text-base line-clamp-2'} ${compact ? 'mb-1' : 'mb-2'}`}
+          >
             {video.title}
           </h3>
-          
-          {/* Description with better contrast */}
-          {video.description && !compact && (
-            <div className="mb-3">
-              <p className="text-sm text-cream-300 line-clamp-2 leading-relaxed">
-                {video.description}
-              </p>
-            </div>
-          )}
-          
-          {/* Channel: YouTube channel that published the video */}
-          {video.channel_name && (
-            <div className={`flex items-center justify-between text-xs border-t border-olive-600/50 ${compact ? 'pt-1.5 mt-1.5' : 'pt-2 mt-2'}`}>
-              <span className="text-cream-400">
-                <span className="text-cream-500">Channel: </span>
-                <span className="font-medium">{video.channel_name}</span>
-              </span>
-              {video.view_count > 0 && (
-                <span className="text-cream-500">{video.view_count.toLocaleString()} views</span>
+
+          {(categoryLabel || video.channel_name || (video.view_count != null && video.view_count > 0)) && (
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-cream-400">
+              {categoryLabel && (
+                <span className="text-cream-500">{categoryLabel}</span>
+              )}
+              {categoryLabel && video.channel_name && (
+                <span className="text-olive-500" aria-hidden>·</span>
+              )}
+              {video.channel_name && (
+                <span>{video.channel_name}</span>
+              )}
+              {(categoryLabel || video.channel_name) && video.view_count != null && video.view_count > 0 && (
+                <span className="text-olive-500" aria-hidden>·</span>
+              )}
+              {video.view_count != null && video.view_count > 0 && (
+                <span>{video.view_count.toLocaleString()} views</span>
               )}
             </div>
           )}
+
+          {!compact && video.description && (
+            <p className="mt-2 text-sm text-cream-400/90 line-clamp-2 leading-relaxed">
+              {video.description}
+            </p>
+          )}
         </CardContent>
       </Card>
-      
-      {/* Video Player Modal */}
+
       {showPlayer && (
-        <VideoPlayer 
-          video={video} 
-          onClose={() => setShowPlayer(false)} 
-        />
+        <VideoPlayer video={video} onClose={() => setShowPlayer(false)} />
       )}
     </>
   );

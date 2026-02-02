@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import type { PartCategory } from '@/types/database';
 
 /**
  * Combines clsx and tailwind-merge for conditional class names
@@ -73,6 +74,8 @@ export const CATEGORY_LABELS: Record<string, string> = {
   axle: 'Axle',
   wheel: 'Wheel',
   tire: 'Tire',
+  tire_front: 'Front Tire',
+  tire_rear: 'Rear Tire',
   brake: 'Brake',
   throttle: 'Throttle',
   frame: 'Frame',
@@ -93,6 +96,16 @@ export const CATEGORY_LABELS: Record<string, string> = {
   gasket: 'Gasket',
   hardware: 'Hardware',
   other: 'Other',
+  // EV-specific categories
+  battery: 'Battery',
+  motor_controller: 'Motor Controller',
+  bms: 'BMS',
+  charger: 'Charger',
+  throttle_controller: 'Throttle Controller',
+  voltage_converter: 'Voltage Converter',
+  battery_mount: 'Battery Mount',
+  wiring_harness: 'Wiring Harness',
+  fuse_kill_switch: 'Fuses & Kill Switch',
 };
 
 /**
@@ -105,6 +118,53 @@ export interface CategoryGroup {
   categories: string[];
 }
 
+// Gas engine-specific categories (only show for gas builds)
+export const GAS_ONLY_CATEGORIES: PartCategory[] = [
+  'carburetor',
+  'exhaust',
+  'air_filter',
+  'camshaft',
+  'valve_spring',
+  'flywheel',
+  'ignition',
+  'connecting_rod',
+  'piston',
+  'crankshaft',
+  'oil_system',
+  'header',
+  'fuel_system',
+  'gasket',
+];
+
+// Electric motor-specific categories (only show for electric builds)
+export const ELECTRIC_ONLY_CATEGORIES: PartCategory[] = [
+  'battery',
+  'motor_controller',
+  'bms',
+  'charger',
+  'throttle_controller',
+  'voltage_converter',
+  'battery_mount',
+  'wiring_harness',
+  'fuse_kill_switch',
+];
+
+/**
+ * Check if a category is compatible with a power source
+ */
+export function isCategoryCompatibleWithPowerSource(
+  category: PartCategory,
+  powerSource: 'gas' | 'electric'
+): boolean {
+  if (powerSource === 'gas') {
+    // Gas builds: show gas-only and shared categories, but not electric-only
+    return !ELECTRIC_ONLY_CATEGORIES.includes(category);
+  } else {
+    // Electric builds: show electric-only and shared categories, but not gas-only
+    return !GAS_ONLY_CATEGORIES.includes(category);
+  }
+}
+
 export const CATEGORY_GROUPS: CategoryGroup[] = [
   {
     id: 'drivetrain',
@@ -114,7 +174,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
   {
     id: 'chassis',
     label: 'Chassis',
-    categories: ['axle', 'wheel', 'tire', 'brake', 'throttle', 'frame'],
+    categories: ['axle', 'wheel', 'tire', 'tire_front', 'tire_rear', 'brake', 'throttle', 'frame'],
   },
   {
     id: 'engine',
@@ -137,16 +197,47 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     ],
   },
   {
+    id: 'ev_system',
+    label: 'EV System',
+    categories: [
+      'battery',
+      'motor_controller',
+      'charger',
+      'bms',
+      'throttle_controller',
+      'battery_mount',
+      'wiring_harness',
+      'fuse_kill_switch',
+      'voltage_converter',
+    ],
+  },
+  {
     id: 'other',
     label: 'Other',
     categories: ['hardware', 'other'],
   },
 ];
 
+/** Builder display order: electric — EV System under Motor, then Drivetrain, Chassis, Other. */
+const EV_BUILDER_GROUP_ORDER: string[] = ['ev_system', 'drivetrain', 'chassis', 'other'];
+
+/** Builder display order: gas — Drivetrain, Chassis, Engine, Other. */
+const GAS_BUILDER_GROUP_ORDER: string[] = ['drivetrain', 'chassis', 'engine', 'other'];
+
+/**
+ * Category groups in builder display order. EV System appears directly under Motor for electric builds.
+ */
+export function getOrderedCategoryGroupsForBuilder(powerSource: 'gas' | 'electric'): CategoryGroup[] {
+  const order = powerSource === 'electric' ? EV_BUILDER_GROUP_ORDER : GAS_BUILDER_GROUP_ORDER;
+  const byId = new Map(CATEGORY_GROUPS.map((g) => [g.id, g]));
+  return order.map((id) => byId.get(id)).filter((g): g is CategoryGroup => !!g);
+}
+
 /**
  * Get category label
  */
-export function getCategoryLabel(category: string): string {
+export function getCategoryLabel(category: string | undefined | null): string {
+  if (!category) return 'Unknown';
   return CATEGORY_LABELS[category] || category.split('_').map(word => 
     word.charAt(0).toUpperCase() + word.slice(1)
   ).join(' ');

@@ -128,7 +128,7 @@ export default function UserDetailPage() {
           <ChevronLeft className="w-4 h-4" />
           Back to Users
         </Link>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-display text-3xl text-cream-100">User Details</h1>
             <p className="text-cream-300 mt-1">{user.email || 'No email'}</p>

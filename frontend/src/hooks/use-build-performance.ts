@@ -11,6 +11,7 @@ import {
   calculatePerformance,
   type PerformanceMetrics,
 } from '@/lib/performance/calculator';
+import type { Part } from '@/types/database';
 
 /**
  * Hook to get performance metrics for the current build
@@ -21,7 +22,11 @@ export function useBuildPerformance(): PerformanceMetrics {
   const { selectedEngine, selectedParts } = useBuildStore();
   
   const performance = useMemo(() => {
-    const partsArray = Array.from(selectedParts.values());
+    // Flatten the Map<PartCategory, Part[]> into a single Part[] array
+    const partsArray: Part[] = [];
+    selectedParts.forEach((parts) => {
+      partsArray.push(...parts);
+    });
     return calculatePerformance(selectedEngine, partsArray);
   }, [selectedEngine, selectedParts]);
   

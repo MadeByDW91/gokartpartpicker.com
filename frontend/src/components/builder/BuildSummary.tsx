@@ -54,7 +54,7 @@ export function BuildSummary({
   const [budget, setBudget] = useState<number | undefined>(undefined);
   const completedSteps = [
     selectedEngine ? 1 : 0,
-    ...Array.from(selectedParts.values()).map(() => 1),
+    ...Array.from(selectedParts.values()).flat().map(() => 1),
   ].reduce((a, b) => a + b, 0);
 
   return (
@@ -115,26 +115,28 @@ export function BuildSummary({
         {/* Selected Parts */}
         {selectedParts.size > 0 && (
           <div className="space-y-2">
-            {Array.from(selectedParts.entries()).map(([category, part]) => (
-              <div key={category} className="p-3 bg-olive-600 rounded-lg">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Package className="w-4 h-4 text-orange-400 flex-shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-cream-100 line-clamp-1">
-                        {part.name}
-                      </p>
-                      <p className="text-xs text-cream-400">
-                        {getCategoryLabel(category)}
-                      </p>
+            {Array.from(selectedParts.entries()).map(([category, partsArray]) => 
+              partsArray.map((part, index) => (
+                <div key={`${category}-${part.id}-${index}`} className="p-3 bg-olive-600 rounded-lg">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Package className="w-4 h-4 text-orange-400 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-cream-100 line-clamp-1">
+                          {part.name}
+                        </p>
+                        <p className="text-xs text-cream-400">
+                          {getCategoryLabel(category)}
+                        </p>
+                      </div>
                     </div>
+                    <span className="text-sm font-bold text-orange-400 ml-2 flex-shrink-0">
+                      {part.price ? formatPrice(part.price) : 'Contact'}
+                    </span>
                   </div>
-                  <span className="text-sm font-bold text-orange-400 ml-2 flex-shrink-0">
-                    {part.price ? formatPrice(part.price) : 'Contact'}
-                  </span>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         )}
         

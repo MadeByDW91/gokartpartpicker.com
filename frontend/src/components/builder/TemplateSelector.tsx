@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTemplates } from '@/hooks/use-templates';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Sparkles, ChevronDown, Rocket, Zap, Wallet, GraduationCap, Trophy, Baby, Loader2, X } from 'lucide-react';
+import { Sparkles, ChevronDown, Rocket, Zap, Wallet, GraduationCap, Trophy, Baby, Loader2, X, Mountain, Car, Flag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BuildTemplate, TemplateGoal } from '@/types/database';
 
@@ -16,6 +16,9 @@ const GOAL_ICONS: Record<TemplateGoal, React.ComponentType<{ className?: string 
   beginner: GraduationCap,
   competition: Trophy,
   kids: Baby,
+  offroad: Mountain,
+  onroad: Car,
+  racing: Flag,
 };
 
 interface TemplateSelectorProps {
@@ -79,7 +82,7 @@ export function TemplateSelector({ className }: TemplateSelectorProps) {
             />
             {/* Drawer Panel */}
             <div className="w-[85vw] max-w-sm bg-olive-900 border-l border-olive-700 shadow-xl flex flex-col">
-              <Card className="h-full flex flex-col shadow-xl border-0 md:border md:rounded-lg">
+              <Card className="h-full flex flex-col shadow-xl border-0 md:border md:rounded-lg bg-olive-900">
               {/* Header */}
               <div className="p-4 border-b border-olive-600 bg-olive-800 flex items-center justify-between flex-shrink-0">
                 <div className="flex items-center gap-2">
@@ -190,7 +193,7 @@ export function TemplateSelector({ className }: TemplateSelectorProps) {
               onClick={() => setIsOpen(false)}
               aria-hidden="true"
             />
-            <Card className="max-h-[600px] overflow-hidden flex flex-col shadow-xl border-olive-600 z-50 relative">
+            <Card className="max-h-[600px] overflow-hidden flex flex-col shadow-xl border-olive-600 z-50 relative bg-olive-900">
               {/* Header */}
               <div className="p-4 border-b border-olive-600 bg-olive-800 flex items-center justify-between flex-shrink-0">
                 <div className="flex items-center gap-2">

@@ -4,12 +4,15 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import { DataTable, StatusBadge, TableActions } from '@/components/admin/DataTable';
+import { QuickActionsToolbar, type BulkAction } from '@/components/admin/QuickActionsToolbar';
+import { AdvancedFilters, type FilterOption, type FilterValue } from '@/components/admin/AdvancedFilters';
+import { EnhancedSearch, highlightSearch } from '@/components/admin/EnhancedSearch';
 import { formatPrice } from '@/lib/utils';
-import { Plus, Search, Pencil, Eye, Trash2, Upload, Download, ShoppingCart } from 'lucide-react';
-import { getAdminParts, deletePart } from '@/actions/admin';
+import { Plus, Pencil, Eye, Trash2, Upload, Download, ShoppingCart, CheckCircle, XCircle, Image as ImageIcon } from 'lucide-react';
+import { getAdminParts, deletePart, bulkActivateParts, bulkDeactivateParts } from '@/actions/admin';
 import { AmazonProductImporter } from '@/components/admin/AmazonProductImporter';
+import { PART_CATEGORIES } from '@/types/database';
 import type { Part } from '@/types/database';
 
 interface AdminPart extends Part {
@@ -23,6 +26,8 @@ export default function AdminPartsPage() {
   const [parts, setParts] = useState<AdminPart[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [filters, setFilters] = useState<FilterValue>({});
   const [deleting, setDeleting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -78,17 +83,189 @@ export default function AdminPartsPage() {
     }
   };
 
-  // Filter parts by search query
+  // Get unique brands and categories for filters
+  const uniqueBrands = Array.from(new Set(parts.map((p) => p.brand).filter(Boolean))).sort();
+  const uniqueCategories = Array.from(new Set(parts.map((p) => p.category))).sort();
+
+  // Filter options
+  const filterOptions: FilterOption[] = [
+    {
+      key: 'category',
+      label: 'Category',
+      type: 'select',
+      options: uniqueCategories.map((cat) => ({
+        value: cat,
+        label: cat.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+      })),
+    },
+    {
+      key: 'brand',
+      label: 'Brand',
+      type: 'select',
+      options: uniqueBrands.map((brand) => ({ value: brand, label: brand })),
+    },
+    {
+      key: 'is_active',
+      label: 'Status',
+      type: 'select',
+      options: [
+        { value: 'true', label: 'Active' },
+        { value: 'false', label: 'Inactive' },
+      ],
+    },
+    {
+      key: 'min_price',
+      label: 'Min Price ($)',
+      type: 'number',
+      placeholder: 'Minimum price',
+    },
+    {
+      key: 'max_price',
+      label: 'Max Price ($)',
+      type: 'number',
+      placeholder: 'Maximum price',
+    },
+  ];
+
+  // Quick filters
+  const quickFilters = [
+    {
+      label: 'Missing Images',
+      icon: ImageIcon,
+      filters: { has_image: false },
+    },
+    {
+      label: 'No Price',
+      filters: { has_price: false },
+    },
+    {
+      label: 'Inactive',
+      filters: { is_active: false },
+    },
+  ];
+
+  // Filter parts by search query and filters
   const filteredParts = parts.filter((part) => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      part.name.toLowerCase().includes(query) ||
-      part.brand?.toLowerCase().includes(query) ||
-      part.slug?.toLowerCase().includes(query) ||
-      part.category.toLowerCase().includes(query)
-    );
+    // Search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch =
+        part.name.toLowerCase().includes(query) ||
+        part.brand?.toLowerCase().includes(query) ||
+        part.slug?.toLowerCase().includes(query) ||
+        part.category.toLowerCase().includes(query);
+      if (!matchesSearch) return false;
+    }
+
+    // Advanced filters
+    if (filters.category && part.category !== filters.category) return false;
+    if (filters.brand && part.brand !== filters.brand) return false;
+    if (filters.is_active !== undefined) {
+      const isActive = filters.is_active === 'true' || filters.is_active === true;
+      if (part.is_active !== isActive) return false;
+    }
+    if (filters.min_price && (!part.price || part.price < Number(filters.min_price))) return false;
+    if (filters.max_price && (!part.price || part.price > Number(filters.max_price))) return false;
+    if (filters.has_image === false && part.image_url) return false;
+    if (filters.has_price === false && part.price) return false;
+
+    return true;
   });
+
+  // Selection handlers
+  const handleSelectItem = (id: string, selected: boolean) => {
+    setSelectedItems((prev) => {
+      const next = new Set(prev);
+      if (selected) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    setSelectedItems(new Set(filteredParts.map((p) => p.id)));
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedItems(new Set());
+  };
+
+  // Bulk actions
+  const bulkActions: BulkAction[] = [
+    {
+      label: 'Activate Selected',
+      icon: CheckCircle,
+      variant: 'success',
+      action: async (ids) => {
+        const result = await bulkActivateParts(ids);
+        if (result.success) {
+          await fetchParts();
+          setSelectedItems(new Set());
+        } else {
+          alert(result.error || 'Failed to activate parts');
+        }
+      },
+    },
+    {
+      label: 'Deactivate Selected',
+      icon: XCircle,
+      variant: 'default',
+      action: async (ids) => {
+        const result = await bulkDeactivateParts(ids);
+        if (result.success) {
+          await fetchParts();
+          setSelectedItems(new Set());
+        } else {
+          alert(result.error || 'Failed to deactivate parts');
+        }
+      },
+    },
+    {
+      label: 'Delete Selected',
+      icon: Trash2,
+      variant: 'danger',
+      requiresConfirmation: true,
+      confirmationMessage: `Are you sure you want to delete ${selectedItems.size} part(s)?`,
+      action: async (ids) => {
+        for (const id of ids) {
+          await deletePart(id, false);
+        }
+        await fetchParts();
+        setSelectedItems(new Set());
+      },
+    },
+  ];
+
+  const handleExport = (ids: string[]) => {
+    const itemsToExport = filteredParts.filter((p) => ids.includes(p.id));
+    const headers = ['Name', 'Slug', 'Category', 'Brand', 'Price', 'Status'];
+    const rows = itemsToExport.map((p) => [
+      p.name,
+      p.slug || '',
+      p.category,
+      p.brand || '',
+      p.price || '',
+      p.is_active ? 'Active' : 'Inactive',
+    ]);
+    
+    const csv = [
+      headers.join(','),
+      ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')),
+    ].join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `parts-export-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   const columns = [
     {
@@ -96,8 +273,12 @@ export default function AdminPartsPage() {
       header: 'Part',
       render: (part: AdminPart) => (
         <div>
-          <p className="font-medium text-cream-100">{part.name}</p>
-          <p className="text-xs text-cream-400">{part.slug || '—'}</p>
+          <p className="font-medium text-cream-100">
+            {searchQuery ? highlightSearch(part.name, searchQuery) : part.name}
+          </p>
+          <p className="text-xs text-cream-400">
+            {part.slug ? (searchQuery ? highlightSearch(part.slug, searchQuery) : part.slug) : '—'}
+          </p>
         </div>
       ),
     },
@@ -105,13 +286,16 @@ export default function AdminPartsPage() {
       key: 'category',
       header: 'Category',
       render: (part: AdminPart) => (
-        <span className="text-cream-300 capitalize">{part.category.replace('_', ' ')}</span>
+        <span className="text-cream-300 capitalize">
+          {searchQuery ? highlightSearch(part.category.replace(/_/g, ' '), searchQuery) : part.category.replace(/_/g, ' ')}
+        </span>
       ),
     },
     {
       key: 'brand',
       header: 'Brand',
-      render: (part: AdminPart) => part.brand || '—',
+      render: (part: AdminPart) => 
+        part.brand ? (searchQuery ? highlightSearch(part.brand, searchQuery) : part.brand) : '—',
     },
     {
       key: 'price',
@@ -200,17 +384,37 @@ export default function AdminPartsPage() {
         </div>
       )}
 
-      {/* Search & Filters */}
+      {/* Enhanced Search */}
       <div className="flex gap-4">
         <div className="flex-1 max-w-md">
-          <Input
-            placeholder="Search parts..."
+          <EnhancedSearch
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            icon={<Search className="w-4 h-4" />}
+            onChange={setSearchQuery}
+            placeholder="Search parts by name, brand, category, slug..."
+            suggestions={uniqueBrands}
           />
         </div>
       </div>
+
+      {/* Advanced Filters */}
+      <AdvancedFilters
+        filters={filterOptions}
+        values={filters}
+        onChange={setFilters}
+        onReset={() => setFilters({})}
+        quickFilters={quickFilters}
+      />
+
+      {/* Quick Actions Toolbar */}
+      <QuickActionsToolbar
+        selectedItems={selectedItems}
+        totalItems={filteredParts.length}
+        onSelectAll={handleSelectAll}
+        onDeselectAll={handleDeselectAll}
+        bulkActions={bulkActions}
+        onExport={handleExport}
+        entityName="parts"
+      />
 
       {/* Data Table */}
       <DataTable
@@ -220,6 +424,16 @@ export default function AdminPartsPage() {
         emptyMessage="No parts found. Add your first part to get started."
         keyExtractor={(part) => part.id}
         onRowClick={(part) => router.push(`/admin/parts/${part.id}`)}
+        selectable
+        selectedItems={selectedItems}
+        onSelectItem={handleSelectItem}
+        onSelectAll={(selected) => {
+          if (selected) {
+            handleSelectAll();
+          } else {
+            handleDeselectAll();
+          }
+        }}
       />
     </div>
   );

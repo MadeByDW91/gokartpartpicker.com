@@ -12,6 +12,9 @@ export const TEMPLATE_GOALS = [
   'beginner',
   'competition',
   'kids',
+  'offroad',
+  'onroad',
+  'racing',
 ] as const;
 
 export type TemplateGoal = (typeof TEMPLATE_GOALS)[number];

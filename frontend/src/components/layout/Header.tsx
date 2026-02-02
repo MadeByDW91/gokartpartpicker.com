@@ -26,10 +26,15 @@ import {
   MessageSquare,
   Command,
   Search,
-  MoreHorizontal
+  MoreHorizontal,
+  FileText,
+  UserCog,
+  UserX,
+  LayoutDashboard
 } from 'lucide-react';
 import { AdvancedSearch } from '@/components/search/AdvancedSearch';
 import { SearchModal } from '@/components/search/SearchModal';
+import { useImpersonation } from '@/hooks/use-impersonation';
 
 const navigation = [
   { name: 'Home', href: '/', icon: Home },
@@ -38,17 +43,18 @@ const navigation = [
   { name: 'Builder', href: '/builder', icon: Wrench },
   { name: 'Forums', href: '/forums', icon: MessageSquare },
   { name: 'Tools', href: '/tools', icon: Calculator },
-  { name: 'Guides', href: '/guides', icon: BookOpen },
 ];
 
 export function Header() {
   const pathname = usePathname();
   const { user, isAuthenticated, signOut, loading } = useAuth();
   const { isAdmin, loading: adminLoading, profile } = useAdmin();
+  const { active: impersonating, exit: exitImpersonation } = useImpersonation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const [viewAsLoading, setViewAsLoading] = useState(false);
   const userMenuButtonRef = useRef<HTMLButtonElement>(null);
   const userMenuPosition = useRef<{ top: number; right: number } | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -87,14 +93,21 @@ export function Header() {
     setMounted(true);
   }, []);
 
-  // Update dropdown position when opened
-  useEffect(() => {
-    if (userMenuOpen && userMenuButtonRef.current && mounted) {
+  // Calculate dropdown position immediately when button is clicked
+  const calculateMenuPosition = () => {
+    if (userMenuButtonRef.current) {
       const rect = userMenuButtonRef.current.getBoundingClientRect();
       userMenuPosition.current = {
         top: rect.bottom + 8, // mt-2 = 8px
         right: window.innerWidth - rect.right,
       };
+    }
+  };
+
+  // Update dropdown position when opened (fallback)
+  useEffect(() => {
+    if (userMenuOpen && userMenuButtonRef.current && mounted) {
+      calculateMenuPosition();
     }
   }, [userMenuOpen, mounted]);
 
@@ -125,16 +138,40 @@ export function Header() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [moreMenuOpen]);
 
-  
-  // Debug: Log admin status
-  if (isAuthenticated && !adminLoading) {
-    console.log('Header - Admin check:', { isAdmin, role: profile?.role, username: profile?.username });
-  }
-  
+  const handleViewAsNormalUser = async () => {
+    setViewAsLoading(true);
+    setUserMenuOpen(false);
+    try {
+      const res = await fetch('/api/impersonation/start', {
+        method: 'POST',
+        credentials: 'same-origin',
+      });
+      const data = (await res.json()) as { success?: boolean; redirect?: string; error?: string };
+      if (data?.success && data.redirect) {
+        window.location.href = data.redirect;
+        return;
+      }
+      if (!data?.success) {
+        alert(data?.error ?? 'Failed to start view-as');
+      }
+    } catch (e) {
+      if (typeof e === 'object' && e !== null && 'digest' in e) return;
+      alert(e instanceof Error ? e.message : 'Failed to start view-as');
+    } finally {
+      setViewAsLoading(false);
+    }
+  };
+
+  const handleExitViewAs = async () => {
+    setUserMenuOpen(false);
+    setMobileMenuOpen(false);
+    await exitImpersonation();
+  };
+
   return (
-    <header className="sticky top-0 z-50 bg-olive-900/95 backdrop-blur-sm border-b border-olive-700 w-full safe-area-top overflow-x-hidden max-w-full">
-      <nav className="max-w-7xl mx-auto px-2 sm:px-3 lg:px-8 w-full overflow-x-hidden max-w-full">
-        <div className="flex items-center h-14 sm:h-16 gap-1 sm:gap-1.5 lg:gap-4 w-full min-w-0 max-w-full overflow-hidden">
+    <header className="sticky top-0 z-50 bg-olive-900/95 backdrop-blur-sm border-b border-olive-700/50 w-full safe-area-top overflow-x-hidden max-w-full">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-x-hidden max-w-full">
+        <div className="flex items-center h-16 sm:h-18 gap-2 sm:gap-3 lg:gap-6 w-full min-w-0 max-w-full overflow-hidden">
           {/* Logo - Icon only on mobile, text on tablet+ */}
           <Link 
             href="/" 
@@ -171,10 +208,10 @@ export function Header() {
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-1.5 px-2.5 py-2 text-xs font-medium uppercase tracking-wide rounded-md transition-all duration-200 whitespace-nowrap flex-shrink-0',
+                    'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 whitespace-nowrap flex-shrink-0',
                     isActive 
-                      ? 'text-orange-400 bg-olive-800' 
-                      : 'text-cream-200 hover:text-orange-400 hover:bg-olive-800'
+                      ? 'text-orange-400' 
+                      : 'text-cream-300 hover:text-orange-400'
                   )}
                 >
                   <item.icon className="w-4 h-4 flex-shrink-0" />
@@ -191,10 +228,10 @@ export function Header() {
                   setMoreMenuOpen(!moreMenuOpen);
                 }}
                 className={cn(
-                  'flex items-center gap-1.5 px-2.5 py-2 text-xs font-medium uppercase tracking-wide rounded-md transition-all duration-200 whitespace-nowrap',
+                  'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 whitespace-nowrap',
                   moreMenuOpen
-                    ? 'text-orange-400 bg-olive-800'
-                    : 'text-cream-200 hover:text-orange-400 hover:bg-olive-800'
+                    ? 'text-orange-400'
+                    : 'text-cream-300 hover:text-orange-400'
                 )}
               >
                 <MoreHorizontal className="w-4 h-4 flex-shrink-0" />
@@ -244,10 +281,10 @@ export function Header() {
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-1.5 xl:gap-2 px-3 xl:px-4 py-2 text-sm font-medium uppercase tracking-wide rounded-md transition-all duration-200 whitespace-nowrap flex-shrink-0',
+                    'flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md transition-colors duration-200 whitespace-nowrap flex-shrink-0',
                     isActive 
-                      ? 'text-orange-400 bg-olive-800' 
-                      : 'text-cream-200 hover:text-orange-400 hover:bg-olive-800'
+                      ? 'text-orange-400' 
+                      : 'text-cream-300 hover:text-orange-400'
                   )}
                 >
                   <item.icon className="w-4 h-4 flex-shrink-0" />
@@ -277,6 +314,8 @@ export function Header() {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    // Calculate position immediately before toggling
+                    calculateMenuPosition();
                     setUserMenuOpen((prev) => !prev);
                   }}
                   className="flex items-center justify-center w-9 h-9 rounded-lg bg-orange-500 text-cream-100 font-bold text-xs hover:bg-orange-400 active:bg-orange-600 transition-colors touch-manipulation cursor-pointer"
@@ -311,6 +350,8 @@ export function Header() {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    // Calculate position immediately before toggling
+                    calculateMenuPosition();
                     setUserMenuOpen((prev) => !prev);
                   }}
                   className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-cream-200 hover:text-orange-400 rounded-md hover:bg-olive-800 transition-colors whitespace-nowrap cursor-pointer"
@@ -365,7 +406,11 @@ export function Header() {
           <>
             <div 
               className="fixed inset-0 z-[9998]" 
-              onClick={() => setUserMenuOpen(false)} 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setUserMenuOpen(false);
+              }} 
               aria-hidden="true"
             />
             <div 
@@ -375,12 +420,26 @@ export function Header() {
                 right: `${userMenuPosition.current.right}px`,
                 width: '14rem',
               }}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              onMouseDown={(e) => {
+                // Prevent the backdrop click from closing when clicking inside
+                e.stopPropagation();
+              }}
             >
               {/* User email header - only on mobile */}
               <div className="md:hidden px-4 py-3 border-b border-olive-600">
                 <p className="text-sm font-medium text-cream-100 truncate">{user?.email}</p>
               </div>
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation"
+                onClick={() => setUserMenuOpen(false)}
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                Dashboard
+              </Link>
               <Link
                 href="/builds"
                 className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-cream-200 hover:bg-olive-700 hover:text-orange-400 transition-colors touch-manipulation"
@@ -406,6 +465,27 @@ export function Header() {
                   <Shield className="w-4 h-4" />
                   Admin Panel
                 </Link>
+              )}
+              {!adminLoading && isAdmin && (
+                impersonating ? (
+                  <button
+                    onClick={handleExitViewAs}
+                    className="flex items-center gap-2 w-full px-4 py-3 min-h-[44px] text-sm text-amber-400 hover:bg-olive-700 hover:text-amber-300 transition-colors border-t border-olive-600 touch-manipulation text-left"
+                  >
+                    <UserX className="w-4 h-4" />
+                    Exit view-as
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleViewAsNormalUser}
+                    disabled={viewAsLoading}
+                    className="flex items-center gap-2 w-full px-4 py-3 min-h-[44px] text-sm text-orange-400 hover:bg-olive-700 hover:text-orange-300 transition-colors border-t border-olive-600 touch-manipulation text-left disabled:opacity-50"
+                  >
+                    <UserCog className="w-4 h-4" />
+                    {viewAsLoading ? '…' : 'View as normal user'}
+                  </button>
+                )
               )}
               <button
                 onClick={() => {
@@ -492,6 +572,14 @@ export function Header() {
             ) : isAuthenticated ? (
               <div className="space-y-1.5">
                 <Link
+                  href="/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3.5 text-base font-medium uppercase tracking-wide text-cream-200 hover:text-orange-400 hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[48px] active:bg-olive-700"
+                >
+                  <LayoutDashboard className="w-5 h-5 flex-shrink-0" />
+                  <span>Dashboard</span>
+                </Link>
+                <Link
                   href="/builds"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center gap-3 px-4 py-3.5 text-base font-medium uppercase tracking-wide text-cream-200 hover:text-orange-400 hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[48px] active:bg-olive-700"
@@ -509,6 +597,26 @@ export function Header() {
                     <span>Admin Panel</span>
                   </Link>
                 )}
+                {!adminLoading && isAdmin && (impersonating ? (
+                  <button
+                    type="button"
+                    onClick={handleExitViewAs}
+                    className="flex items-center gap-3 w-full px-4 py-3.5 text-base font-medium uppercase tracking-wide text-amber-400 hover:text-amber-300 hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[48px] active:bg-olive-700 text-left"
+                  >
+                    <UserX className="w-5 h-5 flex-shrink-0" />
+                    <span>Exit view-as</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => { setMobileMenuOpen(false); void handleViewAsNormalUser(); }}
+                    disabled={viewAsLoading}
+                    className="flex items-center gap-3 w-full px-4 py-3.5 text-base font-medium uppercase tracking-wide text-orange-400 hover:text-orange-300 hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[48px] active:bg-olive-700 text-left disabled:opacity-50"
+                    >
+                      <UserCog className="w-5 h-5 flex-shrink-0" />
+                      <span>{viewAsLoading ? '…' : 'View as normal user'}</span>
+                  </button>
+                ))}
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);

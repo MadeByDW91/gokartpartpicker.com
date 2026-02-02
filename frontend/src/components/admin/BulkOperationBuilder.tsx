@@ -35,6 +35,7 @@ interface BulkOperationBuilderProps {
 
 const ENTITY_LABELS: Record<BulkEntityType, string> = {
   engine: 'Engines',
+  motor: 'Electric Motors',
   part: 'Parts',
   build: 'Builds',
   template: 'Templates',
@@ -245,7 +246,7 @@ export function BulkOperationBuilder({ entityType, onExecute, onCancel }: BulkOp
               onChange={(e) => handleFilterChange('search', e.target.value)}
             />
 
-            {(entityType === 'engine' || entityType === 'part') && (
+            {(entityType === 'engine' || entityType === 'motor' || entityType === 'part') && (
               <>
                 <Select
                   label="Status"
@@ -267,6 +268,30 @@ export function BulkOperationBuilder({ entityType, onExecute, onCancel }: BulkOp
                     value={(filters.brand as string) || ''}
                     onChange={(e) => handleFilterChange('brand', e.target.value)}
                   />
+                )}
+
+                {entityType === 'motor' && (
+                  <>
+                    <Input
+                      label="Brand"
+                      placeholder="Filter by brand..."
+                      value={(filters.brand as string) || ''}
+                      onChange={(e) => handleFilterChange('brand', e.target.value)}
+                    />
+                    <Select
+                      label="Voltage"
+                      value={filters.voltage ? String(filters.voltage) : ''}
+                      onChange={(e) => handleFilterChange('voltage', e.target.value ? Number(e.target.value) : undefined)}
+                    >
+                      <option value="">All Voltages</option>
+                      <option value="12">12V</option>
+                      <option value="24">24V</option>
+                      <option value="36">36V</option>
+                      <option value="48">48V</option>
+                      <option value="72">72V</option>
+                      <option value="96">96V</option>
+                    </Select>
+                  </>
                 )}
 
                 {entityType === 'part' && (

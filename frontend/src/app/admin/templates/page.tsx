@@ -18,6 +18,9 @@ const GOAL_LABELS: Record<string, string> = {
   beginner: 'Beginner',
   competition: 'Competition',
   kids: 'Kids',
+  offroad: 'Off-Road',
+  onroad: 'On-Road',
+  racing: 'Racing',
 };
 
 export default function AdminTemplatesPage() {

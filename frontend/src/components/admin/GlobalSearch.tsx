@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils';
 
 const TYPE_LABELS: Record<SearchEntityType, { label: string; icon: React.ComponentType<{ className?: string }>; color: string }> = {
   engine: { label: 'Engine', icon: Cog, color: 'text-orange-400' },
+  motor: { label: 'Electric Motor', icon: Cog, color: 'text-blue-400' },
   part: { label: 'Part', icon: Package, color: 'text-blue-400' },
   build: { label: 'Build', icon: Wrench, color: 'text-green-400' },
   user: { label: 'User', icon: Users, color: 'text-purple-400' },
@@ -171,7 +172,7 @@ export function GlobalSearch({ className }: GlobalSearchProps) {
               setIsOpen(true);
             }
           }}
-          className="pl-10 pr-20 w-full max-w-md"
+          className="pl-10 pr-20 w-full max-w-md min-h-[44px]"
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
           {query && (
@@ -181,7 +182,7 @@ export function GlobalSearch({ className }: GlobalSearchProps) {
                 setResults([]);
                 inputRef.current?.focus();
               }}
-              className="p-1 text-cream-400 hover:text-cream-100 transition-colors"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center text-cream-400 hover:text-cream-100 transition-colors touch-manipulation"
             >
               <X className="w-4 h-4" />
             </button>
@@ -194,7 +195,7 @@ export function GlobalSearch({ className }: GlobalSearchProps) {
 
       {/* Search Results Dropdown */}
       {isOpen && query.length >= 2 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-olive-800 border border-olive-600 rounded-lg shadow-xl z-50 max-h-[600px] overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-olive-800 border border-olive-600 rounded-lg shadow-xl z-50 max-h-[70vh] sm:max-h-[600px] overflow-y-auto">
           {loading ? (
             <div className="p-8 text-center">
               <Loader2 className="w-6 h-6 text-orange-400 animate-spin mx-auto mb-2" />
@@ -232,7 +233,7 @@ export function GlobalSearch({ className }: GlobalSearchProps) {
                           key={result.id}
                           onClick={() => handleSelectResult(result)}
                           className={cn(
-                            'w-full px-4 py-3 text-left hover:bg-olive-700 transition-colors',
+                            'w-full px-4 py-3 min-h-[44px] text-left hover:bg-olive-700 active:bg-olive-600 transition-colors touch-manipulation',
                             isSelected && 'bg-olive-700'
                           )}
                         >

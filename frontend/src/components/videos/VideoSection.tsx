@@ -163,21 +163,44 @@ export function VideoSection({
     : filteredVideos.slice(0, 3);
 
   return (
-    <Card className="mt-8 bg-olive-800/50 border-olive-600 shadow-lg">
-      <CardHeader className="bg-olive-800/30 border-b border-olive-600/50">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <Film className="w-6 h-6 text-orange-400" />
-            <h2 className="text-2xl font-bold text-cream-100">Videos</h2>
-          </div>
+    <Card className="mt-8 rounded-xl border border-olive-600/60 bg-olive-800/40 shadow-sm">
+      <CardHeader className="border-b border-olive-600/40 bg-olive-800/20">
+        <div className="flex items-center justify-between gap-4">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex items-center gap-2.5 group"
+            aria-label={isExpanded ? 'Collapse videos section' : 'Expand videos section'}
+          >
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400">
+              <Film className="h-5 w-5" />
+            </div>
+            <h2 className="text-xl font-semibold text-cream-100">Videos</h2>
+            {isExpanded ? (
+              <ChevronUp className="h-5 w-5 text-cream-400 transition-colors group-hover:text-cream-100" />
+            ) : (
+              <ChevronDown className="h-5 w-5 text-cream-400 transition-colors group-hover:text-cream-100" />
+            )}
+          </button>
           {!isExpanded && hasAnyVideos && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(true)}
               icon={<ChevronRight className="w-4 h-4" />}
+              className="text-cream-400 hover:text-cream-100 hover:bg-olive-700/50"
             >
-              View All
+              View all
+            </Button>
+          )}
+          {isExpanded && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded(false)}
+              icon={<ChevronUp className="w-4 h-4" />}
+              className="text-cream-400 hover:text-cream-100 hover:bg-olive-700/50"
+            >
+              Collapse
             </Button>
           )}
         </div>
@@ -219,20 +242,21 @@ export function VideoSection({
       <CardContent>
         {/* Collapsed Preview */}
         {!isExpanded && hasAnyVideos && (
-          <div className="bg-olive-700/30 rounded-lg p-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="rounded-xl border border-olive-600/40 bg-olive-800/30 p-5 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5">
               {previewVideos.map((video) => (
                 <VideoCard key={video.id} video={video} compact />
               ))}
             </div>
-            <div className="mt-4 text-center">
+            <div className="mt-6 flex justify-center">
               <Button
                 variant="secondary"
+                size="lg"
                 onClick={() => setIsExpanded(true)}
                 icon={<ChevronDown className="w-4 h-4" />}
-                className="bg-olive-700 hover:bg-olive-600 border-olive-500 text-cream-100"
+                className="rounded-lg bg-olive-700/80 hover:bg-olive-600 border-olive-500/50 text-cream-100 font-medium"
               >
-                View All Videos ({videos.length})
+                View all videos ({allVideos.length})
               </Button>
             </div>
           </div>
@@ -243,12 +267,11 @@ export function VideoSection({
           <>
             {/* Featured videos section */}
             {featuredVideos.length > 0 && selectedCategory === 'all' && (
-              <div className="mb-8 bg-olive-700/20 rounded-lg p-6 border border-olive-600/30">
-                <h3 className="text-lg font-semibold text-cream-100 mb-4 flex items-center gap-2">
-                  Featured Videos
-                  <Badge variant="warning" size="sm">Featured</Badge>
+              <div className="mb-8 rounded-xl border border-olive-600/40 bg-olive-800/30 p-5 sm:p-6">
+                <h3 className="text-base font-semibold text-cream-100 mb-4">
+                  Featured videos
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5">
                   {featuredVideos.map((video) => (
                     <VideoCard key={video.id} video={video} />
                   ))}
@@ -259,8 +282,8 @@ export function VideoSection({
             {/* Main videos section */}
             {selectedCategory === 'all' && filteredVideos.length > 0 && (
               <div className="mb-4">
-                <h3 className="text-lg font-semibold text-cream-100 mb-4">
-                  All Videos
+                <h3 className="text-base font-semibold text-cream-100 mb-4">
+                  All videos
                 </h3>
               </div>
             )}
@@ -275,27 +298,31 @@ export function VideoSection({
               <>
                 <VideoGrid videos={displayedVideos} loading={loading} />
                 {hasMore && !showAll && (
-                  <div className="mt-6 text-center">
+                  <div className="mt-8 flex justify-center">
                     <Button
                       variant="secondary"
+                      size="lg"
                       onClick={() => setShowAll(true)}
                       icon={<ChevronDown className="w-4 h-4" />}
+                      className="rounded-lg bg-olive-700/80 hover:bg-olive-600 border-olive-500/50"
                     >
-                      Load More Videos
+                      Load more videos
                     </Button>
                   </div>
                 )}
                 {showAll && hasMore && (
-                  <div className="mt-6 text-center">
+                  <div className="mt-8 flex justify-center">
                     <Button
                       variant="ghost"
+                      size="sm"
                       onClick={() => {
                         setShowAll(false);
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                       }}
                       icon={<ChevronUp className="w-4 h-4" />}
+                      className="text-cream-400 hover:text-cream-100"
                     >
-                      Show Less
+                      Show less
                     </Button>
                   </div>
                 )}
@@ -306,18 +333,6 @@ export function VideoSection({
                 )}
               </>
             )}
-
-            {/* Collapse button */}
-            <div className="mt-6 text-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsExpanded(false)}
-                icon={<ChevronUp className="w-4 h-4" />}
-              >
-                Show Less
-              </Button>
-            </div>
           </>
         )}
 

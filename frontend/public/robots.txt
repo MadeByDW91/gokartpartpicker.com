@@ -5,9 +5,7 @@ Allow: /
 Disallow: /admin/
 Disallow: /api/
 Disallow: /auth/
+Disallow: /dashboard/
 
 # Sitemap
 Sitemap: https://gokartpartpicker.com/sitemap.xml
-
-# Crawl-delay (optional, be respectful)
-Crawl-delay: 1

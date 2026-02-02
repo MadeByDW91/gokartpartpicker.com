@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getAdminEngine } from '@/actions/admin';
 import { EngineForm } from '@/components/admin/EngineForm';
+import { VideoSearchAndAdd } from '@/components/admin/VideoSearchAndAdd';
 import { ChevronLeft, Loader2 } from 'lucide-react';
 import type { AdminEngine } from '@/types/admin';
 
@@ -27,7 +28,7 @@ export default function EditEnginePage() {
         const result = await getAdminEngine(params.id);
         
         if (result.success) {
-          setEngine(result.data as AdminEngine);
+          setEngine(result.data as unknown as AdminEngine);
         } else {
           setError(result.error || 'Failed to load engine');
         }
@@ -89,6 +90,25 @@ export default function EditEnginePage() {
           {engine.name}
         </p>
       </div>
+
+      {/* Video Search and Add */}
+      <VideoSearchAndAdd
+        productType="engine"
+        productId={engine.id}
+        productName={engine.name}
+        productBrand={engine.brand}
+        suggestedQueries={[
+          `${engine.brand} ${engine.name} go kart`,
+          `${engine.name} unboxing`,
+          `${engine.name} installation`,
+          `${engine.name} review`,
+          `${engine.name} modification`,
+        ]}
+        onVideosAdded={() => {
+          // Optionally refresh the page or update state
+          router.refresh();
+        }}
+      />
 
       {/* Form */}
       <EngineForm engine={engine} mode="edit" />

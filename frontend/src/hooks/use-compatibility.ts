@@ -19,6 +19,10 @@ export function useCompatibilityRules() {
     queryFn: async (): Promise<CompatibilityRule[]> => {
       const supabase = createClient();
       
+      if (!supabase) {
+        throw new Error('Supabase client is not available');
+      }
+      
       try {
         const { data, error } = await supabase
           .from('compatibility_rules')
@@ -42,13 +46,29 @@ export function useCompatibilityRules() {
 /**
  * Check compatibility between selected engine and parts
  * This is computed client-side using the rules from the database
+ * Supports both Map<PartCategory, Part> and Map<PartCategory, Part[]>
  */
 export function checkCompatibility(
   engine: Engine | null,
-  parts: Map<PartCategory, Part>,
+  parts: Map<PartCategory, Part> | Map<PartCategory, Part[]>,
   rules: CompatibilityRule[]
 ): CompatibilityWarning[] {
   const warnings: CompatibilityWarning[] = [];
+  
+  // Convert Map<PartCategory, Part[]> to Map<PartCategory, Part> for compatibility checking
+  // We check the first part in each category array
+  const partsMap = new Map<PartCategory, Part>();
+  parts.forEach((partOrArray, category) => {
+    if (Array.isArray(partOrArray)) {
+      // Take the first part from the array
+      if (partOrArray.length > 0) {
+        partsMap.set(category, partOrArray[0]);
+      }
+    } else {
+      // Already a single Part
+      partsMap.set(category, partOrArray);
+    }
+  });
   
   // Helper to get part specification with key aliasing
   // Supports both ingestion keys (bore_in) and legacy keys (bore_diameter)
@@ -79,7 +99,7 @@ export function checkCompatibility(
   
   // Check shaft compatibility (Engine ↔ Clutch/TC)
   if (engine) {
-    const clutch = parts.get('clutch');
+    const clutch = partsMap.get('clutch');
     if (clutch) {
       const clutchBore = getSpec(clutch, 'bore_diameter') as number | undefined;
       if (clutchBore && clutchBore !== engine.shaft_diameter) {
@@ -92,7 +112,7 @@ export function checkCompatibility(
       }
     }
     
-    const tc = parts.get('torque_converter');
+    const tc = partsMap.get('torque_converter');
     if (tc) {
       const tcBore = getSpec(tc, 'bore_diameter') as number | undefined;
       if (tcBore && tcBore !== engine.shaft_diameter) {
@@ -107,8 +127,8 @@ export function checkCompatibility(
   }
   
   // Check chain compatibility (Chain ↔ Sprockets)
-  const chain = parts.get('chain');
-  const sprocket = parts.get('sprocket');
+  const chain = partsMap.get('chain');
+  const sprocket = partsMap.get('sprocket');
   
   if (chain && sprocket) {
     const chainPitch = getSpec(chain, 'pitch') as string | undefined;
@@ -124,9 +144,27 @@ export function checkCompatibility(
     }
   }
   
+  // Check brake-axle compatibility
+  const brake = partsMap.get('brake');
+  const axle = partsMap.get('axle');
+  
+  if (brake && axle) {
+    const brakeAxleDiameter = getSpec(brake, 'axle_diameter') as number | undefined;
+    const axleDiameter = getSpec(axle, 'diameter') as number | undefined;
+    
+    if (brakeAxleDiameter && axleDiameter && Math.abs(brakeAxleDiameter - axleDiameter) > 0.01) {
+      warnings.push({
+        type: 'error',
+        source: 'Brake',
+        target: 'Axle',
+        message: `Axle diameter mismatch: Brake requires ${brakeAxleDiameter}" axle, but selected axle is ${axleDiameter}"`,
+      });
+    }
+  }
+  
   // Check tire/wheel compatibility
-  const tire = parts.get('tire');
-  const wheel = parts.get('wheel');
+  const tire = partsMap.get('tire') || partsMap.get('tire_front') || partsMap.get('tire_rear');
+  const wheel = partsMap.get('wheel');
   
   if (tire && wheel) {
     const tireDiameter = getSpec(tire, 'wheel_diameter') as number | undefined;
@@ -142,9 +180,7 @@ export function checkCompatibility(
     }
   }
   
-  // Check axle compatibility
-  const axle = parts.get('axle');
-  
+  // Check wheel-axle compatibility (reusing axle from above)
   if (wheel && axle) {
     const wheelBoltPattern = getSpec(wheel, 'bolt_pattern') as string | undefined;
     const axleBoltPattern = getSpec(axle, 'bolt_pattern') as string | undefined;
@@ -160,7 +196,7 @@ export function checkCompatibility(
   }
   
   // Add info warnings for missing critical components
-  if (engine && !parts.get('clutch') && !parts.get('torque_converter')) {
+  if (engine && !partsMap.get('clutch') && !partsMap.get('torque_converter')) {
     warnings.push({
       type: 'info',
       source: 'Engine',
@@ -169,7 +205,7 @@ export function checkCompatibility(
     });
   }
   
-  if (parts.get('clutch') && parts.get('torque_converter')) {
+  if (partsMap.get('clutch') && partsMap.get('torque_converter')) {
     warnings.push({
       type: 'warning',
       source: 'Clutch',
@@ -180,8 +216,8 @@ export function checkCompatibility(
   
   // Apply custom rules from database
   rules.forEach((rule) => {
-    const sourcePart = parts.get(rule.source_category as PartCategory);
-    const targetPart = parts.get(rule.target_category as PartCategory);
+    const sourcePart = partsMap.get(rule.source_category as PartCategory);
+    const targetPart = partsMap.get(rule.target_category as PartCategory);
     
     if (sourcePart && targetPart) {
       const condition = rule.condition as {

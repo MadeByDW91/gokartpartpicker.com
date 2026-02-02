@@ -26,18 +26,6 @@ Build a trusted, builder-first platform where go-kart enthusiasts can:
 
 ---
 
-## 📚 Documentation
-
-| Document | Purpose |
-|----------|---------|
-| [plan.md](./docs/plan.md) | 30-day production plan with day-by-day tasks |
-| [agents.md](./docs/agents.md) | Agent responsibilities and ownership |
-| [repo-structure.md](./docs/repo-structure.md) | Folder structure and conventions |
-| [security.md](./docs/security.md) | Security architecture and RLS policies |
-| [execution-order.md](./docs/execution-order.md) | Agent execution sequence |
-
----
-
 ## 🏗️ Technology Stack
 
 | Layer | Technology |
@@ -70,7 +58,7 @@ This project uses a multi-agent execution model. Each agent has specific respons
 | A8: QA | Testing, audits |
 | A9: DevOps | CI/CD, deployment |
 
-See [agents.md](./docs/agents.md) for full details.
+Agent roles: Architect, Database, Auth, UI, Backend, Admin, Compatibility, Content, QA, DevOps.
 
 ---
 
@@ -114,22 +102,15 @@ pnpm dev
 
 ```
 gokartpartpicker.com/
-├── docs/           # Project documentation
-├── content/        # MDX content files
-├── public/         # Static assets
+├── frontend/       # Next.js app (app/, components/, lib/, etc.)
 ├── scripts/        # Utility scripts
-├── src/
-│   ├── app/        # Next.js pages
-│   ├── components/ # React components
-│   ├── db/         # Database layer
-│   ├── lib/        # Utilities
-│   ├── hooks/      # React hooks
-│   └── types/      # TypeScript types
-├── supabase/       # Supabase config
-└── tests/          # Test files
+├── supabase/       # Migrations and config
+├── Admin/          # Admin/ingestion tooling
+├── HOW-TO-RUN-MIGRATIONS.md
+└── START-DEV-SERVER.md
 ```
 
-See [repo-structure.md](./docs/repo-structure.md) for complete details.
+Frontend lives in `frontend/` (Next.js). Scripts in `scripts/`, Supabase config in `supabase/`.
 
 ---
 
@@ -141,7 +122,7 @@ See [repo-structure.md](./docs/repo-structure.md) for complete details.
 - CSRF protection via Next.js server actions
 - Rate limiting on API routes
 
-See [security.md](./docs/security.md) for the complete security strategy.
+RLS, server-side validation, and rate limiting are in place.
 
 ---
 
@@ -154,7 +135,7 @@ See [security.md](./docs/security.md) for the complete security strategy.
 | Week 3 | Builder (Compatibility, Configurator) | Build saves work |
 | Week 4 | Polish (Content, SEO, Deploy) | Production ready |
 
-See [plan.md](./docs/plan.md) for the day-by-day breakdown.
+See root runbooks: HOW-TO-RUN-MIGRATIONS.md, START-DEV-SERVER.md.
 
 ---
 
@@ -178,7 +159,7 @@ pnpm test:coverage
 This project uses agent-based development. Before making changes:
 
 1. Identify which agent owns the code you're modifying
-2. Follow the conventions in [repo-structure.md](./docs/repo-structure.md)
+2. Follow repo structure and conventions
 3. Run linting and type checks before committing
 4. Write tests for new functionality
 

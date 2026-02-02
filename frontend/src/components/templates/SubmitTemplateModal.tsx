@@ -85,6 +85,9 @@ export function SubmitTemplateModal({ isOpen, onClose, onSuccess }: SubmitTempla
     beginner: 'Beginner',
     competition: 'Competition',
     kids: 'Kids',
+    offroad: 'Off-Road',
+    onroad: 'On-Road',
+    racing: 'Racing',
   };
 
   return (

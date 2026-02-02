@@ -13,8 +13,9 @@ import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { EngineCard } from '@/components/EngineCard';
 import { SelectPartButton } from './SelectPartButton';
 import { ProductStructuredData, BreadcrumbStructuredData } from '@/components/StructuredData';
-import { VideoSection } from '@/components/lazy';
+import { VideoSection, BuilderInsights } from '@/components/lazy';
 import { AffiliateDisclosure } from '@/components/affiliate/AffiliateDisclosure';
+import { PriceComparison } from '@/components/parts/PriceComparison';
 import { 
   ArrowLeft, 
   Package, 
@@ -74,7 +75,9 @@ export async function generateMetadata({ params }: PartPageProps): Promise<Metad
   };
 }
 
-export const dynamic = 'force-dynamic';
+// Enable ISR (Incremental Static Regeneration) for better performance
+// Pages are statically generated and revalidated every 1 hour
+export const revalidate = 3600; // 1 hour
 
 /**
  * Part detail page - Server Component
@@ -91,18 +94,21 @@ export default async function PartPage({ params }: PartPageProps) {
   const part = result.data;
   
   // Find compatible engines (matching shaft diameter for clutches/torque converters)
+  // Optimize: Only fetch if needed and limit upfront
   let compatibleEngines: Engine[] = [];
   if (part.category === 'clutch' || part.category === 'torque_converter') {
     const boreDiameter = part.specifications?.bore_diameter || part.specifications?.bore_in;
     if (boreDiameter && typeof boreDiameter === 'number') {
+      // Fetch only 4 engines we need instead of 10 then filtering
       const enginesResult = await getEngines({ 
-        shaft_type: undefined, // Get all shaft types
-        limit: 10 
+        shaft_type: undefined,
+        limit: 4 // Only fetch what we need
       });
       if (enginesResult.success) {
+        // Filter by diameter match
         compatibleEngines = enginesResult.data.filter(
           (engine) => Math.abs(engine.shaft_diameter - boreDiameter) < 0.01
-        ).slice(0, 4);
+        );
       }
     }
   }
@@ -286,6 +292,17 @@ export default async function PartPage({ params }: PartPageProps) {
               </Card>
             )}
           </div>
+        </div>
+        
+        {/* Price Comparison */}
+        <PriceComparison partId={part.id} fallbackPrice={part.price} />
+        
+        {/* Builder Insights */}
+        <div className="mt-16">
+          <BuilderInsights
+            category={part.category}
+            variant="builder-page"
+          />
         </div>
         
         {/* Video Section */}

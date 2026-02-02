@@ -13,7 +13,7 @@ interface VideoGridProps {
 export function VideoGrid({ videos, loading = false, onVideoClick }: VideoGridProps) {
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
         {Array.from({ length: 8 }).map((_, i) => (
           <VideoSkeleton key={i} />
         ))}
@@ -30,11 +30,11 @@ export function VideoGrid({ videos, loading = false, onVideoClick }: VideoGridPr
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
       {videos.map((video) => (
-        <VideoCard 
-          key={video.id} 
-          video={video} 
+        <VideoCard
+          key={video.id}
+          video={video}
           onClick={onVideoClick}
         />
       ))}
@@ -44,13 +44,11 @@ export function VideoGrid({ videos, loading = false, onVideoClick }: VideoGridPr
 
 function VideoSkeleton() {
   return (
-    <div className="bg-olive-700 border border-olive-600 rounded-lg overflow-hidden">
-      <Skeleton className="h-40 w-full" />
-      <div className="p-4 space-y-3">
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-4 w-1/2" />
-        <Skeleton className="h-3 w-full" />
-        <Skeleton className="h-3 w-2/3" />
+    <div className="overflow-hidden rounded-xl border border-olive-600/50 bg-olive-800/50">
+      <Skeleton className="aspect-video w-full" />
+      <div className="space-y-2 p-4">
+        <Skeleton className="h-4 w-4/5" />
+        <Skeleton className="h-3 w-1/2" />
       </div>
     </div>
   );

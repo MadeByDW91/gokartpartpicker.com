@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRequireAuth } from '@/hooks/use-auth';
+import { useImpersonation } from '@/hooks/use-impersonation';
 import { useUserBuilds } from '@/hooks/use-builds';
 import { getProfile, updateProfile, getUserStats } from '@/actions/profile';
 import { Button } from '@/components/ui/Button';
@@ -75,8 +76,10 @@ const BUILD_GOALS = [
 
 export default function ProfilePage() {
   const { user, loading: authLoading } = useRequireAuth();
+  const { active: impersonating } = useImpersonation();
   const { data: builds } = useUserBuilds();
   const [activeTab, setActiveTab] = useState<Tab>('overview');
+  const viewOnly = impersonating;
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState<{
     totalBuilds: number;
@@ -470,6 +473,11 @@ export default function ProfilePage() {
 
         {activeTab === 'settings' && (
           <div className="space-y-6">
+            {viewOnly && (
+              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-sm text-amber-200">
+                View-only. Exit view-as in the banner to edit this profile.
+              </div>
+            )}
             <Card>
               <CardHeader>
                 <h2 className="text-lg font-semibold text-cream-100">Profile Settings</h2>
@@ -528,16 +536,18 @@ export default function ProfilePage() {
                   </div>
                 )}
 
-                <Button
-                  variant="primary"
-                  size="lg"
-                  onClick={handleSave}
-                  loading={saving}
-                  icon={<Save className="w-5 h-5" />}
-                  className="w-full"
-                >
-                  Save Changes
-                </Button>
+                {!viewOnly && (
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    onClick={handleSave}
+                    loading={saving}
+                    icon={<Save className="w-5 h-5" />}
+                    className="w-full"
+                  >
+                    Save Changes
+                  </Button>
+                )}
               </CardContent>
             </Card>
 
@@ -631,6 +641,11 @@ export default function ProfilePage() {
 
         {activeTab === 'preferences' && (
           <div className="space-y-6">
+            {viewOnly && (
+              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-sm text-amber-200">
+                View-only. Exit view-as in the banner to edit preferences.
+              </div>
+            )}
             <Card>
               <CardHeader>
                 <h2 className="text-lg font-semibold text-cream-100">Build Preferences</h2>
@@ -761,16 +776,18 @@ export default function ProfilePage() {
                   </div>
                 )}
 
-                <Button
-                  variant="primary"
-                  size="lg"
-                  onClick={handleSave}
-                  loading={saving}
-                  icon={<Save className="w-5 h-5" />}
-                  className="w-full"
-                >
-                  Save Preferences
-                </Button>
+                {!viewOnly && (
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    onClick={handleSave}
+                    loading={saving}
+                    icon={<Save className="w-5 h-5" />}
+                    className="w-full"
+                  >
+                    Save Preferences
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </div>

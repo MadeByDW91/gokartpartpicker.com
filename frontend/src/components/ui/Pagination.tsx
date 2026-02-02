@@ -70,11 +70,14 @@ export function Pagination({
         onClick={onPrev}
         disabled={currentPage === 1}
         icon={<ChevronLeft className="w-4 h-4" />}
+        className="min-h-[44px] touch-manipulation"
       >
-        Previous
+        <span className="hidden sm:inline">Previous</span>
+        <span className="sm:hidden">Prev</span>
       </Button>
       
-      <div className="flex items-center gap-1">
+      {/* Desktop: Full pagination with page numbers */}
+      <div className="hidden md:flex items-center gap-1">
         {pageNumbers.map((page, index) => {
           if (page === '...') {
             return (
@@ -94,7 +97,7 @@ export function Pagination({
               size="sm"
               onClick={() => onPageChange(pageNum)}
               className={cn(
-                'min-w-[2.5rem]',
+                'min-w-[2.5rem] min-h-[44px] touch-manipulation',
                 isActive && 'font-bold'
               )}
             >
@@ -104,13 +107,20 @@ export function Pagination({
         })}
       </div>
       
+      {/* Mobile: Current page indicator */}
+      <div className="md:hidden px-3 py-1.5 text-sm text-cream-300 bg-olive-800 rounded-md border border-olive-600 min-h-[44px] flex items-center justify-center">
+        {currentPage} / {totalPages}
+      </div>
+      
       <Button
         variant="ghost"
         size="sm"
         onClick={onNext}
         disabled={currentPage === totalPages}
+        className="min-h-[44px] touch-manipulation"
       >
-        Next
+        <span className="hidden sm:inline">Next</span>
+        <span className="sm:hidden">Next</span>
         <ChevronRight className="w-4 h-4" />
       </Button>
     </div>

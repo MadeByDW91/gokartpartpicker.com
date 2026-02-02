@@ -14,24 +14,40 @@ import { Loader2 } from 'lucide-react';
 interface AnalyticsMetrics {
   catalog: {
     totalEngines: number;
+    totalMotors: number;
     totalParts: number;
     activeEngines: number;
+    activeMotors: number;
     activeParts: number;
+    enginesWithPrice: number;
+    motorsWithPrice: number;
     partsWithPrice: number;
+    enginesWithImages: number;
+    motorsWithImages: number;
     partsWithImages: number;
+    enginesWithAffiliate: number;
+    motorsWithAffiliate: number;
     partsWithAffiliate: number;
   };
   topEngines: Array<{ id: string; name: string; views: number }>;
+  topMotors: Array<{ id: string; name: string; views: number }>;
   topParts: Array<{ id: string; name: string; views: number }>;
   builds: {
     totalBuilds: number;
     publicBuilds: number;
     totalLikes: number;
     averagePartsPerBuild: number;
+    evBuilds: number;
+    gasBuilds: number;
   };
   users: {
     totalUsers: number;
     activeUsers: number;
+    newUsersLast30Days: number;
+  };
+  revenue: {
+    potentialRevenue: number;
+    coverage: number;
   };
 }
 
@@ -148,7 +164,7 @@ export default function AnalyticsPage() {
                   {metrics.users.totalUsers.toLocaleString()}
                 </p>
                 <p className="text-xs text-cream-400 mt-1">
-                  {metrics.users.activeUsers} active (30 days)
+                  {metrics.users.newUsersLast30Days} new (30 days)
                 </p>
               </div>
               <Users className="w-10 h-10 text-blue-400 opacity-50" />
@@ -179,10 +195,10 @@ export default function AnalyticsPage() {
               <div>
                 <p className="text-sm text-cream-400 uppercase tracking-wide">Catalog Items</p>
                 <p className="text-3xl font-bold text-cream-100 mt-1">
-                  {(metrics.catalog.totalEngines + metrics.catalog.totalParts).toLocaleString()}
+                  {(metrics.catalog.totalEngines + metrics.catalog.totalMotors + metrics.catalog.totalParts).toLocaleString()}
                 </p>
                 <p className="text-xs text-cream-400 mt-1">
-                  {metrics.catalog.activeEngines} engines, {metrics.catalog.activeParts} parts
+                  {metrics.catalog.activeEngines} engines, {metrics.catalog.activeMotors} motors, {metrics.catalog.activeParts} parts
                 </p>
               </div>
               <Package className="w-10 h-10 text-orange-400 opacity-50" />
@@ -208,6 +224,43 @@ export default function AnalyticsPage() {
         </Card>
       </div>
 
+      {/* Revenue Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-cream-400 uppercase tracking-wide">Potential Revenue</p>
+                <p className="text-3xl font-bold text-cream-100 mt-1">
+                  {formatPrice(metrics.revenue.potentialRevenue)}
+                </p>
+                <p className="text-xs text-cream-400 mt-1">
+                  Items with affiliate links
+                </p>
+              </div>
+              <TrendingUp className="w-10 h-10 text-green-400 opacity-50" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-cream-400 uppercase tracking-wide">Affiliate Coverage</p>
+                <p className="text-3xl font-bold text-cream-100 mt-1">
+                  {metrics.revenue.coverage}%
+                </p>
+                <p className="text-xs text-cream-400 mt-1">
+                  Of catalog items
+                </p>
+              </div>
+              <BarChart3 className="w-10 h-10 text-blue-400 opacity-50" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Catalog Quality */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -217,21 +270,33 @@ export default function AnalyticsPage() {
           <CardContent className="space-y-4">
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 bg-olive-700/50 rounded-md">
+                <span className="text-sm text-cream-200">Engines with Price</span>
+                <Badge variant={metrics.catalog.enginesWithPrice > metrics.catalog.totalEngines * 0.8 ? 'success' : 'warning'}>
+                  {metrics.catalog.enginesWithPrice} / {metrics.catalog.totalEngines}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-olive-700/50 rounded-md">
+                <span className="text-sm text-cream-200">Motors with Price</span>
+                <Badge variant={metrics.catalog.motorsWithPrice > metrics.catalog.totalMotors * 0.8 ? 'success' : 'warning'}>
+                  {metrics.catalog.motorsWithPrice} / {metrics.catalog.totalMotors}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-olive-700/50 rounded-md">
                 <span className="text-sm text-cream-200">Parts with Price</span>
                 <Badge variant={metrics.catalog.partsWithPrice > metrics.catalog.totalParts * 0.8 ? 'success' : 'warning'}>
                   {metrics.catalog.partsWithPrice} / {metrics.catalog.totalParts}
                 </Badge>
               </div>
               <div className="flex items-center justify-between p-3 bg-olive-700/50 rounded-md">
-                <span className="text-sm text-cream-200">Parts with Images</span>
-                <Badge variant={metrics.catalog.partsWithImages > metrics.catalog.totalParts * 0.8 ? 'success' : 'warning'}>
-                  {metrics.catalog.partsWithImages} / {metrics.catalog.totalParts}
+                <span className="text-sm text-cream-200">Items with Images</span>
+                <Badge variant={(metrics.catalog.enginesWithImages + metrics.catalog.motorsWithImages + metrics.catalog.partsWithImages) > (metrics.catalog.totalEngines + metrics.catalog.totalMotors + metrics.catalog.totalParts) * 0.8 ? 'success' : 'warning'}>
+                  {metrics.catalog.enginesWithImages + metrics.catalog.motorsWithImages + metrics.catalog.partsWithImages} / {metrics.catalog.totalEngines + metrics.catalog.totalMotors + metrics.catalog.totalParts}
                 </Badge>
               </div>
               <div className="flex items-center justify-between p-3 bg-olive-700/50 rounded-md">
-                <span className="text-sm text-cream-200">Parts with Affiliate Links</span>
-                <Badge variant={metrics.catalog.partsWithAffiliate > metrics.catalog.totalParts * 0.5 ? 'success' : 'warning'}>
-                  {metrics.catalog.partsWithAffiliate} / {metrics.catalog.totalParts}
+                <span className="text-sm text-cream-200">Items with Affiliate Links</span>
+                <Badge variant={(metrics.catalog.enginesWithAffiliate + metrics.catalog.motorsWithAffiliate + metrics.catalog.partsWithAffiliate) > (metrics.catalog.totalEngines + metrics.catalog.totalMotors + metrics.catalog.totalParts) * 0.5 ? 'success' : 'warning'}>
+                  {metrics.catalog.enginesWithAffiliate + metrics.catalog.motorsWithAffiliate + metrics.catalog.partsWithAffiliate} / {metrics.catalog.totalEngines + metrics.catalog.totalMotors + metrics.catalog.totalParts}
                 </Badge>
               </div>
             </div>
@@ -263,8 +328,27 @@ export default function AnalyticsPage() {
         </Card>
       </div>
 
+      {/* Build Types */}
+      <Card>
+        <CardHeader>
+          <h2 className="text-lg font-semibold text-cream-100">Build Types</h2>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 bg-olive-700/50 rounded-md">
+              <p className="text-sm text-cream-400">Gas Builds</p>
+              <p className="text-2xl font-bold text-cream-100 mt-1">{metrics.builds.gasBuilds}</p>
+            </div>
+            <div className="p-4 bg-olive-700/50 rounded-md">
+              <p className="text-sm text-cream-400">Electric Builds</p>
+              <p className="text-2xl font-bold text-cream-100 mt-1">{metrics.builds.evBuilds}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Top Performing Items */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Top Engines */}
         <Card>
           <CardHeader>
@@ -281,6 +365,29 @@ export default function AnalyticsPage() {
                   </div>
                   <Badge variant="default" size="sm">
                     {engine.views} views
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Top Motors */}
+        <Card>
+          <CardHeader>
+            <h2 className="text-lg font-semibold text-cream-100">Top Motors</h2>
+            <p className="text-sm text-cream-400 mt-1">By views</p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {metrics.topMotors.slice(0, 10).map((motor, index) => (
+                <div key={motor.id} className="flex items-center justify-between p-3 bg-olive-700/50 rounded-md">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-cream-400 w-6">{index + 1}.</span>
+                    <span className="text-sm text-cream-200">{motor.name}</span>
+                  </div>
+                  <Badge variant="default" size="sm">
+                    {motor.views} views
                   </Badge>
                 </div>
               ))}

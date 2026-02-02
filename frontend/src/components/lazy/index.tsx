@@ -72,3 +72,20 @@ export const PartSelectionModal = dynamic(
     ssr: false 
   }
 );
+
+// Builder Insights - heavy component with many dependencies
+export const BuilderInsights = dynamic(
+  () => import('@/components/builder/BuilderInsights').then(mod => ({ default: mod.BuilderInsights })),
+  { 
+    loading: () => (
+      <div className="mt-16 p-8 bg-olive-800/30 rounded-lg border border-olive-600/50">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 bg-olive-700/50 rounded w-1/3"></div>
+          <div className="h-4 bg-olive-700/50 rounded w-2/3"></div>
+          <div className="h-32 bg-olive-700/50 rounded"></div>
+        </div>
+      </div>
+    ),
+    ssr: false // Client-side only to reduce initial bundle size
+  }
+);

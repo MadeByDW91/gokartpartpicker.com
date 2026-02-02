@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTemplates } from '@/hooks/use-templates';
 import { useParts } from '@/hooks/use-parts';
 import { Button } from '@/components/ui/Button';
-import { Sparkles, Rocket, Zap, Wallet, GraduationCap, Trophy, Baby, ArrowRight, ChevronDown, ChevronUp, Cog, Package } from 'lucide-react';
+import { Sparkles, Rocket, Zap, Wallet, GraduationCap, Trophy, Baby, ArrowRight, ChevronDown, ChevronUp, Cog, Package, Mountain, Car, Flag } from 'lucide-react';
 import { cn, getCategoryLabel, formatPrice } from '@/lib/utils';
 import type { BuildTemplate, TemplateGoal, PartCategory } from '@/types/database';
 
@@ -16,6 +16,9 @@ const GOAL_ICONS: Record<TemplateGoal, React.ComponentType<{ className?: string 
   beginner: GraduationCap,
   competition: Trophy,
   kids: Baby,
+  offroad: Mountain,
+  onroad: Car,
+  racing: Flag,
 };
 
 const GOAL_LABELS: Record<TemplateGoal, string> = {
@@ -25,6 +28,9 @@ const GOAL_LABELS: Record<TemplateGoal, string> = {
   beginner: 'Beginner',
   competition: 'Competition',
   kids: 'Kids',
+  offroad: 'Off-Road',
+  onroad: 'On-Road',
+  racing: 'Racing',
 };
 
 interface ExpandedTemplateProps {

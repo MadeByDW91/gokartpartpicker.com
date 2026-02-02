@@ -3,10 +3,12 @@
 /**
  * Global Admin Search server actions
  * Search across all entities from one place
+ * Phase 2: Rate limited (60 req/min per IP)
  */
 
 import { createClient } from '@/lib/supabase/server';
 import { requireAdmin } from '../admin';
+import { checkRateLimitByIp } from '@/lib/rate-limit';
 import { 
   type ActionResult, 
   success, 
@@ -14,7 +16,7 @@ import {
   handleError 
 } from '@/lib/api/types';
 
-export type SearchEntityType = 'engine' | 'part' | 'build' | 'user' | 'template' | 'guide' | 'video' | 'forum_topic';
+export type SearchEntityType = 'engine' | 'motor' | 'part' | 'build' | 'user' | 'template' | 'guide' | 'video' | 'forum_topic';
 
 export interface SearchResult {
   id: string;
@@ -43,6 +45,11 @@ export async function adminGlobalSearch(
   limit: number = 20
 ): Promise<ActionResult<SearchResult[]>> {
   try {
+    const rateLimit = await checkRateLimitByIp('expensive');
+    if (!rateLimit.allowed) {
+      return { success: false, error: rateLimit.error ?? 'Too many search requests. Please try again later.' };
+    }
+
     const authResult = await requireAdmin();
     if ('success' in authResult && !authResult.success) {
       return authResult;
@@ -92,6 +99,68 @@ export async function adminGlobalSearch(
             metadata: { brand: engine.brand, slug: engine.slug },
             url: `/admin/engines/${engine.id}`,
             status: engine.is_active ? ('active' as const) : ('inactive' as const),
+          }))
+        );
+      }
+    }
+
+    // Search electric motors
+    if (typeFilters.includes('motor')) {
+      let motorQuery = supabase
+        .from('electric_motors')
+        .select('id, name, slug, brand, voltage, is_active')
+        .or(`name.ilike.%${searchTerm}%,brand.ilike.%${searchTerm}%,slug.ilike.%${searchTerm}%`)
+        .limit(limit);
+
+      if (filters?.status?.includes('active')) {
+        motorQuery = motorQuery.eq('is_active', true);
+      } else if (filters?.status?.includes('inactive')) {
+        motorQuery = motorQuery.eq('is_active', false);
+      }
+
+      const { data: motors, error: motorsError } = await motorQuery;
+
+      if (!motorsError && motors) {
+        results.push(
+          ...motors.map((motor: any) => ({
+            id: motor.id,
+            type: 'motor' as const,
+            title: motor.name,
+            description: `${motor.brand} ${motor.voltage}V motor`,
+            metadata: { brand: motor.brand, voltage: motor.voltage, slug: motor.slug },
+            url: `/admin/motors/${motor.id}`,
+            status: motor.is_active ? ('active' as const) : ('inactive' as const),
+          }))
+        );
+      }
+    }
+
+    // Search electric motors
+    if (typeFilters.includes('motor')) {
+      let motorQuery = supabase
+        .from('electric_motors')
+        .select('id, name, slug, brand, voltage, is_active')
+        .or(`name.ilike.%${searchTerm}%,brand.ilike.%${searchTerm}%,slug.ilike.%${searchTerm}%`)
+        .limit(limit);
+
+      if (filters?.status?.includes('active')) {
+        motorQuery = motorQuery.eq('is_active', true);
+      } else if (filters?.status?.includes('inactive')) {
+        motorQuery = motorQuery.eq('is_active', false);
+      }
+
+      const { data: motors, error: motorsError } = await motorQuery;
+
+      if (!motorsError && motors) {
+        results.push(
+          ...motors.map((motor: any) => ({
+            id: motor.id,
+            type: 'motor' as const,
+            title: motor.name,
+            description: `${motor.brand} ${motor.voltage}V motor`,
+            metadata: { brand: motor.brand, voltage: motor.voltage, slug: motor.slug },
+            url: `/admin/motors/${motor.id}`,
+            status: motor.is_active ? ('active' as const) : ('inactive' as const),
           }))
         );
       }

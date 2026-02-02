@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
@@ -9,26 +9,58 @@ import { Input } from '@/components/ui/Input';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Wrench, Mail, Lock, User, ArrowRight, Check, Loader2, RefreshCw } from 'lucide-react';
 import { resendVerificationEmail } from '@/actions/auth';
+import {
+  HCaptchaWidget,
+  useCaptchaEnabled,
+  type HCaptchaRef,
+} from '@/components/auth/HCaptchaWidget';
 
 function RegisterPageContent() {
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/builds';
-  
+  const redirectTo = searchParams.get('redirect') || '/dashboard';
+  const captchaEnabled = useCaptchaEnabled();
+  const captchaRef = useRef<HCaptchaRef>(null);
+
   const { signUp, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    // Strong password validation (12+ chars, complexity)
+    if (password.length < 12) {
+      setError('Password must be at least 12 characters');
+      return;
+    }
+    
+    // Check password complexity
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>\[\]\\\/_\-+=~`]/.test(password);
+    
+    if (!hasUpper) {
+      setError('Password must contain at least one uppercase letter');
+      return;
+    }
+    if (!hasLower) {
+      setError('Password must contain at least one lowercase letter');
+      return;
+    }
+    if (!hasNumber) {
+      setError('Password must contain at least one number');
+      return;
+    }
+    if (!hasSpecial) {
+      setError('Password must contain at least one special character (!@#$%^&*, etc.)');
       return;
     }
     
@@ -36,20 +68,33 @@ function RegisterPageContent() {
       setError('Username must be at least 3 characters');
       return;
     }
-    
+
+    if (captchaEnabled && !captchaToken) {
+      setError('Please complete the verification challenge before signing up.');
+      return;
+    }
+
     try {
-      await signUp(email, password, username);
+      await signUp(email, password, username, captchaToken ?? undefined);
       setSuccess(true);
     } catch (err) {
-      console.error('Registration error:', err);
-      // Extract more detailed error message
+      if (captchaEnabled) {
+        setCaptchaToken(null);
+        captchaRef.current?.resetCaptcha();
+      }
+      // Don't log full error with PII - use sanitized logging
       let errorMessage = 'An error occurred';
       if (err instanceof Error) {
         errorMessage = err.message;
       } else if (typeof err === 'object' && err !== null) {
-        // Supabase errors have a message property
         const supabaseError = err as { message?: string; error?: string };
         errorMessage = supabaseError.message || supabaseError.error || errorMessage;
+      }
+      if (
+        errorMessage.toLowerCase().includes('database error saving new user')
+      ) {
+        errorMessage =
+          'Account creation failed (database trigger). Run migration 20260124000001_fix_handle_new_user_registration.sql in Supabase SQL Editor. See HOW-TO-RUN-MIGRATIONS.md.';
       }
       setError(errorMessage);
     }
@@ -187,10 +232,28 @@ function RegisterPageContent() {
                 required
               />
               
-              <p className="text-xs text-cream-400">
-                Password must be at least 6 characters
-              </p>
-              
+              <div className="text-xs text-cream-400 space-y-1">
+                <p className="font-medium">Password requirements:</p>
+                <ul className="list-disc list-inside space-y-0.5 ml-2">
+                  <li>At least 12 characters</li>
+                  <li>One uppercase letter (A-Z)</li>
+                  <li>One lowercase letter (a-z)</li>
+                  <li>One number (0-9)</li>
+                  <li>One special character (!@#$%^&*, etc.)</li>
+                </ul>
+              </div>
+
+              {captchaEnabled && (
+                <div>
+                  <HCaptchaWidget
+                    captchaRef={captchaRef}
+                    onVerify={setCaptchaToken}
+                    onExpire={() => setCaptchaToken(null)}
+                    theme="dark"
+                  />
+                </div>
+              )}
+
               {error && (
                 <p className="text-sm text-[var(--error)] bg-[rgba(166,61,64,0.1)] p-3 rounded-md">
                   {error}
@@ -213,7 +276,7 @@ function RegisterPageContent() {
               <p className="text-sm text-cream-400">
                 Already have an account?{' '}
                 <Link 
-                  href={`/auth/login${redirectTo !== '/builds' ? `?redirect=${redirectTo}` : ''}`}
+                  href={`/auth/login${redirectTo !== '/dashboard' ? `?redirect=${redirectTo}` : ''}`}
                   className="text-orange-400 hover:text-orange-300 font-medium"
                 >
                   Sign in

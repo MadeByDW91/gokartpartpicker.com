@@ -7,8 +7,8 @@ import { Badge } from '@/components/ui/Badge';
 import {
   Gauge,
   Zap,
+  CheckCircle2,
   TrendingUp,
-  Weight,
   GaugeCircle,
   Timer,
 } from 'lucide-react';
@@ -19,13 +19,22 @@ import {
  * Displays estimated performance metrics for the current build:
  * - HP (Horsepower)
  * - Torque
- * - Top Speed
- * - Power-to-Weight Ratio
+ * - Build Completeness
+ * - Modification Impact
  * - Acceleration (0-20, 0-30)
  */
 export function PerformanceCard() {
-  const { selectedEngine } = useBuildStore();
+  const { selectedEngine, selectedParts } = useBuildStore();
   const performance = useBuildPerformance();
+  
+  // Calculate build completeness (categories filled)
+  const categoriesFilled = selectedParts.size;
+  const totalCategories = 12; // Common categories for a complete build
+  const completenessPercent = Math.round((categoriesFilled / totalCategories) * 100);
+  
+  // Calculate modification impact (HP gain from parts)
+  const baseHP = selectedEngine?.horsepower || 0;
+  const hpGain = performance.hp > baseHP ? performance.hp - baseHP : 0;
   
   // Don't show if no engine selected
   if (!selectedEngine) {
@@ -65,22 +74,24 @@ export function PerformanceCard() {
             color="text-orange-400"
           />
           
-          {/* Top Speed */}
+          {/* Build Completeness */}
           <MetricItem
-            icon={<TrendingUp className="w-4 h-4" />}
-            label="Top Speed"
-            value={performance.topSpeed}
-            unit="mph"
+            icon={<CheckCircle2 className="w-4 h-4" />}
+            label="Completeness"
+            value={categoriesFilled}
+            unit={`/${totalCategories}`}
             color="text-orange-400"
+            subtitle={`${completenessPercent}% complete`}
           />
           
-          {/* Power-to-Weight */}
+          {/* Modification Impact */}
           <MetricItem
-            icon={<Weight className="w-4 h-4" />}
-            label="P/W Ratio"
-            value={performance.powerToWeight}
-            unit="hp/100lbs"
+            icon={<TrendingUp className="w-4 h-4" />}
+            label="Mod Impact"
+            value={hpGain > 0 ? hpGain : 0}
+            unit="hp gain"
             color="text-orange-400"
+            subtitle={hpGain > 0 ? `+${hpGain.toFixed(1)} from parts` : 'No mods'}
           />
         </div>
         
@@ -128,9 +139,10 @@ interface MetricItemProps {
   value: number;
   unit: string;
   color?: string;
+  subtitle?: string;
 }
 
-function MetricItem({ icon, label, value, unit, color = 'text-orange-400' }: MetricItemProps) {
+function MetricItem({ icon, label, value, unit, color = 'text-orange-400', subtitle }: MetricItemProps) {
   return (
     <div className="p-3 bg-olive-600/50 rounded-lg">
       <div className="flex items-center gap-2 mb-1">
@@ -145,6 +157,9 @@ function MetricItem({ icon, label, value, unit, color = 'text-orange-400' }: Met
         </span>
         <span className="text-xs text-cream-500">{unit}</span>
       </div>
+      {subtitle && (
+        <div className="text-xs text-cream-500 mt-1">{subtitle}</div>
+      )}
     </div>
   );
 }

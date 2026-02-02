@@ -5,6 +5,7 @@
  * These require authentication for mutations
  */
 
+import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { 
@@ -15,6 +16,7 @@ import {
   listBuildsSchema,
   addPartToBuildSchema,
   removePartFromBuildSchema,
+  uuidSchema,
   parseInput,
   type CreateBuildInput,
   type UpdateBuildInput,
@@ -29,6 +31,7 @@ import {
   handleError 
 } from '@/lib/api/types';
 import type { Build } from '@/types/database';
+import { getImpersonationContext } from '@/lib/impersonation';
 
 /**
  * Get the current authenticated user
@@ -108,7 +111,7 @@ export async function createBuild(
       return error(parsed.error, parsed.fieldErrors);
     }
     
-    const { name, description, engine_id, parts, is_public } = parsed.data;
+    const { name, description, engine_id, motor_id, power_source_type, parts, is_public } = parsed.data;
     
     // Calculate total price
     const total_price = await calculateTotalPrice(engine_id, parts);
@@ -122,6 +125,8 @@ export async function createBuild(
         name,
         description,
         engine_id: engine_id ?? null,
+        motor_id: motor_id ?? null,
+        power_source_type: power_source_type ?? 'gas',
         parts,
         total_price,
         is_public,
@@ -129,6 +134,7 @@ export async function createBuild(
       .select(`
         *,
         engine:engines(*),
+        motor:electric_motors(*),
         profile:profiles(username, avatar_url)
       `)
       .single();
@@ -145,6 +151,64 @@ export async function createBuild(
     return success(data);
   } catch (err) {
     return handleError(err, 'createBuild');
+  }
+}
+
+/**
+ * Create a new build from a template.
+ * Loads template engine + parts into a new build for the current user.
+ * Requires authentication.
+ */
+export async function createBuildFromTemplate(
+  templateId: string
+): Promise<ActionResult<Build>> {
+  try {
+    const parsed = parseInput(z.object({ templateId: uuidSchema }), { templateId });
+    if (!parsed.success) {
+      return error(parsed.error, parsed.fieldErrors);
+    }
+    const { templateId: id } = parsed.data;
+
+    const user = await getCurrentUser();
+    if (!user) {
+      return error('You must be logged in to create a build from a template');
+    }
+
+    const supabase = await createClient();
+    const { data: template, error: templateError } = await supabase
+      .from('build_templates')
+      .select('id, name, description, engine_id, parts, total_price, approval_status')
+      .eq('id', id)
+      .eq('is_public', true)
+      .eq('is_active', true)
+      .single();
+
+    if (templateError || !template) {
+      return error('Template not found or not available');
+    }
+    // Respect approval_status when present (user_templates_approval migration)
+    const t = template as { approval_status?: string };
+    if (t.approval_status != null && t.approval_status !== 'approved') {
+      return error('Template not found or not available');
+    }
+
+    if (!template.engine_id) {
+      return error('Template must have an engine to create a build');
+    }
+    const parts = (template.parts as Record<string, string>) ?? {};
+
+    const createInput: CreateBuildInput = {
+      name: template.name || 'Build from template',
+      description: (template.description as string) || null,
+      engine_id: template.engine_id,
+      motor_id: null,
+      power_source_type: 'gas',
+      parts,
+      is_public: false,
+    };
+    return createBuild(createInput);
+  } catch (err) {
+    return handleError(err, 'createBuildFromTemplate');
   }
 }
 
@@ -175,7 +239,7 @@ export async function updateBuild(
     // Verify ownership (RLS will also enforce this)
     const { data: existingBuild } = await supabase
       .from('builds')
-      .select('user_id, parts, engine_id')
+      .select('user_id, parts, engine_id, motor_id')
       .eq('id', id)
       .single();
     
@@ -187,7 +251,7 @@ export async function updateBuild(
       return error('You do not have permission to update this build');
     }
     
-    // Calculate new total price if parts or engine changed
+    // Calculate new total price if parts or engine/motor changed
     const newParts = updates.parts ?? existingBuild.parts ?? {};
     const newEngineId = updates.engine_id !== undefined 
       ? updates.engine_id 
@@ -207,6 +271,7 @@ export async function updateBuild(
       .select(`
         *,
         engine:engines(*),
+        motor:electric_motors(*),
         profile:profiles(username, avatar_url)
       `)
       .single();
@@ -294,6 +359,7 @@ export async function getBuild(
       .select(`
         *,
         engine:engines(*),
+        motor:electric_motors(*),
         profile:profiles(username, avatar_url)
       `)
       .eq('id', parsed.data.id)
@@ -315,13 +381,13 @@ export async function getBuild(
 }
 
 /**
- * Get builds for the current user
+ * Get builds for the current user (or impersonated user when admin view-as)
  * Requires authentication
  */
 export async function getUserBuilds(): Promise<ActionResult<Build[]>> {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
+    const ctx = await getImpersonationContext();
+    if (!ctx.realUser || !ctx.effectiveUserId) {
       return error('You must be logged in to view your builds');
     }
     
@@ -332,9 +398,10 @@ export async function getUserBuilds(): Promise<ActionResult<Build[]>> {
       .select(`
         *,
         engine:engines(*),
+        motor:electric_motors(*),
         profile:profiles(username, avatar_url)
       `)
-      .eq('user_id', user.id)
+      .eq('user_id', ctx.effectiveUserId)
       .order('updated_at', { ascending: false });
     
     if (dbError) {
@@ -370,6 +437,7 @@ export async function getBuildByShareId(
       .select(`
         *,
         engine:engines(*),
+        motor:electric_motors(*),
         profile:profiles(username, avatar_url)
       `)
       .eq('id', parsed.data.id)
@@ -468,6 +536,7 @@ export async function addPartToBuild(
       .select(`
         *,
         engine:engines(*),
+        motor:electric_motors(*),
         profile:profiles(username, avatar_url)
       `)
       .single();
@@ -550,6 +619,7 @@ export async function removePartFromBuild(
       .select(`
         *,
         engine:engines(*),
+        motor:electric_motors(*),
         profile:profiles(username, avatar_url)
       `)
       .single();
@@ -595,6 +665,7 @@ export async function getBuildsForComparison(
       .select(`
         *,
         engine:engines(*),
+        motor:electric_motors(*),
         profile:profiles(username, avatar_url)
       `)
       .in('id', buildIds);
@@ -653,6 +724,7 @@ export async function getPublicBuilds(
       .select(`
         *,
         engine:engines(name, brand, horsepower),
+        motor:electric_motors(name, brand, horsepower, voltage),
         profile:profiles(username, avatar_url)
       `)
       .eq('is_public', true);

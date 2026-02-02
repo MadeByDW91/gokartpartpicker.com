@@ -1,0 +1,12 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- CVT/Torque converter housing -->
+  <circle cx="12" cy="12" r="9" stroke="#f5f0e6" stroke-width="1.5" fill="none"/>
+  <!-- Inner pulleys -->
+  <circle cx="12" cy="9" r="3" stroke="#f5f0e6" stroke-width="1.5" fill="none"/>
+  <circle cx="12" cy="15" r="3" stroke="#f5f0e6" stroke-width="1.5" fill="none"/>
+  <!-- Belt representation -->
+  <ellipse cx="12" cy="12" rx="5" ry="2.5" stroke="#c96a24" stroke-width="1" fill="none" opacity="0.7"/>
+  <!-- Input/output shafts -->
+  <circle cx="12" cy="9" r="1.5" fill="#c96a24" opacity="0.6"/>
+  <circle cx="12" cy="15" r="1.5" fill="#c96a24" opacity="0.6"/>
+</svg>

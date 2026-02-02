@@ -4,12 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Package, ExternalLink, Plus, Check } from 'lucide-react';
+import { Package, ExternalLink, Plus, DollarSign, Tag } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { formatPrice, getCategoryLabel, cn } from '@/lib/utils';
-import { trackEvent } from '@/lib/analytics';
 import type { Part } from '@/types/database';
 
 interface PartCardProps {
@@ -20,134 +18,227 @@ interface PartCardProps {
   compact?: boolean;
 }
 
-export function PartCard({ 
-  part, 
-  onAddToBuild, 
+export function PartCard({
+  part,
+  onAddToBuild,
   isSelected = false,
   showAddButton = true,
-  compact = false 
+  compact = false,
 }: PartCardProps) {
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
 
-  // Reset error state if image_url changes
   useEffect(() => {
     setImageError(false);
   }, [part.image_url]);
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Don't trigger if clicking the link or button
-    if ((e.target as HTMLElement).closest('a, button')) {
-      return;
-    }
-    // Navigate to part detail page
+    if ((e.target as HTMLElement).closest('a, button')) return;
     router.push(`/parts/${part.slug}`);
   };
 
-  return (
-    <Card 
-      variant={isSelected ? 'accent' : 'default'} 
-      hoverable 
-      className={cn(
-        "overflow-hidden group cursor-pointer transition-all",
-        isSelected && "ring-2 ring-orange-500"
-      )}
-      onClick={handleCardClick}
-    >
-      {/* Image */}
-      <div className={`relative ${compact ? 'h-32 sm:h-36' : 'h-40 sm:h-48'} bg-olive-800 overflow-hidden`}>
-        {part.image_url && !imageError ? (
-          <Image
-            src={part.image_url}
-            alt={part.name}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            unoptimized={part.image_url.includes('harborfreight.com') || part.image_url.includes('amazon.com') || part.image_url.includes('m.media-amazon.com')}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <Image
-            src="/placeholders/placeholder-part-v1.svg"
-            alt="Part placeholder"
-            fill
-            className="object-contain p-4 opacity-60"
-          />
+  // Compact variant: simpler layout for tight grids
+  if (compact) {
+    return (
+      <Card
+        variant={isSelected ? 'accent' : 'default'}
+        hoverable
+        className={cn(
+          'overflow-hidden group cursor-pointer transition-all duration-300 flex flex-col h-full',
+          isSelected ? 'border-orange-500/60 bg-gradient-to-br from-orange-500/10 to-transparent' : 'border-olive-700/50 hover:border-orange-500/40'
         )}
-        {/* Category Badge */}
-        <Badge className="absolute top-2 left-2" variant="default" size="sm">
-          {getCategoryLabel(part.category)}
-        </Badge>
-        {/* Selected indicator */}
-        {isSelected && (
-          <div className="absolute top-2 right-2 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
-            <Check className="w-4 h-4 text-cream-100" />
+        onClick={handleCardClick}
+      >
+        <div className="relative aspect-[4/3] sm:aspect-square bg-white overflow-hidden border-b border-olive-700/40">
+          {part.image_url && !imageError ? (
+            <Image
+              src={part.image_url}
+              alt={part.name}
+              fill
+              className="object-contain p-3 sm:p-4 transition-transform duration-300 group-hover:scale-105"
+              unoptimized={
+                part.image_url.includes('harborfreight.com') ||
+                part.image_url.includes('amazon.com') ||
+                part.image_url.includes('m.media-amazon.com')
+              }
+              sizes="144px"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Image src="/placeholders/placeholder-part-v1.svg" alt="" width={64} height={64} className="opacity-30" />
+            </div>
+          )}
+          <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-olive-800/90 border-l-2 border-l-orange-500 text-[10px] font-semibold text-cream-100 uppercase tracking-wide">
+            {getCategoryLabel(part.category)}
           </div>
-        )}
-      </div>
-      
-      <CardContent className={compact ? 'p-3' : 'p-4 sm:p-5'}>
-        {/* Brand */}
-        <p className="text-xs sm:text-sm text-cream-400 uppercase tracking-wide mb-1.5">
-          {part.brand}
-        </p>
-        
-        {/* Title */}
-        <Link 
-          href={`/parts/${part.slug}`}
-          className={`font-bold text-cream-100 hover:text-orange-400 transition-colors line-clamp-2 ${
-            compact ? 'text-sm sm:text-base' : 'text-base sm:text-lg'
-          }`}
-        >
-          {part.name}
-        </Link>
-        
-        {/* Key Specs (if available) */}
-        {!compact && part.specifications && Object.keys(part.specifications).length > 0 && (
-          <div className="mt-2 sm:mt-3 text-xs sm:text-sm text-cream-400">
-            {Object.entries(part.specifications).slice(0, 2).map(([key, value]) => (
-              <span key={key} className="mr-3 sm:mr-4">
-                {key.replace(/_/g, ' ')}: <span className="text-cream-200">{String(value)}</span>
-              </span>
-            ))}
-          </div>
-        )}
-        
-        {/* Price & Actions */}
-        <div className={`flex items-center justify-between gap-2 sm:gap-3 ${compact ? 'mt-2' : 'mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-olive-600'}`}>
-          <span className={`font-bold text-orange-400 ${compact ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl'}`}>
-            {part.price ? formatPrice(part.price) : 'Contact'}
-          </span>
-          
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            {part.affiliate_url && !compact && (
-              <a
-                href={part.affiliate_url}
-                target="_blank"
-                rel="noopener noreferrer sponsored"
-                className="p-2 sm:p-2.5 text-cream-400 hover:text-orange-400 hover:bg-olive-600 rounded-md transition-colors touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
-                title="Buy Now (affiliate link)"
-                aria-label="Buy Now (affiliate link)"
-              >
-                <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5" />
-              </a>
+          {isSelected && (
+            <div className="absolute top-2 left-2 w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center shadow-md border border-olive-900 z-10">
+              <Plus className="w-3 h-3 text-white rotate-45" />
+            </div>
+          )}
+        </div>
+        <CardContent className="p-3 flex flex-col flex-1 min-h-0">
+          <Link
+            href={`/parts/${part.slug}`}
+            className="text-sm font-bold text-cream-100 hover:text-orange-400 line-clamp-2 leading-snug"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {part.name}
+          </Link>
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-orange-500/10 border border-orange-500/20">
+              <Package className="w-2.5 h-2.5 text-orange-400 shrink-0" />
+              <span className="text-[10px] font-bold text-cream-100">{getCategoryLabel(part.category)}</span>
+            </div>
+            {part.price != null && (
+              <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-500/10 border border-blue-500/20">
+                <DollarSign className="w-2.5 h-2.5 text-blue-400 shrink-0" />
+                <span className="text-[10px] font-bold text-cream-100 tabular-nums">{formatPrice(part.price)}</span>
+              </div>
             )}
-            
+          </div>
+          <div className="flex items-center justify-between gap-2 mt-auto pt-2 border-t border-olive-700/30">
+            <span className="text-sm font-bold text-orange-400 tabular-nums">{part.price != null ? formatPrice(part.price) : 'Contact'}</span>
             {showAddButton && (
               <Button
                 variant={isSelected ? 'secondary' : 'primary'}
                 size="sm"
                 onClick={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   onAddToBuild?.(part);
                 }}
-                icon={isSelected ? <Check className="w-3 h-3 sm:w-4 sm:h-4" /> : <Plus className="w-3 h-3 sm:w-4 sm:h-4" />}
-                className={cn(
-                  compact ? 'px-2 py-1 text-xs min-h-[36px]' : 'min-h-[44px] px-3 sm:px-4',
-                  'touch-manipulation'
-                )}
+                icon={isSelected ? undefined : <Plus className="w-3 h-3" />}
+                className="shrink-0 text-xs"
               >
-                {compact ? '' : isSelected ? 'Selected' : 'Add'}
+                {isSelected ? 'Selected' : 'Add'}
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Default grid variant – match EngineCard layout
+  return (
+    <Card
+      variant={isSelected ? 'accent' : 'default'}
+      hoverable
+      className={cn(
+        'overflow-hidden group cursor-pointer transition-all duration-300 flex flex-col h-full',
+        isSelected
+          ? 'border-orange-500/60 bg-gradient-to-br from-orange-500/10 to-transparent shadow-lg shadow-orange-500/10'
+          : 'border-olive-700/50 hover:border-orange-500/40 hover:shadow-xl hover:shadow-orange-500/5'
+      )}
+      onClick={handleCardClick}
+    >
+      {/* Image section – white background like engine card */}
+      <div className="relative h-56 sm:h-64 bg-white overflow-hidden">
+        {part.image_url && !imageError ? (
+          <div className="relative w-full h-full flex items-center justify-center p-4 sm:p-6">
+            <Image
+              src={part.image_url}
+              alt={part.name}
+              fill
+              className="object-contain transition-transform duration-500 group-hover:scale-105"
+              style={{
+                filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.15))',
+                WebkitFilter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.15))',
+              }}
+              unoptimized={
+                part.image_url.includes('harborfreight.com') ||
+                part.image_url.includes('amazon.com') ||
+                part.image_url.includes('m.media-amazon.com')
+              }
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              onError={() => setImageError(true)}
+            />
+          </div>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Image src="/placeholders/placeholder-part-v1.svg" alt="Part placeholder" width={120} height={120} className="opacity-20" />
+          </div>
+        )}
+        {/* Category badge – top right with orange accent (like engine PREDATOR badge) */}
+        <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-olive-800/95 backdrop-blur-sm border border-olive-700/50 shadow-lg z-10 border-l-2 border-l-orange-500">
+          <span className="text-[10px] sm:text-xs font-bold text-cream-100 uppercase tracking-wide">
+            {getCategoryLabel(part.category)}
+          </span>
+        </div>
+        {isSelected && (
+          <div className="absolute top-3 left-3 w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center shadow-lg border-2 border-olive-900 z-10">
+            <Plus className="w-3.5 h-3.5 text-white rotate-45" />
+          </div>
+        )}
+      </div>
+
+      <CardContent className="p-4 sm:p-5 space-y-3">
+        {/* Title – same hierarchy as engine card */}
+        <div className="space-y-0.5">
+          <Link
+            href={`/parts/${part.slug}`}
+            className="text-base sm:text-lg font-bold text-cream-100 hover:text-orange-400 transition-colors line-clamp-2 leading-snug"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {part.name}
+          </Link>
+          {part.brand && <p className="text-xs text-cream-500 font-medium">{part.brand}</p>}
+        </div>
+
+        {/* Spec chips – same style as engine card (3 pills) */}
+        <div className="flex flex-wrap gap-2">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/15 transition-colors">
+            <Package className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+            <span className="text-xs font-bold text-cream-100">{getCategoryLabel(part.category)}</span>
+          </div>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/15 transition-colors">
+            <DollarSign className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+            <span className="text-xs font-bold text-cream-100 tabular-nums">{part.price != null ? formatPrice(part.price) : '—'}</span>
+          </div>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/15 transition-colors">
+            <Tag className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+            <span className="text-xs font-bold text-cream-100 truncate max-w-[80px]" title={part.brand || undefined}>{part.brand || '—'}</span>
+          </div>
+        </div>
+
+        {/* Price & actions – same layout as engine card */}
+        <div className="pt-2 border-t border-olive-700/30">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1 min-w-0 flex items-center gap-2">
+              {part.price != null ? (
+                <span className="text-xl sm:text-2xl font-bold text-orange-400 tabular-nums">{formatPrice(part.price)}</span>
+              ) : (
+                <span className="text-sm text-cream-500">Contact for price</span>
+              )}
+              {part.affiliate_url && (
+                <a
+                  href={part.affiliate_url}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="p-2 text-cream-400 hover:text-orange-400 hover:bg-olive-600/50 rounded-md transition-colors"
+                  title="Buy (affiliate link)"
+                  aria-label="Buy (affiliate link)"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5" />
+                </a>
+              )}
+            </div>
+            {showAddButton && (
+              <Button
+                variant={isSelected ? 'secondary' : 'primary'}
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onAddToBuild?.(part);
+                }}
+                icon={isSelected ? undefined : <Plus className="w-4 h-4" />}
+                className={cn('shrink-0 font-semibold', isSelected && 'bg-olive-700/50 border-olive-600/50')}
+              >
+                {isSelected ? 'Selected' : 'Add'}
               </Button>
             )}
           </div>

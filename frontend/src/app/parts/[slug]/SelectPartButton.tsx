@@ -14,14 +14,15 @@ interface SelectPartButtonProps {
  * Uses Zustand store for state management
  */
 export function SelectPartButton({ part }: SelectPartButtonProps) {
-  const { selectedParts, setPart } = useBuildStore();
-  const isSelected = selectedParts.get(part.category)?.id === part.id;
+  const { selectedParts, setPart, addPart, removePart } = useBuildStore();
+  const partsArray = selectedParts.get(part.category) || [];
+  const isSelected = partsArray.some(p => p.id === part.id);
   
   const handleClick = () => {
     if (isSelected) {
-      setPart(part.category, null);
+      removePart(part.category, part.id);
     } else {
-      setPart(part.category, part);
+      addPart(part.category, part);
     }
   };
   

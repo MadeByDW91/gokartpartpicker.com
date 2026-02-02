@@ -44,6 +44,7 @@ const STATUS_COLORS: Record<BulkOperation['status'], { label: string; color: str
 
 const ENTITY_LABELS: Record<BulkEntityType, string> = {
   engine: 'Engines',
+  motor: 'Electric Motors',
   part: 'Parts',
   build: 'Builds',
   template: 'Templates',

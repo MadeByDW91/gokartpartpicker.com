@@ -2,34 +2,20 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import { getUserBuilds } from '@/actions';
 import type { Build, BuildParts } from '@/types/database';
 
 /**
- * Fetch user's saved builds
- * Per db-query-contract.md: GET /api/builds (Auth Required)
+ * Fetch user's saved builds (server action).
+ * Supports admin "view as user": when impersonating, returns the viewed user's builds.
  */
 export function useUserBuilds() {
-  const supabase = createClient();
-  
   return useQuery({
     queryKey: ['user-builds'],
     queryFn: async (): Promise<Build[]> => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) throw new Error('Not authenticated');
-      
-      const { data, error } = await supabase
-        .from('builds')
-        .select(`
-          *,
-          engine:engines(*),
-          profile:profiles(username, avatar_url)
-        `)
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
-      
-      if (error) throw error;
-      return data || [];
+      const res = await getUserBuilds();
+      if (!res.success) throw new Error(res.error ?? 'Failed to load builds');
+      return res.data ?? [];
     },
   });
 }
@@ -43,7 +29,12 @@ export function usePublicBuilds(limit = 20) {
   
   return useQuery({
     queryKey: ['public-builds', limit],
+    staleTime: 5 * 60 * 1000, // 5 min — public builds change infrequently
     queryFn: async (): Promise<Build[]> => {
+      if (!supabase) {
+        throw new Error('Supabase client is not available');
+      }
+      
       const { data, error } = await supabase
         .from('builds')
         .select(`
@@ -69,12 +60,18 @@ export function useBuild(id: string) {
   
   return useQuery({
     queryKey: ['build', id],
+    staleTime: 2 * 60 * 1000, // 2 min — single build detail
     queryFn: async (): Promise<Build> => {
+      if (!supabase) {
+        throw new Error('Supabase client is not available');
+      }
+      
       const { data, error } = await supabase
         .from('builds')
         .select(`
           *,
           engine:engines(*),
+          motor:electric_motors(*),
           profile:profiles(username, avatar_url)
         `)
         .eq('id', id)
@@ -91,6 +88,8 @@ interface CreateBuildInput {
   name: string;
   description?: string;
   engine_id?: string;
+  motor_id?: string;
+  power_source_type?: 'gas' | 'electric';
   parts: BuildParts;
   total_price: number;
   is_public?: boolean;
@@ -106,6 +105,10 @@ export function useCreateBuild() {
   
   return useMutation({
     mutationFn: async (input: CreateBuildInput): Promise<Build> => {
+      if (!supabase) {
+        throw new Error('Supabase client is not available');
+      }
+      
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) throw new Error('Not authenticated');
@@ -117,6 +120,8 @@ export function useCreateBuild() {
           name: input.name,
           description: input.description || null,
           engine_id: input.engine_id || null,
+          motor_id: input.motor_id || null,
+          power_source_type: input.power_source_type || 'gas',
           parts: input.parts,
           total_price: input.total_price,
           is_public: input.is_public ?? false,
@@ -153,6 +158,10 @@ export function useUpdateBuild() {
   
   return useMutation({
     mutationFn: async (input: UpdateBuildInput): Promise<Build> => {
+      if (!supabase) {
+        throw new Error('Supabase client is not available');
+      }
+      
       const { id, ...updates } = input;
       
       const { data, error } = await supabase
@@ -185,6 +194,10 @@ export function useDeleteBuild() {
   
   return useMutation({
     mutationFn: async (id: string): Promise<void> => {
+      if (!supabase) {
+        throw new Error('Supabase client is not available');
+      }
+      
       const { error } = await supabase
         .from('builds')
         .delete()
@@ -207,6 +220,10 @@ export function useBuildsForComparison(buildIds: string[]) {
   return useQuery({
     queryKey: ['builds-comparison', buildIds.sort().join(',')],
     queryFn: async (): Promise<Build[]> => {
+      if (!supabase) {
+        throw new Error('Supabase client is not available');
+      }
+      
       if (buildIds.length === 0 || buildIds.length > 3) {
         throw new Error('Invalid number of build IDs');
       }

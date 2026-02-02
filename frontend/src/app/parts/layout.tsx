@@ -22,9 +22,7 @@ export const metadata: Metadata = {
     title: 'Go-Kart Parts | GoKartPartPicker',
     description: 'Browse go-kart parts and find compatible components.',
   },
-  alternates: {
-    canonical: 'https://gokartpartpicker.com/parts',
-  },
+  // Canonical set per-request in page.tsx (base /parts or /parts?category=X)
 };
 
 export default function PartsLayout({

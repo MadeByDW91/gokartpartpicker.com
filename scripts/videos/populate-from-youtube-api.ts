@@ -29,6 +29,17 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || '';
 
+const YT_ID_REGEX = /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+const PLACEHOLDER = /^(PLACEHOLDER|EXAMPLE)/i;
+
+function getYouTubeVideoId(url: string | null | undefined): string | null {
+  if (!url || typeof url !== 'string') return null;
+  const m = url.match(YT_ID_REGEX);
+  const id = m?.[1];
+  if (!id || PLACEHOLDER.test(id)) return null;
+  return id;
+}
+
 async function youtubeSearchFirst(query: string): Promise<string | null> {
   if (!query?.trim() || !YOUTUBE_API_KEY) return null;
   const url = `https://www.googleapis.com/youtube/v3/search?part=id&type=video&maxResults=1&q=${encodeURIComponent(query.trim())}&key=${YOUTUBE_API_KEY}`;
@@ -109,7 +120,15 @@ async function main() {
   const engineMap = new Map((enginesRes.data ?? []).map((e: { id: string; name: string }) => [e.id, e.name]));
   const partMap = new Map((partsRes.data ?? []).map((p: { id: string; name: string }) => [p.id, p.name]));
 
+  const { data: allVideos } = await supabase.from('videos').select('video_url');
+  const usedYouTubeIds = new Set<string>();
+  for (const row of allVideos ?? []) {
+    const id = getYouTubeVideoId(row.video_url);
+    if (id) usedYouTubeIds.add(id);
+  }
+
   let filled = 0;
+  let skippedDup = 0;
   for (const v of list) {
     const engineName = v.engine_id ? engineMap.get(v.engine_id) : null;
     const partName = v.part_id ? partMap.get(v.part_id) : null;
@@ -118,7 +137,6 @@ async function main() {
     if (!q) continue;
 
     let videoId = await youtubeSearchFirst(q);
-    // Fallback: try shorter query (engine/part + "go kart" or just name)
     if (!videoId) {
       const fallback = (engineName || partName) ? `${engineName || partName} go kart` : '';
       if (fallback) videoId = await youtubeSearchFirst(fallback);
@@ -131,6 +149,13 @@ async function main() {
       continue;
     }
 
+    if (usedYouTubeIds.has(videoId)) {
+      console.log(`  [skip] ${v.title} — duplicate (already on site)`);
+      skippedDup++;
+      continue;
+    }
+    usedYouTubeIds.add(videoId);
+
     const url = `https://www.youtube.com/watch?v=${videoId}`;
     if (dryRun) {
       console.log(`  [would update] ${v.title} → ${url}`);
@@ -140,6 +165,7 @@ async function main() {
 
     const { error: upErr } = await supabase.from('videos').update({ video_url: url }).eq('id', v.id);
     if (upErr) {
+      usedYouTubeIds.delete(videoId);
       console.log(`  [error] ${v.title}: ${upErr.message}`);
     } else {
       console.log(`  [ok] ${v.title} → ${url}`);
@@ -147,7 +173,7 @@ async function main() {
     }
   }
 
-  console.log(`\nFilled ${filled} URL(s). Run again for more (quota: ~${limit}/day).`);
+  console.log(`\nFilled ${filled} URL(s).${skippedDup > 0 ? ` Skipped ${skippedDup} duplicate(s).` : ''} Run again for more (quota: ~${limit}/day).`);
 }
 
 main();

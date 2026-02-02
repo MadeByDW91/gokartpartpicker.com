@@ -29,8 +29,10 @@ export function useBuildCost(budget?: number) {
   // Calculate total cost
   const totalCost = useMemo(() => {
     let total = selectedEngine?.price || 0;
-    selectedParts.forEach((part) => {
-      total += part.price || 0;
+    selectedParts.forEach((partsArray) => {
+      partsArray.forEach((part) => {
+        total += part.price || 0;
+      });
     });
     return total;
   }, [selectedEngine, selectedParts]);
@@ -51,26 +53,28 @@ export function useBuildCost(budget?: number) {
     }
 
     // Add parts by category
-    selectedParts.forEach((part, category) => {
-      const group = CATEGORY_GROUPS.find((g) => g.categories.includes(category));
-      const groupId = group?.id || 'other';
-      const groupLabel = group?.label || 'Other';
+    selectedParts.forEach((partsArray, category) => {
+      partsArray.forEach((part) => {
+        const group = CATEGORY_GROUPS.find((g) => g.categories.includes(category));
+        const groupId = group?.id || 'other';
+        const groupLabel = group?.label || 'Other';
 
-      const existing = breakdown.get(groupId);
-      const partCost = part.price || 0;
+        const existing = breakdown.get(groupId);
+        const partCost = part.price || 0;
 
-      if (existing) {
-        existing.cost += partCost;
-        existing.parts.push({ name: part.name, cost: partCost });
-      } else {
-        breakdown.set(groupId, {
-          category: groupId,
-          label: groupLabel,
-          cost: partCost,
-          percentage: 0, // Will calculate after
-          parts: [{ name: part.name, cost: partCost }],
-        });
-      }
+        if (existing) {
+          existing.cost += partCost;
+          existing.parts.push({ name: part.name, cost: partCost });
+        } else {
+          breakdown.set(groupId, {
+            category: groupId,
+            label: groupLabel,
+            cost: partCost,
+            percentage: 0, // Will calculate after
+            parts: [{ name: part.name, cost: partCost }],
+          });
+        }
+      });
     });
 
     // Calculate percentages
@@ -110,10 +114,12 @@ export function useBuildCost(budget?: number) {
   const expensiveParts = useMemo(() => {
     const parts: Array<{ part: Part; category: PartCategory; savings?: number }> = [];
     
-    selectedParts.forEach((part, category) => {
-      if (part.price && part.price > 0) {
-        parts.push({ part, category });
-      }
+    selectedParts.forEach((partsArray, category) => {
+      partsArray.forEach((part) => {
+        if (part.price && part.price > 0) {
+          parts.push({ part, category });
+        }
+      });
     });
 
     // Sort by price descending

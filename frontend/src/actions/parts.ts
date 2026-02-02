@@ -5,6 +5,7 @@
  * These replace direct Supabase calls from client components
  */
 
+import { unstable_cache } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { 
   partFiltersSchema, 
@@ -22,71 +23,56 @@ import {
 } from '@/lib/api/types';
 import type { Part, PartCategory } from '@/types/database';
 
+/** Cache TTL for public read-heavy data (10 min) */
+const PARTS_CACHE_REVALIDATE = 600;
+
 /**
  * Fetch all active parts with optional filters
  * Public action - no auth required
+ * Cached for 10 min to reduce DB load at scale
  */
 export async function getParts(
   filters?: Partial<PartFiltersInput>
 ): Promise<ActionResult<Part[]>> {
   try {
-    // Validate filters
     const parsed = parseInput(partFiltersSchema, filters ?? {});
     if (!parsed.success) {
       return error(parsed.error, parsed.fieldErrors);
     }
-    
-    const { 
-      category, 
-      brand, 
-      min_price, 
-      max_price, 
-      sort, 
-      order, 
-      limit 
-    } = parsed.data;
-    
-    const supabase = await createClient();
-    
-    // Check if Supabase is properly configured
-    if (!supabase || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      console.error('[getParts] Supabase not configured');
-      return error('Database connection not configured. Please check environment variables.');
-    }
-    
-    // Build query - only active parts are visible
-    let query = supabase
-      .from('parts')
-      .select('*')
-      .eq('is_active', true);
-    
-    // Apply filters
-    if (category) {
-      query = query.eq('category', category);
-    }
-    if (brand) {
-      query = query.eq('brand', brand);
-    }
-    if (min_price !== undefined) {
-      query = query.gte('price', min_price).not('price', 'is', null);
-    }
-    if (max_price !== undefined) {
-      query = query.lte('price', max_price);
-    }
-    
-    // Apply sorting and limit
-    query = query
-      .order(sort, { ascending: order === 'asc' })
-      .limit(limit);
-    
-    const { data, error: dbError } = await query;
-    
-    if (dbError) {
-      console.error('[getParts] Database error:', dbError);
-      return error('Failed to fetch parts');
-    }
-    
-    return success(data ?? []);
+
+    const cacheKey = JSON.stringify(parsed.data);
+
+    return unstable_cache(
+      async () => {
+        const supabase = await createClient();
+
+        if (!supabase || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+          return error('Database connection not configured. Please check environment variables.');
+        }
+
+        const { category, brand, min_price, max_price, sort, order, limit } = parsed.data;
+
+        let query = supabase.from('parts').select('*').eq('is_active', true);
+
+        if (category) query = query.eq('category', category);
+        if (brand) query = query.eq('brand', brand);
+        if (min_price !== undefined) query = query.gte('price', min_price).not('price', 'is', null);
+        if (max_price !== undefined) query = query.lte('price', max_price);
+
+        query = query.order(sort, { ascending: order === 'asc' }).limit(limit);
+
+        const { data, error: dbError } = await query;
+
+        if (dbError) {
+          console.error('[getParts] Database error:', dbError);
+          return error('Failed to fetch parts');
+        }
+
+        return success(data ?? []);
+      },
+      ['parts', cacheKey],
+      { revalidate: PARTS_CACHE_REVALIDATE }
+    )() as Promise<ActionResult<Part[]>>;
   } catch (err) {
     return handleError(err, 'getParts');
   }
@@ -138,32 +124,37 @@ export async function getPart(
 /**
  * Fetch single part by slug
  * Public action - no auth required
- * Used for detail pages with SEO-friendly URLs
+ * Cached for 10 min (detail pages are hot read paths)
  */
 export async function getPartBySlug(
   slug: string
 ): Promise<ActionResult<Part>> {
   try {
-    // Validate input
     const parsed = parseInput(getPartBySlugSchema, { slug });
     if (!parsed.success) {
       return error(parsed.error, parsed.fieldErrors);
     }
-    
-    const supabase = await createClient();
-    
-    const { data, error: dbError } = await supabase
-      .from('parts')
-      .select('*')
-      .eq('slug', parsed.data.slug)
-      .eq('is_active', true)
-      .single();
-    
-    if (dbError) {
-      return handleError(dbError, 'getPartBySlug', 'Part');
-    }
-    
-    return success(data);
+
+    const slugKey = parsed.data.slug;
+
+    return unstable_cache(
+      async () => {
+        const supabase = await createClient();
+        const { data, error: dbError } = await supabase
+          .from('parts')
+          .select('*')
+          .eq('slug', slugKey)
+          .eq('is_active', true)
+          .single();
+
+        if (dbError) {
+          return handleError(dbError, 'getPartBySlug', 'Part');
+        }
+        return success(data);
+      },
+      ['part-by-slug', slugKey],
+      { revalidate: PARTS_CACHE_REVALIDATE }
+    )() as Promise<ActionResult<Part>>;
   } catch (err) {
     return handleError(err, 'getPartBySlug');
   }
@@ -172,23 +163,28 @@ export async function getPartBySlug(
 /**
  * Fetch all part categories
  * Public action - no auth required
+ * Cached for 10 min
  */
 export async function getPartCategories(): Promise<ActionResult<PartCategoryInfo[]>> {
   try {
-    const supabase = await createClient();
-    
-    const { data, error: dbError } = await supabase
-      .from('part_categories')
-      .select('id, slug, name, description, icon, sort_order, is_active')
-      .eq('is_active', true)
-      .order('sort_order');
-    
-    if (dbError) {
-      console.error('[getPartCategories] Database error:', dbError);
-      return error('Failed to fetch part categories');
-    }
-    
-    return success(data ?? []);
+    return unstable_cache(
+      async () => {
+        const supabase = await createClient();
+        const { data, error: dbError } = await supabase
+          .from('part_categories')
+          .select('id, slug, name, description, icon, sort_order, is_active')
+          .eq('is_active', true)
+          .order('sort_order');
+
+        if (dbError) {
+          console.error('[getPartCategories] Database error:', dbError);
+          return error('Failed to fetch part categories');
+        }
+        return success(data ?? []);
+      },
+      ['part-categories'],
+      { revalidate: PARTS_CACHE_REVALIDATE }
+    )() as Promise<ActionResult<PartCategoryInfo[]>>;
   } catch (err) {
     return handleError(err, 'getPartCategories');
   }

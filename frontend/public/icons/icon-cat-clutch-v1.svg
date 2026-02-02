@@ -1,0 +1,16 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Clutch disc -->
+  <circle cx="12" cy="12" r="8" stroke="#f5f0e6" stroke-width="1.5" fill="none"/>
+  <circle cx="12" cy="12" r="4" stroke="#f5f0e6" stroke-width="1.5" fill="none"/>
+  <!-- Friction material segments -->
+  <g stroke="#c96a24" stroke-width="1" opacity="0.7">
+    <path d="M12 4 L12 6" stroke-linecap="round"/>
+    <path d="M12 18 L12 20" stroke-linecap="round"/>
+    <path d="M4 12 L6 12" stroke-linecap="round"/>
+    <path d="M18 12 L20 12" stroke-linecap="round"/>
+    <path d="M6.34 6.34 L7.76 7.76" stroke-linecap="round"/>
+    <path d="M16.24 16.24 L17.66 17.66" stroke-linecap="round"/>
+    <path d="M17.66 6.34 L16.24 7.76" stroke-linecap="round"/>
+    <path d="M7.76 16.24 L6.34 17.66" stroke-linecap="round"/>
+  </g>
+</svg>

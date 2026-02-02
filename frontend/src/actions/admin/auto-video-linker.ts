@@ -161,6 +161,8 @@ function getCategoryLabel(category: PartCategory): string {
     axle: 'axle',
     wheel: 'wheel',
     tire: 'tire',
+    tire_front: 'front tire',
+    tire_rear: 'rear tire',
     brake: 'brake',
     throttle: 'throttle',
     exhaust: 'exhaust',
@@ -180,6 +182,16 @@ function getCategoryLabel(category: PartCategory): string {
     frame: 'frame',
     hardware: 'hardware',
     other: 'other',
+    // EV-specific categories
+    battery: 'battery',
+    motor_controller: 'motor controller',
+    bms: 'BMS',
+    charger: 'charger',
+    throttle_controller: 'throttle controller',
+    voltage_converter: 'voltage converter',
+    battery_mount: 'battery mount',
+    wiring_harness: 'wiring harness',
+    fuse_kill_switch: 'fuse kill switch',
   };
   return labels[category] || category;
 }

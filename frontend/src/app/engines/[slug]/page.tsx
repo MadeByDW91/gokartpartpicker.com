@@ -16,6 +16,12 @@ import { ProductStructuredData, BreadcrumbStructuredData } from '@/components/St
 import { VideoSection } from '@/components/lazy';
 import { EngineClonesList } from '@/components/engines/EngineClonesList';
 import { GuidesSection } from '@/components/guides/GuidesSection';
+import { ManualCard } from '@/components/engines/ManualCard';
+import { MountDimensionsDiagram } from '@/components/engines/MountDimensionsDiagram';
+import { ShaftCalloutDiagram } from '@/components/engines/ShaftCalloutDiagram';
+import { EngineDetailTabs } from '@/components/engines/EngineDetailTabs';
+import { EngineTorqueSpecs } from '@/components/engines/EngineTorqueSpecs';
+import { BuilderInsights } from '@/components/lazy';
 import { 
   ArrowLeft, 
   Cog, 
@@ -26,7 +32,8 @@ import {
   ExternalLink,
   Wrench,
   Package,
-  Info
+  ChevronRight,
+  Link2
 } from 'lucide-react';
 
 interface EnginePageProps {
@@ -92,8 +99,9 @@ export async function generateMetadata({ params }: EnginePageProps): Promise<Met
   };
 }
 
-// Always fetch fresh data (videos, etc.) so auto-filled URLs and thumbnails show without cache delay
-export const dynamic = 'force-dynamic';
+// Enable ISR (Incremental Static Regeneration) for better performance
+// Pages are statically generated and revalidated every 1 hour
+export const revalidate = 3600; // 1 hour
 
 /**
  * Engine detail page - Server Component
@@ -121,17 +129,15 @@ export default async function EnginePage({ params }: EnginePageProps) {
   const videosResult = await getEngineVideos(engine.id);
   const initialVideos = videosResult.success && videosResult.data ? videosResult.data : [];
   
-  // Group specs for display
-  const specs = [
-    { label: 'Displacement', value: `${engine.displacement_cc} cc`, icon: Gauge },
-    { label: 'Horsepower', value: `${engine.horsepower} HP`, icon: Zap },
-    { label: 'Torque', value: `${engine.torque} lb-ft`, icon: null },
-    { label: 'Shaft Diameter', value: `${engine.shaft_diameter}"`, icon: Ruler },
-    { label: 'Shaft Length', value: `${engine.shaft_length}"`, icon: null },
-    { label: 'Shaft Type', value: engine.shaft_type, capitalize: true, icon: null },
-    { label: 'Mount Type', value: engine.mount_type, icon: null },
-    ...(engine.weight_lbs ? [{ label: 'Weight', value: `${engine.weight_lbs} lbs`, icon: Weight }] : []),
-  ];
+  // Performance tier calculation
+  const getPerformanceTier = (hp: number): { tier: string; color: string; description: string } => {
+    if (hp < 6) return { tier: 'Entry-Level', color: 'text-green-400', description: 'Perfect for beginners' };
+    if (hp >= 6 && hp < 10) return { tier: 'Mid-Range', color: 'text-orange-400', description: 'Great for recreational use' };
+    if (hp >= 10 && hp < 15) return { tier: 'High Performance', color: 'text-red-400', description: 'Racing and competition' };
+    return { tier: 'Extreme', color: 'text-purple-400', description: 'Maximum power' };
+  };
+  
+  const performanceTier = getPerformanceTier(engine.horsepower);
   
   const engineUrl = `https://gokartpartpicker.com/engines/${engine.slug}`;
   const breadcrumbs = [
@@ -175,201 +181,158 @@ export default async function EnginePage({ params }: EnginePageProps) {
         </div>
       </div>
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Image Section */}
-          <div className="relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+          {/* Image Section - smaller, left-aligned */}
+          <div className="relative lg:col-span-4">
             <div className="sticky top-24">
-              <div className="aspect-square bg-olive-800 rounded-xl overflow-hidden border border-olive-600">
-                {engine.image_url ? (
-                  <Image
-                    src={engine.image_url}
-                    alt={`${engine.brand} ${engine.name}`}
-                    fill
-                    className="object-cover"
-                    priority
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
-                ) : (
-                  <Image
-                    src="/placeholders/placeholder-engine-v1.svg"
-                    alt="Engine placeholder"
-                    fill
-                    className="object-contain p-8 opacity-60"
-                  />
-                )}
-              </div>
-              
-              {/* Compatibility Info Box - Desktop */}
-              <div className="hidden lg:block mt-6 p-4 bg-[rgba(90,125,154,0.1)] border border-[rgba(90,125,154,0.3)] rounded-lg">
-                <div className="flex items-start gap-3">
-                  <Info className="w-5 h-5 text-[#7a9db9] flex-shrink-0 mt-0.5" />
-                  <div>
-                    <h3 className="font-semibold text-[#7a9db9] mb-1">Compatibility Note</h3>
-                    <p className="text-sm text-cream-300">
-                      This engine has a <strong className="text-cream-100">{engine.shaft_diameter}&quot;</strong>{' '}
-                      <strong className="text-cream-100 capitalize">{engine.shaft_type}</strong> shaft. 
-                      Make sure your clutch or torque converter has a matching bore size.
-                    </p>
+              <div className="space-y-6">
+                {/* Product Image */}
+                <div className="relative w-full max-w-sm mx-auto lg:max-w-none">
+                  <div className="relative w-full aspect-[4/3] lg:aspect-[1] bg-gradient-to-br from-olive-800 to-olive-800/80 rounded-2xl overflow-hidden border border-olive-600/50 shadow-xl shadow-black/20 ring-1 ring-olive-500/10">
+                    {engine.image_url ? (
+                      <Image
+                        src={engine.image_url}
+                        alt={`${engine.brand} ${engine.name}`}
+                        fill
+                        className="object-contain p-4 sm:p-6"
+                        priority
+                        sizes="(max-width: 1024px) 100vw, 380px"
+                      />
+                    ) : (
+                      <Image
+                        src="/placeholders/placeholder-engine-v1.svg"
+                        alt="Engine placeholder"
+                        fill
+                        className="object-contain p-8 opacity-60"
+                      />
+                    )}
                   </div>
                 </div>
-              </div>
+                
+                {/* Manual and Torque Specs - Side by Side */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Manual Card */}
+                  {(engine.manual_url || engine.schematic_url) && (
+                    <ManualCard
+                      manualUrl={engine.manual_url || engine.schematic_url || ''}
+                      engineName={engine.name}
+                      type="manual"
+                    />
+                  )}
+                  
+                  {/* Torque Specifications */}
+                  <EngineTorqueSpecs engine={engine} compact={true} />
+                </div>
             </div>
+          </div>
           </div>
           
           {/* Details Section */}
-          <div className="space-y-6">
-            {/* Brand Badge */}
-            {getEngineBadge(engine.brand) ? (
-              <div className="w-20 h-20 relative">
-                <Image
-                  src={getEngineBadge(engine.brand)!}
-                  alt={`${engine.brand} badge`}
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            ) : (
-              <Badge variant="default" className="text-sm">
-                {engine.brand}
-              </Badge>
-            )}
-            
-            {/* Title */}
-            <h1 className="text-display text-4xl sm:text-5xl text-cream-100">
-              {engine.name}
-            </h1>
-            
-            {/* Quick Stats */}
-            <div className="flex flex-wrap gap-6">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-orange-500/10 rounded-lg">
-                  <Zap className="w-6 h-6 text-orange-400" />
+          <div className="lg:col-span-8 space-y-4">
+            {/* Brand + Title */}
+            <div className="flex items-start gap-4 mb-6">
+              {getEngineBadge(engine.brand) ? (
+                <div className="w-16 h-16 relative shrink-0 rounded-xl border-2 border-olive-600/40 bg-gradient-to-br from-olive-800/60 to-olive-900/40 p-2 shadow-md">
+                  <Image
+                    src={getEngineBadge(engine.brand)!}
+                    alt={`${engine.brand} badge`}
+                    fill
+                    className="object-contain p-1"
+                  />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold text-cream-100">{engine.horsepower}</p>
-                  <p className="text-xs text-cream-400 uppercase tracking-wide">Horsepower</p>
+              ) : (
+                <div className="w-16 h-16 rounded-xl border-2 border-olive-600/40 bg-gradient-to-br from-olive-800/60 to-olive-900/40 flex items-center justify-center shadow-md">
+                  <Badge variant="default" className="text-xs font-semibold">
+                    {engine.brand}
+                  </Badge>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-orange-500/10 rounded-lg">
-                  <Gauge className="w-6 h-6 text-orange-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-cream-100">{engine.displacement_cc}</p>
-                  <p className="text-xs text-cream-400 uppercase tracking-wide">CC</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-orange-500/10 rounded-lg">
-                  <Ruler className="w-6 h-6 text-orange-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-cream-100">{engine.shaft_diameter}&quot;</p>
-                  <p className="text-xs text-cream-400 uppercase tracking-wide">Shaft</p>
-                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <h1 className="text-display text-2xl sm:text-3xl lg:text-4xl font-bold text-cream-100 tracking-tight mb-1">
+                  {engine.name}
+                </h1>
+                {!getEngineBadge(engine.brand) && (
+                  <p className="text-sm text-cream-400 font-medium">{engine.brand}</p>
+                )}
               </div>
             </div>
             
-            {/* Price */}
-            {engine.price && (
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-orange-400">
-                  {formatPrice(engine.price)}
-                </span>
-                <span className="text-cream-400 text-sm">estimated</span>
-              </div>
-            )}
-            
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-3 pt-2">
-              <SelectEngineButton engine={engine} />
+            {/* Price & Actions - Unified Professional Layout */}
+            <div className="rounded-xl border border-olive-600/50 bg-gradient-to-br from-olive-800/40 to-olive-900/30 p-5 shadow-lg">
+              {/* Price Section */}
+              {engine.price && (
+                <div className="mb-5 pb-5 border-b border-olive-600/30">
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-3xl sm:text-4xl font-bold text-orange-400 tabular-nums">
+                      {formatPrice(engine.price)}
+                    </span>
+                    <span className="text-xs text-cream-500/70 font-medium uppercase tracking-wide" title="Prices vary by retailer">
+                      Est.
+                    </span>
+                  </div>
+                  <p className="text-xs text-cream-500/60">Prices may vary by retailer</p>
+                </div>
+              )}
               
-              {/* Harbor Freight Link for Predator Engines */}
-              {engine.brand.toLowerCase().includes('predator') ? (
-                <a
-                  href="https://www.harborfreight.com/brands/predator/engines.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 sm:flex-none"
-                >
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    icon={<ExternalLink className="w-5 h-5" />}
-                    className="w-full"
-                  >
-                    View on Harbor Freight
-                  </Button>
-                </a>
-              ) : engine.affiliate_url ? (
-                <a
-                  href={engine.affiliate_url}
-                  target="_blank"
-                  rel="noopener noreferrer sponsored"
-                  className="flex-1 sm:flex-none"
-                  aria-label="Buy Now (affiliate link)"
-                >
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    icon={<ExternalLink className="w-5 h-5" />}
-                    className="w-full"
-                  >
-                    Buy Now
-                  </Button>
-                </a>
-              ) : null}
-              
-              <Link href="/builder" className="flex-1 sm:flex-none">
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  icon={<Wrench className="w-5 h-5" />}
-                  className="w-full"
-                >
-                  Open Builder
-                </Button>
-              </Link>
-            </div>
-            
-            {/* Compatibility Info Box - Mobile */}
-            <div className="lg:hidden p-4 bg-[rgba(90,125,154,0.1)] border border-[rgba(90,125,154,0.3)] rounded-lg">
-              <div className="flex items-start gap-3">
-                <Info className="w-5 h-5 text-[#7a9db9] flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-cream-300">
-                  This engine has a <strong className="text-cream-100">{engine.shaft_diameter}&quot;</strong>{' '}
-                  <strong className="text-cream-100 capitalize">{engine.shaft_type}</strong> shaft.
-                </p>
+              {/* Primary Action */}
+              <div className="mb-3">
+                <SelectEngineButton engine={engine} />
               </div>
-            </div>
-            
-            {/* Specifications Card */}
-            <Card className="mt-6">
-              <CardHeader className="border-b border-olive-600">
-                <h2 className="text-display text-xl text-cream-100">Full Specifications</h2>
-              </CardHeader>
-              <CardContent>
-                <dl className="divide-y divide-olive-600">
-                  {specs.map((spec, index) => (
-                    <div 
-                      key={spec.label} 
-                      className={`flex items-center justify-between py-3 ${
-                        index === 0 ? 'pt-0' : ''
-                      } ${index === specs.length - 1 ? 'pb-0' : ''}`}
+              
+              {/* Secondary Actions */}
+              <div className="flex flex-col sm:flex-row gap-2">
+                {/* Harbor Freight Link for Predator Engines */}
+                {engine.brand.toLowerCase().includes('predator') ? (
+                  <a
+                    href="https://www.harborfreight.com/brands/predator/engines.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1"
+                  >
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      icon={<ExternalLink className="w-4 h-4" />}
+                      className="w-full text-sm"
                     >
-                      <dt className="flex items-center gap-2 text-cream-400">
-                        {spec.icon && <spec.icon className="w-4 h-4" />}
-                        {spec.label}
-                      </dt>
-                      <dd className={`font-semibold text-cream-100 ${spec.capitalize ? 'capitalize' : ''}`}>
-                        {spec.value}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-              </CardContent>
-            </Card>
+                      View on Harbor Freight
+                    </Button>
+                  </a>
+                ) : engine.affiliate_url ? (
+                  <a
+                    href={engine.affiliate_url}
+                    target="_blank"
+                    rel="noopener noreferrer sponsored"
+                    className="flex-1"
+                    aria-label="Buy Now (affiliate link)"
+                  >
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      icon={<ExternalLink className="w-4 h-4" />}
+                      className="w-full text-sm"
+                    >
+                      Buy Now
+                    </Button>
+                  </a>
+                ) : null}
+                
+                <Link href="/builder" className="flex-1">
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    icon={<Wrench className="w-4 h-4" />}
+                    className="w-full text-sm"
+                  >
+                    Open Builder
+                  </Button>
+                </Link>
+              </div>
+            </div>
+            
+            {/* Tabbed Specifications */}
+            <EngineDetailTabs engine={engine} performanceTier={performanceTier} />
           </div>
         </div>
         
@@ -427,6 +390,16 @@ export default async function EnginePage({ params }: EnginePageProps) {
             )}
           </section>
         )}
+        
+        {/* Builder Insights */}
+        <div className="mt-16">
+          <BuilderInsights
+            engines={[engine]}
+            selectedItem={engine}
+            activePowerSource="gas"
+            variant="engines-page"
+          />
+        </div>
         
         {/* Related Engines - Optional future feature */}
         {/* We could add a section for similar engines by HP range or brand */}

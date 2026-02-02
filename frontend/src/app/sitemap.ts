@@ -44,6 +44,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
     {
+      url: `${baseUrl}/templates`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
       url: `${baseUrl}/privacy`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
@@ -83,12 +89,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  // Dynamic guide pages
+  // Dynamic guide pages (content uses is_published, not is_active)
   const { data: guides } = await supabase
     .from('content')
     .select('slug, updated_at')
     .eq('content_type', 'guide')
-    .eq('is_active', true);
+    .eq('is_published', true);
 
   const guidePages: MetadataRoute.Sitemap = (guides || []).map((guide: { slug: string; updated_at: string | null }) => ({
     url: `${baseUrl}/guides/${guide.slug}`,
@@ -97,5 +103,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...staticPages, ...enginePages, ...partPages, ...guidePages];
+  // Dynamic motor pages (electric go-kart motors)
+  const { data: motors } = await supabase
+    .from('electric_motors')
+    .select('slug, updated_at')
+    .eq('is_active', true);
+
+  const motorPages: MetadataRoute.Sitemap = (motors || []).map((motor: { slug: string; updated_at: string | null }) => ({
+    url: `${baseUrl}/motors/${motor.slug}`,
+    lastModified: motor.updated_at ? new Date(motor.updated_at) : new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.75,
+  }));
+
+  return [...staticPages, ...enginePages, ...partPages, ...guidePages, ...motorPages];
 }

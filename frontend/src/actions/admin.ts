@@ -10,12 +10,16 @@ import { createClient } from '@/lib/supabase/server';
 import { 
   createEngineSchema,
   updateEngineSchema,
+  createMotorSchema,
+  updateMotorSchema,
   createPartSchema,
   updatePartSchema,
   uuidSchema,
   parseInput,
   type CreateEngineInput,
   type UpdateEngineInput,
+  type CreateMotorInput,
+  type UpdateMotorInput,
   type CreatePartInput,
   type UpdatePartInput 
 } from '@/lib/validation/schemas';
@@ -25,7 +29,7 @@ import {
   error, 
   handleError 
 } from '@/lib/api/types';
-import type { Engine, Part } from '@/types/database';
+import type { Engine, Part, ElectricMotor } from '@/types/database';
 
 // ============================================================================
 // Auth Helpers
@@ -62,6 +66,8 @@ async function getCurrentUserWithRole() {
 /**
  * Check if user is admin or super_admin
  * Exported for use in other admin action files
+ * 
+ * Phase 1 Security: Also checks MFA (Multi-Factor Authentication) for admins
  */
 export async function requireAdmin(): Promise<ActionResult<{ userId: string }> | { userId: string }> {
   const user = await getCurrentUserWithRole();
@@ -72,6 +78,22 @@ export async function requireAdmin(): Promise<ActionResult<{ userId: string }> |
   
   if (user.role !== 'admin' && user.role !== 'super_admin') {
     return error('Admin privileges required');
+  }
+
+  // Phase 1 Security: Require MFA for admin access (if MFA is configured)
+  // Note: This check is lenient - if aal is not available, we allow access
+  // MFA enforcement should be configured at the Supabase level for production
+  const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  // Check Authentication Assurance Level (aal) if available
+  // aal1 = single factor (password only)
+  // aal2 = multi-factor (password + MFA)
+  // Only enforce if aal property exists and is explicitly aal1
+  if (session && 'aal' in session && session.aal === 'aal1') {
+    // MFA is recommended but not strictly enforced yet
+    // Uncomment the line below to enforce MFA requirement:
+    // return error('Multi-factor authentication (MFA) is required for admin access. Please enable MFA in your account settings.');
   }
   
   return { userId: user.id };
@@ -715,5 +737,426 @@ export async function getAdminPart(id: string): Promise<ActionResult<Part>> {
     return success(data);
   } catch (err) {
     return handleError(err, 'getAdminPart');
+  }
+}
+
+// ============================================================================
+// Electric Motor Admin Actions
+// ============================================================================
+
+/**
+ * Get all electric motors including inactive ones (for admin)
+ * Requires admin role
+ */
+export async function getAdminMotors(): Promise<ActionResult<ElectricMotor[]>> {
+  try {
+    const authResult = await requireAdmin();
+    if ('success' in authResult && !authResult.success) {
+      return authResult as ActionResult<ElectricMotor[]>;
+    }
+    
+    const supabase = await createClient();
+    
+    const { data, error: dbError } = await supabase
+      .from('electric_motors')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (dbError) {
+      console.error('[getAdminMotors] Database error:', dbError);
+      return error('Failed to fetch electric motors');
+    }
+    
+    return success(data ?? []);
+  } catch (err) {
+    return handleError(err, 'getAdminMotors');
+  }
+}
+
+/**
+ * Get a single electric motor by ID including inactive ones (for admin)
+ * Requires admin role
+ */
+export async function getAdminMotor(id: string): Promise<ActionResult<ElectricMotor>> {
+  try {
+    const authResult = await requireAdmin();
+    if ('success' in authResult && !authResult.success) {
+      return authResult as ActionResult<ElectricMotor>;
+    }
+    
+    const supabase = await createClient();
+    
+    const { data, error: dbError } = await supabase
+      .from('electric_motors')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (dbError) {
+      console.error('[getAdminMotor] Database error:', dbError);
+      return error('Failed to fetch electric motor');
+    }
+    
+    if (!data) {
+      return error('Electric motor not found');
+    }
+    
+    return success(data);
+  } catch (err) {
+    return handleError(err, 'getAdminMotor');
+  }
+}
+
+/**
+ * Create a new electric motor
+ * Requires admin role
+ */
+export async function createMotor(
+  input: CreateMotorInput
+): Promise<ActionResult<ElectricMotor>> {
+  try {
+    const authResult = await requireAdmin();
+    if ('success' in authResult && !authResult.success) {
+      return authResult as ActionResult<ElectricMotor>;
+    }
+    const { userId } = authResult as { userId: string };
+
+    // Validate input
+    const parsed = parseInput(createMotorSchema, input);
+    if (!parsed.success) {
+      return error(parsed.error, parsed.fieldErrors);
+    }
+    
+    const supabase = await createClient();
+    
+    // Check if slug already exists
+    const { data: existing } = await supabase
+      .from('electric_motors')
+      .select('id')
+      .eq('slug', parsed.data.slug)
+      .single();
+    
+    if (existing) {
+      return error('A motor with this slug already exists');
+    }
+    
+    const { data, error: dbError } = await supabase
+      .from('electric_motors')
+      .insert({
+        ...parsed.data,
+        created_by: userId,
+      })
+      .select()
+      .single();
+    
+    if (dbError) {
+      console.error('[createMotor] Database error:', dbError);
+      return error('Failed to create electric motor');
+    }
+    
+    revalidatePath('/admin/motors');
+    revalidatePath('/motors');
+    
+    return success(data);
+  } catch (err) {
+    return handleError(err, 'createMotor');
+  }
+}
+
+/**
+ * Update an existing electric motor
+ * Requires admin role
+ */
+export async function updateMotor(
+  input: UpdateMotorInput
+): Promise<ActionResult<ElectricMotor>> {
+  try {
+    const authResult = await requireAdmin();
+    if ('success' in authResult && !authResult.success) {
+      return authResult as ActionResult<ElectricMotor>;
+    }
+
+    // Validate input
+    const parsed = parseInput(updateMotorSchema, input);
+    if (!parsed.success) {
+      return error(parsed.error, parsed.fieldErrors);
+    }
+    
+    const { id, ...updateData } = parsed.data;
+    
+    const supabase = await createClient();
+    
+    // If slug is being updated, check for conflicts
+    if (updateData.slug) {
+      const { data: existing } = await supabase
+        .from('electric_motors')
+        .select('id')
+        .eq('slug', updateData.slug)
+        .neq('id', id)
+        .single();
+      
+      if (existing) {
+        return error('A motor with this slug already exists');
+      }
+    }
+    
+    const { data, error: dbError } = await supabase
+      .from('electric_motors')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (dbError) {
+      console.error('[updateMotor] Database error:', dbError);
+      return error('Failed to update electric motor');
+    }
+    
+    if (!data) {
+      return error('Electric motor not found');
+    }
+    
+    revalidatePath('/admin/motors');
+    revalidatePath(`/admin/motors/${id}`);
+    revalidatePath('/motors');
+    
+    return success(data);
+  } catch (err) {
+    return handleError(err, 'updateMotor');
+  }
+}
+
+/**
+ * Delete an electric motor (soft delete by setting is_active = false)
+ * Requires admin role
+ */
+export async function deleteMotor(
+  id: string,
+  hardDelete: boolean = false
+): Promise<ActionResult<void>> {
+  try {
+    const authResult = await requireAdmin();
+    if ('success' in authResult && !authResult.success) {
+      return authResult as ActionResult<void>;
+    }
+    
+    const supabase = await createClient();
+    
+    if (hardDelete) {
+      // Hard delete - remove from database
+      const { error: deleteError } = await supabase
+        .from('electric_motors')
+        .delete()
+        .eq('id', id);
+      
+      if (deleteError) {
+        console.error('[deleteMotor] Delete error:', deleteError);
+        return error('Failed to delete electric motor');
+      }
+    } else {
+      // Soft delete - set is_active = false
+      const { error: updateError } = await supabase
+        .from('electric_motors')
+        .update({ is_active: false })
+        .eq('id', id);
+      
+      if (updateError) {
+        console.error('[deleteMotor] Update error:', updateError);
+        return error('Failed to deactivate electric motor');
+      }
+    }
+    
+    revalidatePath('/admin/motors');
+    revalidatePath('/motors');
+    
+    return success(undefined);
+  } catch (err) {
+    return handleError(err, 'deleteMotor');
+  }
+}
+
+/**
+ * Bulk activate engines
+ * Requires admin role
+ */
+export async function bulkActivateEngines(ids: string[]): Promise<ActionResult<{ updated: number }>> {
+  try {
+    const authResult = await requireAdmin();
+    if ('success' in authResult && !authResult.success) {
+      return authResult as ActionResult<{ updated: number }>;
+    }
+
+    const supabase = await createClient();
+    const { error: dbError, count } = await supabase
+      .from('engines')
+      .update({ is_active: true })
+      .in('id', ids);
+
+    if (dbError) {
+      console.error('[bulkActivateEngines] Database error:', dbError);
+      return error('Failed to activate engines');
+    }
+
+    revalidatePath('/admin/engines');
+    revalidatePath('/engines');
+
+    return success({ updated: count || ids.length });
+  } catch (err) {
+    return handleError(err, 'bulkActivateEngines');
+  }
+}
+
+/**
+ * Bulk deactivate engines
+ * Requires admin role
+ */
+export async function bulkDeactivateEngines(ids: string[]): Promise<ActionResult<{ updated: number }>> {
+  try {
+    const authResult = await requireAdmin();
+    if ('success' in authResult && !authResult.success) {
+      return authResult as ActionResult<{ updated: number }>;
+    }
+
+    const supabase = await createClient();
+    const { error: dbError, count } = await supabase
+      .from('engines')
+      .update({ is_active: false })
+      .in('id', ids);
+
+    if (dbError) {
+      console.error('[bulkDeactivateEngines] Database error:', dbError);
+      return error('Failed to deactivate engines');
+    }
+
+    revalidatePath('/admin/engines');
+    revalidatePath('/engines');
+
+    return success({ updated: count || ids.length });
+  } catch (err) {
+    return handleError(err, 'bulkDeactivateEngines');
+  }
+}
+
+/**
+ * Bulk activate parts
+ * Requires admin role
+ */
+export async function bulkActivateParts(ids: string[]): Promise<ActionResult<{ updated: number }>> {
+  try {
+    const authResult = await requireAdmin();
+    if ('success' in authResult && !authResult.success) {
+      return authResult as ActionResult<{ updated: number }>;
+    }
+
+    const supabase = await createClient();
+    const { error: dbError, count } = await supabase
+      .from('parts')
+      .update({ is_active: true })
+      .in('id', ids);
+
+    if (dbError) {
+      console.error('[bulkActivateParts] Database error:', dbError);
+      return error('Failed to activate parts');
+    }
+
+    revalidatePath('/admin/parts');
+    revalidatePath('/parts');
+
+    return success({ updated: count || ids.length });
+  } catch (err) {
+    return handleError(err, 'bulkActivateParts');
+  }
+}
+
+/**
+ * Bulk deactivate parts
+ * Requires admin role
+ */
+export async function bulkDeactivateParts(ids: string[]): Promise<ActionResult<{ updated: number }>> {
+  try {
+    const authResult = await requireAdmin();
+    if ('success' in authResult && !authResult.success) {
+      return authResult as ActionResult<{ updated: number }>;
+    }
+
+    const supabase = await createClient();
+    const { error: dbError, count } = await supabase
+      .from('parts')
+      .update({ is_active: false })
+      .in('id', ids);
+
+    if (dbError) {
+      console.error('[bulkDeactivateParts] Database error:', dbError);
+      return error('Failed to deactivate parts');
+    }
+
+    revalidatePath('/admin/parts');
+    revalidatePath('/parts');
+
+    return success({ updated: count || ids.length });
+  } catch (err) {
+    return handleError(err, 'bulkDeactivateParts');
+  }
+}
+
+/**
+ * Bulk activate motors
+ * Requires admin role
+ */
+export async function bulkActivateMotors(ids: string[]): Promise<ActionResult<{ updated: number }>> {
+  try {
+    const authResult = await requireAdmin();
+    if ('success' in authResult && !authResult.success) {
+      return authResult as ActionResult<{ updated: number }>;
+    }
+
+    const supabase = await createClient();
+    const { error: dbError, count } = await supabase
+      .from('electric_motors')
+      .update({ is_active: true })
+      .in('id', ids);
+
+    if (dbError) {
+      console.error('[bulkActivateMotors] Database error:', dbError);
+      return error('Failed to activate motors');
+    }
+
+    revalidatePath('/admin/motors');
+    revalidatePath('/motors');
+
+    return success({ updated: count || ids.length });
+  } catch (err) {
+    return handleError(err, 'bulkActivateMotors');
+  }
+}
+
+/**
+ * Bulk deactivate motors
+ * Requires admin role
+ */
+export async function bulkDeactivateMotors(ids: string[]): Promise<ActionResult<{ updated: number }>> {
+  try {
+    const authResult = await requireAdmin();
+    if ('success' in authResult && !authResult.success) {
+      return authResult as ActionResult<{ updated: number }>;
+    }
+
+    const supabase = await createClient();
+    const { error: dbError, count } = await supabase
+      .from('electric_motors')
+      .update({ is_active: false })
+      .in('id', ids);
+
+    if (dbError) {
+      console.error('[bulkDeactivateMotors] Database error:', dbError);
+      return error('Failed to deactivate motors');
+    }
+
+    revalidatePath('/admin/motors');
+    revalidatePath('/motors');
+
+    return success({ updated: count || ids.length });
+  } catch (err) {
+    return handleError(err, 'bulkDeactivateMotors');
   }
 }

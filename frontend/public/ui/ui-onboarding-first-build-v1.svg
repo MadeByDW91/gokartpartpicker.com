@@ -1,0 +1,81 @@
+<svg width="500" height="400" viewBox="0 0 500 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main illustration area -->
+  
+  <!-- Go-kart illustration (simplified) -->
+  <g transform="translate(250, 120)">
+    <!-- Frame/chassis -->
+    <path d="M-80 -30 L-60 -50 L60 -50 L80 -30 L80 40 L60 60 L-60 60 L-80 40 Z" 
+          fill="#2d3226" stroke="#5d634d" stroke-width="2" stroke-linejoin="round"/>
+    
+    <!-- Wheels -->
+    <circle cx="-50" cy="30" r="20" fill="#1a1e15" stroke="#5d634d" stroke-width="2"/>
+    <circle cx="-50" cy="30" r="12" fill="#3d4233" opacity="0.6"/>
+    <circle cx="50" cy="30" r="20" fill="#1a1e15" stroke="#5d634d" stroke-width="2"/>
+    <circle cx="50" cy="30" r="12" fill="#3d4233" opacity="0.6"/>
+    
+    <!-- Engine block -->
+    <rect x="-25" y="-35" width="50" height="25" rx="3" fill="#3d4233" stroke="#c96a24" stroke-width="2"/>
+    <rect x="-20" y="-30" width="10" height="15" rx="1" fill="#c96a24" opacity="0.6"/>
+    <rect x="10" y="-30" width="10" height="15" rx="1" fill="#c96a24" opacity="0.6"/>
+    
+    <!-- Exhaust -->
+    <path d="M25 -20 Q35 -25, 45 -20" stroke="#c96a24" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Step indicators (numbered) -->
+  
+  <!-- Step 1: Select Engine -->
+  <g transform="translate(100, 60)">
+    <circle cx="0" cy="0" r="20" fill="#c96a24" opacity="0.2" stroke="#c96a24" stroke-width="2"/>
+    <text x="0" y="6" text-anchor="middle" fill="#c96a24" font-size="16" font-family="sans-serif" font-weight="700">1</text>
+    <text x="0" y="45" text-anchor="middle" fill="#f5f0e6" font-size="11" font-family="sans-serif" font-weight="600">Select</text>
+    <text x="0" y="58" text-anchor="middle" fill="#f5f0e6" font-size="11" font-family="sans-serif" font-weight="600">Engine</text>
+  </g>
+  
+  <!-- Arrow 1 -->
+  <path d="M140 60 L180 60" stroke="#5d634d" stroke-width="2" stroke-linecap="round" marker-end="url(#arrowhead)" opacity="0.6"/>
+  
+  <!-- Step 2: Add Parts -->
+  <g transform="translate(250, 60)">
+    <circle cx="0" cy="0" r="20" fill="#c96a24" opacity="0.2" stroke="#c96a24" stroke-width="2"/>
+    <text x="0" y="6" text-anchor="middle" fill="#c96a24" font-size="16" font-family="sans-serif" font-weight="700">2</text>
+    <text x="0" y="45" text-anchor="middle" fill="#f5f0e6" font-size="11" font-family="sans-serif" font-weight="600">Add</text>
+    <text x="0" y="58" text-anchor="middle" fill="#f5f0e6" font-size="11" font-family="sans-serif" font-weight="600">Parts</text>
+  </g>
+  
+  <!-- Arrow 2 -->
+  <path d="M290 60 L330 60" stroke="#5d634d" stroke-width="2" stroke-linecap="round" marker-end="url(#arrowhead)" opacity="0.6"/>
+  
+  <!-- Step 3: Save Build -->
+  <g transform="translate(400, 60)">
+    <circle cx="0" cy="0" r="20" fill="#c96a24" opacity="0.2" stroke="#c96a24" stroke-width="2"/>
+    <text x="0" y="6" text-anchor="middle" fill="#c96a24" font-size="16" font-family="sans-serif" font-weight="700">3</text>
+    <text x="0" y="45" text-anchor="middle" fill="#f5f0e6" font-size="11" font-family="sans-serif" font-weight="600">Save</text>
+    <text x="0" y="58" text-anchor="middle" fill="#f5f0e6" font-size="11" font-family="sans-serif" font-weight="600">Build</text>
+  </g>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#5d634d" opacity="0.6"/>
+    </marker>
+  </defs>
+  
+  <!-- Helper text -->
+  <text x="250" y="280" text-anchor="middle" fill="#f5f0e6" font-size="18" font-family="sans-serif" font-weight="600">Build Your Ultimate Go-Kart</text>
+  <text x="250" y="305" text-anchor="middle" fill="#5d634d" font-size="14" font-family="sans-serif">Start by selecting an engine, then add compatible parts</text>
+  
+  <!-- Decorative elements -->
+  <g opacity="0.2">
+    <!-- Parts floating around -->
+    <circle cx="80" cy="200" r="8" fill="#c96a24"/>
+    <rect x="415" y="195" width="16" height="16" rx="2" fill="#c96a24"/>
+    <circle cx="430" cy="250" r="6" fill="#c96a24"/>
+  </g>
+  
+  <!-- Sparkle effects (optional) -->
+  <g opacity="0.4">
+    <path d="M150 200 L152 205 L150 210 L148 205 Z" fill="#c96a24"/>
+    <path d="M350 200 L352 205 L350 210 L348 205 Z" fill="#c96a24"/>
+  </g>
+</svg>

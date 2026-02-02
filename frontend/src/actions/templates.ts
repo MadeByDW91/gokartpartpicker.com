@@ -5,7 +5,7 @@
  * Templates allow users to quickly start builds from presets
  */
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, unstable_cache } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { 
   type ActionResult, 
@@ -47,83 +47,56 @@ async function isAdmin(): Promise<boolean> {
   return data?.role === 'admin' || data?.role === 'super_admin';
 }
 
+/** Cache TTL for public templates (5 min) */
+const TEMPLATES_CACHE_REVALIDATE = 300;
+
 /**
  * Get public templates
- * Optionally filter by goal
+ * Optionally filter by goal and/or engine_id
+ * Cached for 5 min. Uses single query with engine join (no N+1).
  */
 export async function getTemplates(
-  goal?: TemplateGoal
+  goal?: TemplateGoal,
+  engineId?: string
 ): Promise<ActionResult<BuildTemplate[]>> {
   try {
-    const supabase = await createClient();
-    
-    // Query public, active templates. approval_status is applied in app when the column exists
-    // (avoids "column does not exist" when 20260116000013_user_templates_approval hasn't run)
-    let query = supabase
-      .from('build_templates')
-      .select('*')
-      .eq('is_public', true)
-      .eq('is_active', true);
+    const cacheKey = `${goal ?? 'all'}-${engineId ?? 'all'}`;
 
-    if (goal) {
-      query = query.eq('goal', goal);
-    }
+    return unstable_cache(
+      async () => {
+        const supabase = await createClient();
 
-    query = query.order('created_at', { ascending: false });
+        // Single query with engine join - avoids N+1
+        let query = supabase
+          .from('build_templates')
+          .select('*, engine:engines(*)')
+          .eq('is_public', true)
+          .eq('is_active', true);
 
-    const { data, error: dbError } = await query;
+        if (goal) query = query.eq('goal', goal);
+        if (engineId) query = query.eq('engine_id', engineId);
 
-    if (dbError) {
-      console.error('[getTemplates] Database error:', dbError);
-      console.error('[getTemplates] Error code:', dbError.code);
-      console.error('[getTemplates] Error message:', dbError.message);
-      
-      if (dbError.code === '42501' || dbError.message?.includes('permission') || dbError.message?.includes('policy')) {
-        return error('Permission denied. Please check RLS policies for build_templates table.');
-      }
-      return error(`Failed to fetch templates: ${dbError.message || 'Unknown error'}`);
-    }
+        query = query.order('created_at', { ascending: false });
 
-    // Only show approved when approval_status exists; else allow rows without it (pre-migration)
-    let list = (data || []).filter(
-      (t: { approval_status?: string }) => t.approval_status === 'approved' || t.approval_status === undefined
-    );
+        const { data, error: dbError } = await query;
 
-    if (list.length === 0) {
-      return success([]);
-    }
-
-    // Enrich with engine data if engine_id exists (don't fail if engines fetch errors)
-    const templatesWithEngines = await Promise.all(
-      list.map(async (template: any) => {
-        if (template.engine_id) {
-          try {
-            const { data: engine, error: engineError } = await supabase
-              .from('engines')
-              .select('*')
-              .eq('id', template.engine_id)
-              .eq('is_active', true)
-              .single();
-            
-            if (engineError) {
-              console.warn(`[getTemplates] Failed to fetch engine ${template.engine_id}:`, engineError.message);
-              return template;
-            }
-            
-            return {
-              ...template,
-              engine: engine || null,
-            };
-          } catch (err) {
-            console.warn(`[getTemplates] Error fetching engine for template ${template.id}:`, err);
-            return template;
+        if (dbError) {
+          console.error('[getTemplates] Database error:', dbError);
+          if (dbError.code === '42501' || dbError.message?.includes('permission') || dbError.message?.includes('policy')) {
+            return error('Permission denied. Please check RLS policies for build_templates table.');
           }
+          return error(`Failed to fetch templates: ${dbError.message || 'Unknown error'}`);
         }
-        return template;
-      })
-    );
 
-    return success(templatesWithEngines as BuildTemplate[]);
+        const list = (data || []).filter(
+          (t: { approval_status?: string }) => t.approval_status === 'approved' || t.approval_status === undefined
+        );
+
+        return success(list as BuildTemplate[]);
+      },
+      ['templates', cacheKey],
+      { revalidate: TEMPLATES_CACHE_REVALIDATE }
+    )() as Promise<ActionResult<BuildTemplate[]>>;
   } catch (err) {
     console.error('[getTemplates] Unexpected error:', err);
     return handleError(err, 'getTemplates');

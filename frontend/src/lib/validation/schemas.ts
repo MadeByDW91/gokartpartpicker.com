@@ -1,6 +1,6 @@
 /**
  * Zod validation schemas for GoKart Part Picker
- * Based on docs/agent-handoffs.md and types/database.ts
+ * Based on types/database.ts
  */
 
 import { z } from 'zod';
@@ -106,6 +106,90 @@ export const updateEngineSchema = createEngineSchema.partial().extend({
 });
 
 export type UpdateEngineInput = z.infer<typeof updateEngineSchema>;
+
+// ============================================================================
+// Electric Motor Schemas
+// ============================================================================
+
+/**
+ * Motor filters for list queries
+ * Per A13 EV Implementation Agent spec
+ */
+export const motorFiltersSchema = z.object({
+  brand: z.string().optional(),
+  voltage: z.coerce.number().int().positive().optional(),
+  min_hp: z.coerce.number().positive().optional(),
+  max_hp: z.coerce.number().positive().optional(),
+  min_power_kw: z.coerce.number().positive().optional(),
+  max_power_kw: z.coerce.number().positive().optional(),
+  sort: z.enum(['price', 'horsepower', 'power_kw', 'voltage', 'created_at']).default('power_kw'),
+  order: sortOrderSchema,
+  // Pagination
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+});
+
+export type MotorFiltersInput = z.infer<typeof motorFiltersSchema>;
+
+/**
+ * Get single motor by ID
+ */
+export const getMotorSchema = z.object({
+  id: uuidSchema,
+});
+
+export type GetMotorInput = z.infer<typeof getMotorSchema>;
+
+/**
+ * Get motor by slug
+ */
+export const getMotorBySlugSchema = z.object({
+  slug: z.string().min(1).max(200).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase with hyphens only'),
+});
+
+export type GetMotorBySlugInput = z.infer<typeof getMotorBySlugSchema>;
+
+/**
+ * Create motor schema (admin only)
+ */
+export const createMotorSchema = z.object({
+  slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase with hyphens only'),
+  name: z.string().min(1, 'Name is required').max(200),
+  brand: z.string().min(1, 'Brand is required').max(100),
+  model: z.string().max(100).optional().nullable(),
+  variant: z.string().max(100).optional().nullable(),
+  voltage: z.coerce.number().int().positive('Voltage must be positive'),
+  power_kw: z.coerce.number().positive('Power must be positive'),
+  peak_power_kw: z.coerce.number().positive().optional().nullable(),
+  horsepower: z.coerce.number().positive('Horsepower must be positive'),
+  torque_lbft: z.coerce.number().positive('Torque must be positive'),
+  rpm_max: z.coerce.number().int().positive().optional().nullable(),
+  rpm_rated: z.coerce.number().int().positive().optional().nullable(),
+  efficiency: z.coerce.number().min(0).max(1).optional().nullable(),
+  shaft_diameter: z.coerce.number().positive().optional().nullable(),
+  shaft_length: z.coerce.number().positive().optional().nullable(),
+  shaft_type: z.enum(SHAFT_TYPES).default('straight'),
+  mount_type: z.string().max(100).optional().nullable(),
+  controller_required: z.boolean().default(true),
+  cooling_type: z.string().max(50).optional().nullable(),
+  weight_lbs: z.coerce.number().positive().optional().nullable(),
+  price: z.coerce.number().nonnegative().optional().nullable(),
+  image_url: z.string().url().optional().nullable(),
+  affiliate_url: z.string().url().optional().nullable(),
+  notes: z.string().max(2000).optional().nullable(),
+  is_active: z.boolean().default(true),
+});
+
+export type CreateMotorInput = z.infer<typeof createMotorSchema>;
+
+/**
+ * Update motor schema (admin only)
+ */
+export const updateMotorSchema = createMotorSchema.partial().extend({
+  id: uuidSchema,
+});
+
+export type UpdateMotorInput = z.infer<typeof updateMotorSchema>;
 
 // ============================================================================
 // Part Schemas
@@ -225,7 +309,7 @@ export type BuildPartsInput = z.infer<typeof buildPartsSchema>;
 
 /**
  * Create build schema
- * Per docs/agent-handoffs.md: A1 → A4 Handoff
+ * A1 → A4 Handoff (DB schema → validation)
  */
 export const createBuildSchema = z.object({
   name: z
@@ -239,9 +323,21 @@ export const createBuildSchema = z.object({
     .optional()
     .transform(val => val?.trim() || null),
   engine_id: uuidSchema.optional().nullable(),
+  motor_id: uuidSchema.optional().nullable(),
+  power_source_type: z.enum(['gas', 'electric']).default('gas'),
   parts: buildPartsSchema,
   is_public: z.boolean().default(false),
-});
+}).refine(
+  (data) => {
+    // Must have either engine_id (gas) or motor_id (electric), but not both
+    if (data.power_source_type === 'gas') {
+      return !!data.engine_id && !data.motor_id;
+    } else {
+      return !!data.motor_id && !data.engine_id;
+    }
+  },
+  { message: 'Must have either engine_id (gas) or motor_id (electric), but not both' }
+);
 
 export type CreateBuildInput = z.infer<typeof createBuildSchema>;
 
@@ -263,6 +359,8 @@ export const updateBuildSchema = z.object({
     .nullable()
     .transform(val => val?.trim() || null),
   engine_id: uuidSchema.optional().nullable(),
+  motor_id: uuidSchema.optional().nullable(),
+  power_source_type: z.enum(['gas', 'electric']).optional(),
   parts: buildPartsSchema.optional(),
   is_public: z.boolean().optional(),
 });

@@ -8,9 +8,12 @@ import type { Engine, EngineFilters } from '@/types/database';
  * Fetch all engines with optional filters
  * Per db-query-contract.md: GET /api/engines
  */
+const ENGINES_STALE_MS = 5 * 60 * 1000; // 5 min — reduces refetches for public data
+
 export function useEngines(filters?: EngineFilters) {
   return useQuery({
     queryKey: ['engines', filters],
+    staleTime: ENGINES_STALE_MS,
     queryFn: async (): Promise<Engine[]> => {
       const supabase = createClient();
       
@@ -54,18 +57,13 @@ export function useEngines(filters?: EngineFilters) {
         const { data, error } = await query;
         
         if (error) {
-          // Better error logging - handle cases where error.message might not exist
-          const errorMessage = error.message || error.code || JSON.stringify(error) || 'Unknown error';
-          const errorDetails = {
-            message: error.message,
-            code: error.code,
-            details: error.details,
-            hint: error.hint,
-            fullError: error,
-          };
-          console.error('[useEngines] Error fetching engines:', errorDetails);
-          
-          // Provide more helpful error messages
+          // Abort = component unmounted or query cancelled; resolve with empty so nothing is logged
+          const msg = error.message ?? '';
+          if (msg.toLowerCase().includes('abort') || (error as { name?: string }).name === 'AbortError') {
+            return [];
+          }
+          const errorMessage = error.message ?? error.code ?? String(error);
+          console.error('[useEngines] Error fetching engines:', errorMessage || 'Unknown error', error);
           if (error.code === '42P01' || error.message?.includes('does not exist')) {
             throw new Error('Database tables not found. Please run migrations first.');
           }
@@ -76,7 +74,7 @@ export function useEngines(filters?: EngineFilters) {
             throw new Error('Network error. Please check your internet connection.');
           }
           
-          throw new Error(`Failed to load engines: ${errorMessage}`);
+          throw new Error(`Failed to load engines: ${errorMessage || 'Unknown error'}`);
         }
         
         if (!data) {
@@ -86,12 +84,9 @@ export function useEngines(filters?: EngineFilters) {
         
         return data;
       } catch (error) {
-        // Handle AbortError specifically
         if (error instanceof Error && error.name === 'AbortError') {
-          console.warn('[useEngines] Query was aborted (likely component unmounted)');
-          throw new Error('Request was cancelled');
+          return [];
         }
-        
         console.error('[useEngines] Unexpected error:', {
           error,
           name: error instanceof Error ? error.name : 'Unknown',
@@ -106,11 +101,9 @@ export function useEngines(filters?: EngineFilters) {
       }
     },
     retry: (failureCount, error) => {
-      // Don't retry on configuration errors
-      if (error instanceof Error && error.message.includes('not configured')) {
+      if (error instanceof Error && (error.message.includes('not configured') || error.name === 'AbortError')) {
         return false;
       }
-      // Retry up to 2 times for network errors
       return failureCount < 2;
     },
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
@@ -124,6 +117,7 @@ export function useEngines(filters?: EngineFilters) {
 export function useEngine(id: string) {
   return useQuery({
     queryKey: ['engine', id],
+    staleTime: ENGINES_STALE_MS,
     queryFn: async (): Promise<Engine> => {
       const supabase = createClient();
       
@@ -141,18 +135,12 @@ export function useEngine(id: string) {
           .single();
         
         if (error) {
-          // Better error logging
-          const errorMessage = error.message || error.code || JSON.stringify(error) || 'Unknown error';
-          const errorDetails = {
-            message: error.message,
-            code: error.code,
-            details: error.details,
-            hint: error.hint,
-            fullError: error,
-          };
-          console.error('[useEngine] Error fetching engine:', errorDetails);
-          
-          // Provide more helpful error messages
+          const msg = error.message ?? '';
+          if (msg.toLowerCase().includes('abort') || (error as { name?: string }).name === 'AbortError') {
+            throw new DOMException('The operation was aborted.', 'AbortError');
+          }
+          const errorMessage = error.message ?? error.code ?? String(error);
+          console.error('[useEngine] Error fetching engine:', errorMessage || 'Unknown error', error);
           if (error.code === 'PGRST116' || error.message?.includes('not found')) {
             throw new Error('Engine not found');
           }
@@ -173,10 +161,8 @@ export function useEngine(id: string) {
         }
         return data;
       } catch (error) {
-        // Handle AbortError specifically
         if (error instanceof Error && error.name === 'AbortError') {
-          console.warn('[useEngine] Query was aborted (likely component unmounted)');
-          throw new Error('Request was cancelled');
+          throw new DOMException('The operation was aborted.', 'AbortError');
         }
         
         console.error('[useEngine] Unexpected error:', {
@@ -194,7 +180,7 @@ export function useEngine(id: string) {
     },
     enabled: !!id,
     retry: (failureCount, error) => {
-      if (error instanceof Error && (error.message.includes('not configured') || error.message.includes('not found'))) {
+      if (error instanceof Error && (error.message.includes('not configured') || error.message.includes('not found') || error.name === 'AbortError')) {
         return false;
       }
       return failureCount < 2;
@@ -209,6 +195,7 @@ export function useEngine(id: string) {
 export function useEngineBrands() {
   return useQuery({
     queryKey: ['engine-brands'],
+    staleTime: ENGINES_STALE_MS,
     queryFn: async (): Promise<string[]> => {
       const supabase = createClient();
       
@@ -225,18 +212,12 @@ export function useEngineBrands() {
           .order('brand');
         
         if (error) {
-          // Better error logging
-          const errorMessage = error.message || error.code || JSON.stringify(error) || 'Unknown error';
-          const errorDetails = {
-            message: error.message,
-            code: error.code,
-            details: error.details,
-            hint: error.hint,
-            fullError: error,
-          };
-          console.error('[useEngineBrands] Error fetching brands:', errorDetails);
-          
-          // Provide more helpful error messages
+          const msg = error.message ?? '';
+          if (msg.toLowerCase().includes('abort') || (error as { name?: string }).name === 'AbortError') {
+            return [];
+          }
+          const errorMessage = error.message ?? error.code ?? String(error);
+          console.error('[useEngineBrands] Error fetching brands:', errorMessage || 'Unknown error', error);
           if (error.code === '42P01' || error.message?.includes('does not exist')) {
             throw new Error('Database tables not found. Please run migrations first.');
           }
@@ -247,7 +228,7 @@ export function useEngineBrands() {
             throw new Error('Network error. Please check your internet connection.');
           }
           
-          throw new Error(`Failed to load brands: ${errorMessage}`);
+          throw new Error(`Failed to load brands: ${errorMessage || 'Unknown error'}`);
         }
         
         // Get unique brands
@@ -255,12 +236,9 @@ export function useEngineBrands() {
         const brands: string[] = [...new Set(brandList)];
         return brands;
       } catch (error) {
-        // Handle AbortError specifically
         if (error instanceof Error && error.name === 'AbortError') {
-          console.warn('[useEngineBrands] Query was aborted (likely component unmounted)');
-          throw new Error('Request was cancelled');
+          return [];
         }
-        
         console.error('[useEngineBrands] Unexpected error:', {
           error,
           name: error instanceof Error ? error.name : 'Unknown',
@@ -275,7 +253,7 @@ export function useEngineBrands() {
       }
     },
     retry: (failureCount, error) => {
-      if (error instanceof Error && error.message.includes('not configured')) {
+      if (error instanceof Error && (error.message.includes('not configured') || error.name === 'AbortError')) {
         return false;
       }
       return failureCount < 2;

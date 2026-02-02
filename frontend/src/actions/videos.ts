@@ -22,13 +22,26 @@ import {
   handleError 
 } from '@/lib/api/types';
 import type { Video } from '@/types/database';
-import { getYouTubeThumbnailUrl } from '@/lib/video-utils';
+import { getYouTubeThumbnailUrl, isEmbeddableVideoUrl } from '@/lib/video-utils';
 
 function enrichThumbnails(list: Video[]): Video[] {
   return list.map((v) => ({
     ...v,
     thumbnail_url: v.thumbnail_url ?? getYouTubeThumbnailUrl(v.video_url) ?? null,
   }));
+}
+
+/**
+ * Filter out videos with placeholder URLs or missing embeddable URLs.
+ * Only show videos that can actually be played on the live site.
+ */
+function filterPlaceholderVideos(list: Video[]): Video[] {
+  return list.filter((v) => {
+    // Must have a video_url
+    if (!v.video_url) return false;
+    // Must be embeddable (not a placeholder)
+    return isEmbeddableVideoUrl(v.video_url);
+  });
 }
 
 /**
@@ -69,7 +82,11 @@ export async function getEngineVideos(
       return error('Failed to fetch engine videos');
     }
     
-    return success(enrichThumbnails(data ?? []));
+    const videos = data ?? [];
+    const enriched = enrichThumbnails(videos);
+    const filtered = filterPlaceholderVideos(enriched);
+    
+    return success(filtered);
   } catch (err) {
     return handleError(err, 'getEngineVideos');
   }
@@ -150,7 +167,11 @@ export async function getFeaturedEngineVideos(
       return error('Failed to fetch featured engine videos');
     }
     
-    return success(enrichThumbnails(data ?? []));
+    const videos = data ?? [];
+    const enriched = enrichThumbnails(videos);
+    const filtered = filterPlaceholderVideos(enriched);
+    
+    return success(filtered);
   } catch (err) {
     return handleError(err, 'getFeaturedEngineVideos');
   }
@@ -187,7 +208,11 @@ export async function getFeaturedPartVideos(
       return error('Failed to fetch featured part videos');
     }
     
-    return success(enrichThumbnails(data ?? []));
+    const videos = data ?? [];
+    const enriched = enrichThumbnails(videos);
+    const filtered = filterPlaceholderVideos(enriched);
+    
+    return success(filtered);
   } catch (err) {
     return handleError(err, 'getFeaturedPartVideos');
   }
@@ -209,7 +234,11 @@ export async function getAllVideos(filters?: {
     
     let query = supabase
       .from('videos')
-      .select('*')
+      .select(`
+        *,
+        engine:engines(*),
+        part:parts(*)
+      `)
       .eq('is_active', true);
     
     if (filters?.category) {
@@ -241,7 +270,11 @@ export async function getAllVideos(filters?: {
       return error('Failed to fetch videos');
     }
     
-    return success(enrichThumbnails(data ?? []));
+    const videos = data ?? [];
+    const enriched = enrichThumbnails(videos);
+    const filtered = filterPlaceholderVideos(enriched);
+    
+    return success(filtered);
   } catch (err) {
     return handleError(err, 'getAllVideos');
   }

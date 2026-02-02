@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useBuildStore } from '@/store/build-store';
 import { useEngines } from '@/hooks/use-engines';
+import { useMotors } from '@/hooks/use-motors';
 import { useParts } from '@/hooks/use-parts';
 import { useCompatibilityRules, checkCompatibility } from '@/hooks/use-compatibility';
 import { useCreateBuild, useBuild } from '@/hooks/use-builds';
@@ -16,12 +17,15 @@ import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { ShareButton } from '@/components/social/ShareButton';
 import { shareBuild } from '@/lib/social-sharing';
 import { getEngineBySlug } from '@/actions/engines';
+import { getMotorBySlug } from '@/actions/motors';
 import { EngineCard } from '@/components/EngineCard';
 import { PartCard } from '@/components/PartCard';
 import { CompatibilityWarningList } from '@/components/CompatibilityWarning';
-import { RecommendationsPanel } from '@/components/builder/RecommendationsPanel';
-import { TemplateSelector } from '@/components/builder/TemplateSelector';
-import { BuilderTable, PartSelectionModal } from '@/components/lazy';
+import { BuilderInsights } from '@/components/builder/BuilderInsights';
+import { PageHero } from '@/components/layout/PageHero';
+import { PowerSourceSelector } from '@/components/builder/PowerSourceSelector';
+import { BuilderTable } from '@/components/lazy';
+import { PartSelectionModal } from '@/components/builder/PartSelectionModal';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -44,11 +48,11 @@ import {
   X,
   Loader2,
 } from 'lucide-react';
-import { formatPrice, getCategoryLabel, CATEGORY_GROUPS, cn } from '@/lib/utils';
+import { formatPrice, getCategoryLabel, CATEGORY_GROUPS, GAS_ONLY_CATEGORIES, ELECTRIC_ONLY_CATEGORIES, cn } from '@/lib/utils';
 import { trackEvent, trackBuildCreated, trackConversion } from '@/lib/analytics';
-import { PART_CATEGORIES, type PartCategory, type Engine, type Part } from '@/types/database';
+import { PART_CATEGORIES, type PartCategory, type Engine, type ElectricMotor, type Part } from '@/types/database';
 
-type BuilderStep = 'engine' | PartCategory;
+type BuilderStep = 'engine' | 'motor' | PartCategory;
 
 function BuilderPageContent() {
   const searchParams = useSearchParams();
@@ -60,7 +64,7 @@ function BuilderPageContent() {
   const [shareLinkCopied, setShareLinkCopied] = useState(false);
   const [savedBuildId, setSavedBuildId] = useState<string | null>(null);
   const [selectionModalOpen, setSelectionModalOpen] = useState(false);
-  const [selectionCategory, setSelectionCategory] = useState<PartCategory | 'engine'>('engine');
+  const [selectionCategory, setSelectionCategory] = useState<PartCategory | 'engine' | 'motor'>('engine');
   const [searchQuery, setSearchQuery] = useState('');
   
   // URL parameters
@@ -69,10 +73,16 @@ function BuilderPageContent() {
   const templateId = searchParams.get('template');
   
   const {
+    powerSourceType,
     selectedEngine,
+    selectedMotor,
     selectedParts,
+    setPowerSourceType,
     setEngine,
+    setMotor,
+    addPart,
     setPart,
+    removePart,
     clearBuild,
     getTotalPrice,
     warnings,
@@ -82,6 +92,7 @@ function BuilderPageContent() {
   } = useBuildStore();
   
   const { data: engines, isLoading: enginesLoading, error: enginesError } = useEngines();
+  const { data: motors, isLoading: motorsLoading, error: motorsError } = useMotors();
   const { data: allParts, isLoading: partsLoading, error: partsError } = useParts();
   const { data: compatRules } = useCompatibilityRules();
   const { data: loadedBuild, isLoading: buildLoading } = useBuild(buildId || '');
@@ -97,19 +108,20 @@ function BuilderPageContent() {
       getEngineBySlug(engineSlug)
         .then((result) => {
           if (result.success && result.data) {
-          setEngine(result.data);
-          const firstPartCategory = PART_CATEGORIES.find((cat) => {
+            setPowerSourceType('gas');
+            setEngine(result.data);
+            const firstPartCategory = PART_CATEGORIES.find((cat) => {
               const compatibleParts = allParts?.filter((p) => p && p.category === cat) || [];
-            return compatibleParts.length > 0;
-          });
-          if (firstPartCategory) {
-            setActiveStep(firstPartCategory);
+              return compatibleParts.length > 0;
+            });
+            if (firstPartCategory) {
+              setActiveStep(firstPartCategory);
+            }
           }
-        }
         })
         .catch((error) => {
           console.error('Error loading engine from URL:', error);
-      });
+        });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [engineSlug, selectedEngine, allParts]);
@@ -118,28 +130,29 @@ function BuilderPageContent() {
   useEffect(() => {
     if (templateId && loadedTemplate && allParts && !selectedEngine && selectedParts.size === 0) {
       try {
-      if (loadedTemplate.engine) {
-        setEngine(loadedTemplate.engine);
-      }
+        if (loadedTemplate.engine) {
+          setPowerSourceType('gas');
+          setEngine(loadedTemplate.engine);
+        }
         const parts = loadedTemplate.parts as Record<string, string> | null;
-      if (parts) {
-        Object.entries(parts).forEach(([category, partId]) => {
-          const part = allParts.find((p) => p.id === partId);
-          if (part) {
-            setPart(category as PartCategory, part);
-          }
+        if (parts) {
+          Object.entries(parts).forEach(([category, partId]) => {
+            const part = allParts.find((p) => p.id === partId);
+            if (part) {
+              setPart(category as PartCategory, part);
+            }
+          });
+        }
+        const firstPartCategory = PART_CATEGORIES.find((cat) => {
+          const compatibleParts = allParts.filter((p) => p.category === cat) || [];
+          return compatibleParts.length > 0;
         });
-      }
-      const firstPartCategory = PART_CATEGORIES.find((cat) => {
-        const compatibleParts = allParts.filter((p) => p.category === cat) || [];
-        return compatibleParts.length > 0;
-      });
-      if (firstPartCategory) {
-        setActiveStep(firstPartCategory);
-      }
+        if (firstPartCategory) {
+          setActiveStep(firstPartCategory);
+        }
       } catch (error) {
         console.error('Error loading template:', error);
-    }
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [templateId, loadedTemplate, allParts, selectedEngine, selectedParts]);
@@ -148,19 +161,23 @@ function BuilderPageContent() {
   useEffect(() => {
     if (buildId && loadedBuild && !buildLoading && !templateId) {
       try {
-      if (loadedBuild.engine) {
-        setEngine(loadedBuild.engine);
-      }
+        if (loadedBuild.engine) {
+          setPowerSourceType('gas');
+          setEngine(loadedBuild.engine);
+        } else if (loadedBuild.motor) {
+          setPowerSourceType('electric');
+          setMotor(loadedBuild.motor);
+        }
         const parts = loadedBuild.parts as Record<string, string> | null;
-      if (parts && allParts) {
-        Object.entries(parts).forEach(([category, partId]) => {
-          const part = allParts.find((p) => p.id === partId);
-          if (part) {
-            setPart(category as PartCategory, part);
-          }
-        });
-      }
-      setSavedBuildId(buildId);
+        if (parts && allParts) {
+          Object.entries(parts).forEach(([category, partId]) => {
+            const part = allParts.find((p) => p.id === partId);
+            if (part) {
+              setPart(category as PartCategory, part);
+            }
+          });
+        }
+        setSavedBuildId(buildId);
       } catch (error) {
         console.error('Error loading build:', error);
     }
@@ -188,11 +205,19 @@ function BuilderPageContent() {
   // Get parts for current category
   const partsForCategory = useMemo(() => {
     try {
-    if (activeStep === 'engine') return [];
+    if (activeStep === 'engine' || activeStep === 'motor') return [];
       const category = activeStep as PartCategory;
       if (!allParts || !Array.isArray(allParts)) return [];
     
-      let parts = allParts.filter((p) => p && p.category === category);
+      // Filter by category and power source compatibility
+      let parts = allParts.filter((p) => {
+        if (!p || p.category !== category) return false;
+        // Filter out gas-only parts when power source is electric
+        if (powerSourceType === 'electric' && GAS_ONLY_CATEGORIES.includes(category)) return false;
+        // Filter out electric-only parts when power source is gas
+        if (powerSourceType === 'gas' && ELECTRIC_ONLY_CATEGORIES.includes(category)) return false;
+        return true;
+      });
     
     if (selectedEngine && parts.length > 0) {
       parts = [...parts].sort((a, b) => {
@@ -219,7 +244,7 @@ function BuilderPageContent() {
       console.error('Error getting parts for category:', error);
       return [];
     }
-  }, [allParts, activeStep, selectedEngine]);
+  }, [allParts, activeStep, selectedEngine, powerSourceType]);
   
   // Calculate item count for summary
   const itemCount = useMemo(() => {
@@ -231,8 +256,17 @@ function BuilderPageContent() {
     }
   }, [selectedEngine, selectedParts]);
   
-  // Get all steps for navigation
-  const allSteps: BuilderStep[] = useMemo(() => ['engine', ...PART_CATEGORIES], []);
+  // Get all steps for navigation - depends on power source type
+  const allSteps: BuilderStep[] = useMemo(() => {
+    const baseCategories = powerSourceType === 'electric'
+      ? PART_CATEGORIES.filter(cat => !GAS_ONLY_CATEGORIES.includes(cat))
+      : PART_CATEGORIES.filter(cat => !ELECTRIC_ONLY_CATEGORIES.includes(cat));
+    
+    if (powerSourceType === 'electric') {
+      return ['motor', ...baseCategories];
+    }
+    return ['engine', ...baseCategories];
+  }, [powerSourceType]);
   const currentStepIndex = useMemo(() => {
     try {
       return allSteps.indexOf(activeStep);
@@ -272,13 +306,26 @@ function BuilderPageContent() {
     }
   };
   
-  const handleSelectPart = (part: Part) => {
-    const current = selectedParts.get(part.category);
-    if (current?.id === part.id) {
-      setPart(part.category, null);
+  const handleSelectMotor = (motor: ElectricMotor) => {
+    if (selectedMotor?.id === motor.id) {
+      setMotor(null);
     } else {
-      setPart(part.category, part);
+      setMotor(motor);
+      // Auto-advance to first part category
+      const firstPartCategory = PART_CATEGORIES.find((cat) => {
+        const compatibleParts = allParts?.filter((p) => p.category === cat) || [];
+        return compatibleParts.length > 0;
+      });
+      if (firstPartCategory) {
+        setActiveStep(firstPartCategory);
+      }
     }
+  };
+  
+  const handleSelectPart = (part: Part) => {
+    // Add part to category (allows multiple parts per category)
+    addPart(part.category, part);
+    // Don't close modal automatically - allow adding multiple parts
   };
   
   const handleSaveBuild = async () => {
@@ -286,7 +333,9 @@ function BuilderPageContent() {
     try {
       const build = await createBuild.mutateAsync({
         name: buildName,
-        engine_id: selectedEngine?.id,
+        engine_id: powerSourceType === 'gas' ? selectedEngine?.id : undefined,
+        motor_id: powerSourceType === 'electric' ? selectedMotor?.id : undefined,
+        power_source_type: powerSourceType,
         parts: getPartIds(),
         total_price: getTotalPrice(),
         is_public: false,
@@ -326,105 +375,92 @@ function BuilderPageContent() {
   // Safely get total price
   const totalPrice = useMemo(() => {
     try {
-      let total = selectedEngine?.price || 0;
-      selectedParts.forEach((part) => {
-        total += part.price || 0;
-      });
-      return total;
+      return getTotalPrice();
     } catch (error) {
       console.error('Error calculating total price:', error);
       return 0;
     }
-  }, [selectedEngine, selectedParts]);
+  }, [getTotalPrice]);
   
+  const builderActions = (
+    <>
+      {(selectedEngine || selectedMotor || selectedParts.size > 0) && (
+        <>
+          <Button variant="ghost" size="sm" onClick={clearBuild} icon={<Trash2 className="w-4 h-4" />} className="min-h-[44px] min-w-[44px] touch-manipulation lg:min-w-0" aria-label="Clear build">
+            <span className="hidden lg:inline">Clear</span>
+          </Button>
+          <ShareButton
+            options={shareBuild(savedBuildId || '', `My Go-Kart Build - $${totalPrice.toFixed(2)}`)}
+            variant="icon"
+          />
+        </>
+      )}
+      {hasUnsavedChanges && (
+        <div className="flex items-center gap-2 text-xs text-cream-400">
+          {isSaving ? (
+            <>
+              <Loader2 className="w-3 h-3 animate-spin" />
+              <span>Saving...</span>
+            </>
+          ) : lastSaved ? (
+            <>
+              <Check className="w-3 h-3 text-green-400" />
+              <span>Saved {new Date(lastSaved).toLocaleTimeString()}</span>
+            </>
+          ) : null}
+        </div>
+      )}
+      {isAuthenticated ? (
+        <Button variant="primary" size="sm" onClick={() => setShowSaveModal(true)} disabled={!selectedEngine && !selectedMotor && selectedParts.size === 0} icon={<Save className="w-4 h-4" />} className="min-h-[44px] touch-manipulation">
+          <span className="hidden sm:inline">Save</span>
+        </Button>
+      ) : (
+        <Link href="/auth/login?redirect=/builder">
+          <Button variant="secondary" size="sm" className="min-h-[44px] touch-manipulation">Login</Button>
+        </Link>
+      )}
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-olive-900">
-      {/* Header with Progress */}
-      <div className="bg-olive-800 border-b border-olive-700 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-              <Wrench className="w-5 h-5 sm:w-6 sm:h-6 text-orange-400 flex-shrink-0" />
-              <h1 className="text-display text-xl sm:text-2xl lg:text-3xl text-cream-100 truncate">
-                Build Your Kart
-              </h1>
-            </div>
-            
-            <div className="hidden md:flex items-center gap-2 flex-shrink-0">
-              <TemplateSelector />
-               {(selectedEngine || selectedParts.size > 0) && (
-                 <>
-                   <Button variant="ghost" size="sm" onClick={clearBuild} icon={<Trash2 className="w-4 h-4" />}>
-                    Clear
-                  </Button>
-                   <ShareButton
-                     options={shareBuild(savedBuildId || '', `My Go-Kart Build - $${totalPrice.toFixed(2)}`)}
-                     variant="icon"
-                   />
-                 </>
-               )}
-               {/* Auto-save indicator */}
-               {hasUnsavedChanges && (
-                 <div className="flex items-center gap-2 text-xs text-cream-400">
-                   {isSaving ? (
-                     <>
-                       <Loader2 className="w-3 h-3 animate-spin" />
-                       <span>Saving...</span>
-                     </>
-                   ) : lastSaved ? (
-                     <>
-                       <Check className="w-3 h-3 text-green-400" />
-                       <span>Saved {new Date(lastSaved).toLocaleTimeString()}</span>
-                     </>
-                   ) : null}
-                 </div>
-               )}
-              {isAuthenticated ? (
-                <Button variant="primary" size="sm" onClick={() => setShowSaveModal(true)} disabled={!selectedEngine && selectedParts.size === 0} icon={<Save className="w-4 h-4" />}>
-                  Save
-                </Button>
-              ) : (
-                <Link href="/auth/login?redirect=/builder">
-                  <Button variant="secondary" size="sm">Login</Button>
-                </Link>
-              )}
-            </div>
-            
-            {/* Mobile Actions */}
-            <div className="md:hidden flex items-center gap-2 flex-shrink-0">
-              <TemplateSelector />
-              {(selectedEngine || selectedParts.size > 0) && (
-                <>
-                  <Button variant="ghost" size="sm" onClick={clearBuild} icon={<Trash2 className="w-4 h-4" />} className="min-h-[44px] min-w-[44px] touch-manipulation" aria-label="Clear build">
-                  </Button>
-                  <ShareButton
-                    options={shareBuild(savedBuildId || '', `My Go-Kart Build - $${totalPrice.toFixed(2)}`)}
-                    variant="icon"
-                  />
-                </>
-              )}
-              {isAuthenticated ? (
-                <Button variant="primary" size="sm" onClick={() => setShowSaveModal(true)} disabled={!selectedEngine && selectedParts.size === 0} icon={<Save className="w-4 h-4" />} className="min-h-[44px] touch-manipulation">
-                  <span className="hidden sm:inline">Save</span>
-                </Button>
-              ) : (
-                <Link href="/auth/login?redirect=/builder">
-                  <Button variant="secondary" size="sm" className="min-h-[44px] touch-manipulation">Login</Button>
-                </Link>
-              )}
-            </div>
-          </div>
-          
+      <PageHero
+        eyebrow="Builder"
+        icon={<Wrench className="h-6 w-6 sm:h-7 sm:w-7" aria-hidden />}
+        title="Build Your Kart"
+        subtitle="Choose your engine and parts. We'll check compatibility and cost."
+        actions={builderActions}
+        sticky
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        {/* Power Source Selector */}
+        <div className="mb-8">
+          <PowerSourceSelector
+            onSwitch={(type) => {
+              // Reset active step when switching
+              setActiveStep(type === 'gas' ? 'engine' : 'motor');
+            }}
+          />
         </div>
-      </div>
-      
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
+
+        {/* Builder Insights - Now includes Live Tools as first tab */}
+        <div className="mb-8">
+          <BuilderInsights
+            variant="builder-page"
+          />
+        </div>
+        
         {/* Builder Table */}
         <BuilderTable
-          selectedEngine={selectedEngine}
+          selectedEngine={powerSourceType === 'gas' ? selectedEngine : null}
+          selectedMotor={powerSourceType === 'electric' ? selectedMotor : null}
           selectedParts={selectedParts}
           onSelectEngine={() => {
             setSelectionCategory('engine');
+            setSelectionModalOpen(true);
+          }}
+          onSelectMotor={() => {
+            setSelectionCategory('motor');
             setSelectionModalOpen(true);
           }}
           onSelectPart={(category) => {
@@ -432,15 +468,19 @@ function BuilderPageContent() {
             setSelectionModalOpen(true);
           }}
           onRemoveEngine={() => setEngine(null)}
-          onRemovePart={(category) => setPart(category, null)}
+          onRemoveMotor={() => setMotor(null)}
+          onRemovePart={(category, partId) => {
+            removePart(category, partId);
+          }}
           totalPrice={totalPrice}
+          powerSourceType={powerSourceType}
         />
 
         {/* Compatibility Warnings */}
         {warnings.length > 0 && (
           <div className="mt-6">
             <CompatibilityWarningList warnings={warnings} />
-                    </div>
+          </div>
         )}
 
         {/* Part Selection Modal */}
@@ -454,20 +494,51 @@ function BuilderPageContent() {
           items={
             selectionCategory === 'engine'
               ? (engines || [])
-              : (allParts?.filter((p) => p.category === selectionCategory) || [])
+              : selectionCategory === 'motor'
+              ? (motors || [])
+              : (allParts?.filter((p) => {
+                  if (!p || p.category !== selectionCategory) return false;
+                  // Filter by power source compatibility
+                  if (powerSourceType === 'electric' && GAS_ONLY_CATEGORIES.includes(p.category)) return false;
+                  if (powerSourceType === 'gas' && ELECTRIC_ONLY_CATEGORIES.includes(p.category)) return false;
+                  return true;
+                }) || [])
           }
-          isLoading={selectionCategory === 'engine' ? enginesLoading : partsLoading}
-          error={selectionCategory === 'engine' ? enginesError : partsError}
+          isLoading={
+            selectionCategory === 'engine'
+              ? enginesLoading
+              : selectionCategory === 'motor'
+              ? motorsLoading
+              : partsLoading
+          }
+          error={
+            selectionCategory === 'engine'
+              ? enginesError
+              : selectionCategory === 'motor'
+              ? motorsError
+              : partsError
+          }
           selectedItem={
             selectionCategory === 'engine'
               ? selectedEngine
-              : selectedParts.get(selectionCategory) || null
+              : selectionCategory === 'motor'
+              ? selectedMotor
+              : (selectedParts.get(selectionCategory as PartCategory)?.[0] || null) // Get first part for display
           }
+          selectedParts={selectionCategory !== 'engine' && selectionCategory !== 'motor' ? selectedParts : undefined}
           onSelect={(item) => {
             if (selectionCategory === 'engine') {
               setEngine(item as Engine);
+              setSelectionModalOpen(false);
+              setSearchQuery('');
+            } else if (selectionCategory === 'motor') {
+              setMotor(item as ElectricMotor);
+              setSelectionModalOpen(false);
+              setSearchQuery('');
             } else {
-              setPart(selectionCategory, item as Part);
+              // For parts, add to category (allows multiple) and keep modal open
+              addPart(selectionCategory as PartCategory, item as Part);
+              // Don't close modal - allow adding multiple parts
             }
           }}
           searchQuery={searchQuery}
@@ -498,7 +569,8 @@ function BuilderPageContent() {
                         </button>
                         
                 {PART_CATEGORIES.map((category) => {
-                  const selectedPart = selectedParts.get(category);
+                  const selectedPartsArray = selectedParts.get(category);
+                  const hasParts = selectedPartsArray && selectedPartsArray.length > 0;
                   const isActive = activeStep === category;
                               
                               return (
@@ -509,12 +581,12 @@ function BuilderPageContent() {
                         'flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-colors flex-shrink-0',
                         isActive
                           ? 'bg-orange-500 text-cream-100'
-                          : selectedPart
+                          : hasParts
                             ? 'bg-olive-700 text-cream-200 hover:bg-olive-600'
                             : 'bg-olive-800 text-cream-400 hover:bg-olive-700'
                       )}
                     >
-                      {selectedPart ? <Check className="w-4 h-4" /> : <Package className="w-4 h-4" />}
+                      {hasParts ? <Check className="w-4 h-4" /> : <Package className="w-4 h-4" />}
                       <span className="font-medium">{getCategoryLabel(category)}</span>
                                 </button>
                               );
@@ -680,7 +752,10 @@ function BuilderPageContent() {
                         key={part.id}
                         part={part}
                         onAddToBuild={handleSelectPart}
-                        isSelected={selectedParts.get(part.category)?.id === part.id}
+                        isSelected={(() => {
+                          const parts = selectedParts.get(part.category);
+                          return parts?.some(p => p.id === part.id) || false;
+                        })()}
                       />
                     ))}
                   </div>
@@ -699,9 +774,10 @@ function BuilderPageContent() {
                       {/* Recommendations */}
                       {selectedEngine && (
                         <div className="pt-6 border-t border-olive-600">
-                    <RecommendationsPanel
-                            category={activeStep as PartCategory}
-                            onAddPart={handleSelectPart}
+                    <BuilderInsights
+                      category={activeStep as PartCategory}
+                      onAddPart={handleSelectPart}
+                      variant="builder-page"
                     />
                   </div>
                       )}
@@ -774,35 +850,39 @@ function BuilderPageContent() {
                 {selectedParts.size > 0 && (
                   <div className="space-y-2">
                     <h3 className="text-sm font-semibold text-cream-300 mb-2">Parts</h3>
-                    {Array.from(selectedParts.entries()).map(([category, part]) => (
-                      <div key={category} className="p-3 bg-olive-600 rounded-lg">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-start gap-2 flex-1 min-w-0">
-                            <Package className="w-4 h-4 text-orange-400 flex-shrink-0 mt-0.5" />
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-cream-100 line-clamp-1">
-                                {part.name}
-                              </p>
-                              <p className="text-xs text-cream-400">
-                                {getCategoryLabel(category)}
-                              </p>
+                    {Array.from(selectedParts.entries()).map(([category, partsArray]) => 
+                      partsArray.map((part, index) => (
+                        <div key={`${category}-${part.id}-${index}`} className="p-3 bg-olive-600 rounded-lg">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start gap-2 flex-1 min-w-0">
+                              <Package className="w-4 h-4 text-orange-400 flex-shrink-0 mt-0.5" />
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium text-cream-100 line-clamp-1">
+                                  {part.name}
+                                </p>
+                                <p className="text-xs text-cream-400">
+                                  {getCategoryLabel(category)}
+                                </p>
+                              </div>
                             </div>
+                            <button
+                              onClick={() => {
+                                removePart(category, part.id);
+                              }}
+                              className="text-cream-400 hover:text-red-400 transition-colors flex-shrink-0"
+                              title="Remove part"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
                           </div>
-                          <button
-                            onClick={() => setPart(category, null)}
-                            className="text-cream-400 hover:text-red-400 transition-colors flex-shrink-0"
-                            title="Remove part"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
+                          <div className="mt-2 pt-2 border-t border-olive-500">
+                            <span className="text-sm font-bold text-orange-400">
+                              {part.price ? formatPrice(part.price) : '—'}
+                            </span>
+                          </div>
                         </div>
-                        <div className="mt-2 pt-2 border-t border-olive-500">
-                          <span className="text-sm font-bold text-orange-400">
-                            {part.price ? formatPrice(part.price) : '—'}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 )}
                 
@@ -824,7 +904,7 @@ function BuilderPageContent() {
                   
                   {/* Mobile Actions */}
                   <div className="space-y-2 lg:hidden">
-                    {(selectedEngine || selectedParts.size > 0) && (
+                    {(selectedEngine || selectedMotor || selectedParts.size > 0) && (
                       <>
                         <Button variant="ghost" size="sm" onClick={clearBuild} icon={<Trash2 className="w-4 h-4" />} className="w-full">
                         Clear Build
