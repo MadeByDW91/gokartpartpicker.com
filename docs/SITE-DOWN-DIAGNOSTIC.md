@@ -11,7 +11,7 @@ Your monitor reports **Down** for `https://www.gokartpartpicker.com/api/health`.
   - If **Failed** or **Building**, open that deployment and check the **Build Logs** and **Runtime Logs**.
 - **Root Directory**: This repo’s Next.js app lives in **`frontend/`**. In Vercel → Project Settings → General:
   - **Root Directory** must be **`frontend`** (not blank).
-  - If it’s blank, Vercel builds from repo root where there is no `package.json` → build fails → site down.
+  - If it’s blank, Vercel builds from repo root where there is no `package.json` or `package-lock.json` → `npm ci` fails with “can only install with an existing package-lock.json” → build fails → site down.
 
 ---
 

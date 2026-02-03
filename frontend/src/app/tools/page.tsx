@@ -759,8 +759,10 @@ export default function ToolsPage() {
                                 <div className="text-xs text-cream-500 truncate">{resource.description}</div>
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
-                                {resource.category && (
-                                  <span className="text-xs text-cream-500 hidden sm:inline">{resource.category}</span>
+                                {(resource.type === 'guide' ? resource.guide?.category : resource.category) && (
+                                  <span className="text-xs text-cream-500 hidden sm:inline">
+                                    {resource.type === 'guide' ? resource.guide?.category : resource.category}
+                                  </span>
                                 )}
                                 <ArrowRight className="w-4 h-4 text-cream-500 group-hover:text-orange-400 group-hover:translate-x-0.5 transition-transform" />
                               </div>
@@ -1071,8 +1073,8 @@ function ResourceCard({ resource, featured = false }: ResourceCardProps) {
               )}>
                 {resource.title}
               </h3>
-              {/* Category Badge */}
-              {resource.category && (
+              {/* Category Badge (tools/calculators/templates; guides use guide-specific badges below) */}
+              {resource.type !== 'guide' && 'category' in resource && resource.category && (
                 <Badge variant="default" className="text-xs px-2 py-0.5 bg-olive-700/50 text-cream-300 border-olive-600/50 mb-2">
                   {resource.category}
                 </Badge>
