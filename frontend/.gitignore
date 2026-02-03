@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Lighthouse CI (reports and LHRs; CI uploads to temp storage)
+.lighthouseci/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

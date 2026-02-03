@@ -1,14 +1,12 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { getPartBySlug } from '@/actions/parts';
 import { getEngines } from '@/actions/engines';
 import { getPartVideos } from '@/actions/videos';
-import { formatPrice, getCategoryLabel } from '@/lib/utils';
-import type { Engine } from '@/types/database';
+import { getCategoryLabel, getPartBrandDisplay } from '@/lib/utils';
+import type { Engine, Part } from '@/types/database';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { EngineCard } from '@/components/EngineCard';
 import { SelectPartButton } from './SelectPartButton';
@@ -16,13 +14,15 @@ import { ProductStructuredData, BreadcrumbStructuredData } from '@/components/St
 import { VideoSection, BuilderInsights } from '@/components/lazy';
 import { AffiliateDisclosure } from '@/components/affiliate/AffiliateDisclosure';
 import { PriceComparison } from '@/components/parts/PriceComparison';
+import { PartDetailHero } from '@/components/parts/PartDetailHero';
+import { getPartSupplierLinksPublic } from '@/actions/admin/part-suppliers';
 import { 
   ArrowLeft, 
   Package, 
-  ExternalLink,
   Wrench,
   Info,
   Cog,
+  Zap,
 } from 'lucide-react';
 
 interface PartPageProps {
@@ -44,14 +44,15 @@ export async function generateMetadata({ params }: PartPageProps): Promise<Metad
   }
   
   const part = result.data;
-  const description = `${part.name} by ${part.brand} - ${getCategoryLabel(part.category)} for go-karts. View specs, price, and compatibility.`;
+  const brandDisplay = getPartBrandDisplay(part.brand);
+  const description = `${part.name} by ${brandDisplay} - ${getCategoryLabel(part.category)} for go-karts. View specs, price, and compatibility.`;
   
   return {
-    title: `${part.name} | ${part.brand} ${getCategoryLabel(part.category)}`,
+    title: `${part.name} | ${brandDisplay} ${getCategoryLabel(part.category)}`,
     description,
     keywords: [
       part.name.toLowerCase(),
-      part.brand?.toLowerCase(),
+      brandDisplay.toLowerCase(),
       getCategoryLabel(part.category).toLowerCase(),
       'go-kart parts',
       'kart parts',
@@ -92,7 +93,19 @@ export default async function PartPage({ params }: PartPageProps) {
   }
   
   const part = result.data;
-  
+
+  // Serializable copy for client components (avoids RSC serialization errors with DB row shape)
+  const clientPart: Part = {
+    ...part,
+    brand: part.brand ?? null,
+    specifications:
+      part.specifications &&
+      typeof part.specifications === 'object' &&
+      !Array.isArray(part.specifications)
+        ? part.specifications
+        : {},
+  };
+
   // Find compatible engines (matching shaft diameter for clutches/torque converters)
   // Optimize: Only fetch if needed and limit upfront
   let compatibleEngines: Engine[] = [];
@@ -113,9 +126,15 @@ export default async function PartPage({ params }: PartPageProps) {
     }
   }
   
-  // Format specifications for display
-  const specs = part.specifications 
-    ? Object.entries(part.specifications)
+  // Format specifications for display (guard: only plain objects)
+  const specsObj =
+    part.specifications &&
+    typeof part.specifications === 'object' &&
+    !Array.isArray(part.specifications)
+      ? part.specifications
+      : null;
+  const specs = specsObj
+    ? Object.entries(specsObj)
         .filter(([_, value]) => value !== null && value !== undefined && value !== '')
         .map(([key, value]) => ({
           label: key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
@@ -123,6 +142,11 @@ export default async function PartPage({ params }: PartPageProps) {
         }))
     : [];
   
+  // Supplier / buy links for "Where to buy" (public, cached)
+  const supplierResult = await getPartSupplierLinksPublic(part.id);
+  const supplierLinks = supplierResult.success && supplierResult.data ? supplierResult.data : [];
+  const hasAnyBuyLink = !!(part.affiliate_url || supplierLinks.length > 0);
+
   const partUrl = `https://gokartpartpicker.com/parts/${part.slug}`;
   const breadcrumbs = [
     { name: 'Home', url: 'https://gokartpartpicker.com' },
@@ -136,8 +160,8 @@ export default async function PartPage({ params }: PartPageProps) {
       {/* Structured Data */}
       <ProductStructuredData
         name={part.name}
-        description={`${part.name} by ${part.brand} - ${getCategoryLabel(part.category)} for go-karts`}
-        brand={part.brand}
+        description={`${part.name} by ${getPartBrandDisplay(part.brand)} - ${getCategoryLabel(part.category)} for go-karts`}
+        brand={getPartBrandDisplay(part.brand)}
         price={part.price}
         image={part.image_url || undefined}
         category={getCategoryLabel(part.category)}
@@ -171,139 +195,63 @@ export default async function PartPage({ params }: PartPageProps) {
       </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Image Section */}
-          <div className="relative">
-            <div className="sticky top-24">
-              <div className="aspect-square bg-olive-800 rounded-xl overflow-hidden border border-olive-600">
-                {part.image_url ? (
-                  <Image
-                    src={part.image_url}
-                    alt={`${part.brand} ${part.name}`}
-                    fill
-                    className="object-cover"
-                    priority
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
-                ) : (
-                  <Image
-                    src="/placeholders/placeholder-part-v1.svg"
-                    alt="Part placeholder"
-                    fill
-                    className="object-contain p-8 opacity-60"
-                  />
-                )}
-              </div>
+        <PartDetailHero part={clientPart} supplierLinks={supplierLinks}>
+          {hasAnyBuyLink && (
+            <div className="mt-2">
+              <AffiliateDisclosure variant="inline" />
             </div>
-          </div>
-          
-          {/* Details Section */}
-          <div className="space-y-6">
-            {/* Category Badge */}
-            <Badge variant="default" className="text-sm">
-              {getCategoryLabel(part.category)}
-            </Badge>
-            
-            {/* Brand */}
-            {part.brand && (
-              <p className="text-sm text-cream-400 uppercase tracking-wide">
-                {part.brand}
-              </p>
-            )}
-            
-            {/* Title */}
-            <h1 className="text-display text-4xl sm:text-5xl text-cream-100">
-              {part.name}
-            </h1>
-            
-            {/* Price */}
-            {part.price && (
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-orange-400">
-                  {formatPrice(part.price)}
-                </span>
-                <span className="text-cream-400 text-sm">estimated</span>
-              </div>
-            )}
-            
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-3 pt-2">
-              <SelectPartButton part={part} />
-              
-              {part.affiliate_url && (
-                <a
-                  href={part.affiliate_url}
-                  target="_blank"
-                  rel="noopener noreferrer sponsored"
-                  className="flex-1 sm:flex-none"
-                  aria-label="Buy Now (affiliate link)"
-                >
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    icon={<ExternalLink className="w-5 h-5" />}
-                    className="w-full"
-                  >
-                    Buy Now
-                  </Button>
-                </a>
-              )}
-              
-              <Link href="/builder" className="flex-1 sm:flex-none">
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  icon={<Wrench className="w-5 h-5" />}
-                  className="w-full"
-                >
-                  Open Builder
-                </Button>
-              </Link>
-            </div>
-            
-            {/* Affiliate Disclosure */}
-            {part.affiliate_url && (
-              <div className="mt-4">
-                <AffiliateDisclosure variant="inline" />
-              </div>
-            )}
-            
-            {/* Specifications Card */}
-            {specs.length > 0 && (
-              <Card className="mt-6">
-                <CardHeader className="border-b border-olive-600">
-                  <h2 className="text-display text-xl text-cream-100">Specifications</h2>
-                </CardHeader>
-                <CardContent>
-                  <dl className="divide-y divide-olive-600">
-                    {specs.map((spec, index) => (
-                      <div 
-                        key={spec.label} 
-                        className={`flex items-center justify-between py-3 ${
-                          index === 0 ? 'pt-0' : ''
-                        } ${index === specs.length - 1 ? 'pb-0' : ''}`}
-                      >
-                        <dt className="text-cream-400">{spec.label}</dt>
-                        <dd className="font-semibold text-cream-100">{spec.value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </div>
+          )}
+          {specs.length > 0 && (
+            <Card className="mt-6">
+              <CardHeader className="border-b border-olive-600">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-olive-700/30 border border-olive-600/20">
+                    <Zap className="w-5 h-5 text-orange-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-display text-xl text-cream-100">Key Specifications</h2>
+                    <p className="text-xs text-cream-500 mt-0.5">Part details and dimensions</p>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <dl className="divide-y divide-olive-600">
+                  {specs.map((spec, index) => (
+                    <div
+                      key={spec.label}
+                      className={`flex items-center justify-between py-3 ${
+                        index === 0 ? 'pt-0' : ''
+                      } ${index === specs.length - 1 ? 'pb-0' : ''}`}
+                    >
+                      <dt className="text-cream-400">{spec.label}</dt>
+                      <dd className="font-semibold text-cream-100">{spec.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </CardContent>
+            </Card>
+          )}
+        </PartDetailHero>
         
         {/* Price Comparison */}
         <PriceComparison partId={part.id} fallbackPrice={part.price} />
         
-        {/* Builder Insights */}
-        <div className="mt-16">
+        {/* Builder Insights — tools and guides for this part / build */}
+        <section id="builder-insights" className="mt-12 sm:mt-16 scroll-mt-20" aria-labelledby="builder-insights-heading">
+          <div className="mb-4">
+            <h2 id="builder-insights-heading" className="text-display text-2xl text-cream-100">
+              Tools & insights
+            </h2>
+            <p className="text-cream-400 mt-1 text-sm max-w-2xl">
+              Add this part to your build and pick an engine in the Builder to see cost estimates, compatibility, manuals, and guides.
+            </p>
+          </div>
           <BuilderInsights
             category={part.category}
             variant="builder-page"
+            context="part-detail"
           />
-        </div>
+        </section>
         
         {/* Video Section */}
         <VideoSection partId={part.id} />

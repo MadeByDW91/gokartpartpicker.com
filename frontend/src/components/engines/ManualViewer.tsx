@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { X, Download, ExternalLink, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { getAbsoluteManualUrl } from '@/lib/manual-url';
 
 interface ManualViewerProps {
   manualUrl: string;
@@ -10,9 +11,13 @@ interface ManualViewerProps {
   onClose: () => void;
 }
 
+const isPdfUrl = (url: string) => /\.(pdf|doc|docx|txt|csv)$/i.test(url) || url.includes('.pdf?');
+
 export function ManualViewer({ manualUrl, engineName, onClose }: ManualViewerProps) {
   const [loadError, setLoadError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [iframeBlocked, setIframeBlocked] = useState(false);
+  const pdfOftenBlockedInIframe = isPdfUrl(manualUrl);
 
   useEffect(() => {
     // Prevent body scroll when modal is open
@@ -35,26 +40,9 @@ export function ManualViewer({ manualUrl, engineName, onClose }: ManualViewerPro
 
   // Extract filename for download
   const filename = manualUrl.split('/').pop() || 'manual.pdf';
-  
-  // Ensure URL is absolute if it's relative and properly encode it
-  const getAbsoluteUrl = (url: string) => {
-    if (url.startsWith('http')) {
-      // URL is already absolute, but ensure it's properly encoded
-      // If it has %20, keep it; if it has spaces, encode them
-      try {
-        const urlObj = new URL(url);
-        // Reconstruct with proper encoding
-        return urlObj.toString();
-      } catch {
-        // If URL parsing fails, return as-is (might already be encoded)
-        return url;
-      }
-    }
-    if (typeof window === 'undefined') return url;
-    return `${window.location.origin}${url.startsWith('/') ? url : `/${url}`}`;
-  };
-  
-  const absoluteUrl = getAbsoluteUrl(manualUrl);
+
+  // Resolve to absolute URL; /manuals/* paths become Supabase storage URLs so they don't 404
+  const absoluteUrl = getAbsoluteManualUrl(manualUrl);
 
   // Handle iframe load with timeout
   useEffect(() => {
@@ -71,27 +59,18 @@ export function ManualViewer({ manualUrl, engineName, onClose }: ManualViewerPro
   }, [manualUrl]);
 
   const handleIframeLoad = () => {
-    // Check if iframe actually loaded content
     setTimeout(() => {
-      const iframe = document.querySelector('iframe[title*="Owner\'s Manual"]') as HTMLIFrameElement;
-      if (iframe) {
-        try {
-          // Try to access iframe - will fail if CORS blocked, but that's OK
-          // Just hide loading spinner
-          setIsLoading(false);
-        } catch (e) {
-          // CORS error is expected for cross-origin PDFs
-          // Hide loading anyway - browser PDF viewer should still work
-          setIsLoading(false);
-        }
-      } else {
-        setIsLoading(false);
+      setIsLoading(false);
+      // For PDFs, many hosts block embedding; assume we may need fallback
+      if (pdfOftenBlockedInIframe) {
+        setIframeBlocked(true);
       }
-    }, 1000);
+    }, 1200);
   };
 
   const handleIframeError = () => {
     setLoadError(true);
+    setIframeBlocked(true);
     setIsLoading(false);
   };
   
@@ -126,7 +105,7 @@ export function ManualViewer({ manualUrl, engineName, onClose }: ManualViewerPro
           </div>
           <div className="flex items-center gap-2 ml-4 flex-shrink-0">
             {/* Download button - only show for actual file URLs */}
-            {manualUrl.match(/\.(pdf|doc|docx|txt|csv)$/i) && (
+            {isPdfUrl(manualUrl) && (
               <a
                 href={absoluteUrl}
                 download={filename}
@@ -191,7 +170,7 @@ export function ManualViewer({ manualUrl, engineName, onClose }: ManualViewerPro
                     Open in New Tab
                   </Button>
                 </a>
-                {manualUrl.match(/\.(pdf|doc|docx|txt|csv)$/i) && (
+                {isPdfUrl(manualUrl) && (
                   <a
                     href={absoluteUrl}
                     download={filename}
@@ -206,25 +185,59 @@ export function ManualViewer({ manualUrl, engineName, onClose }: ManualViewerPro
             </div>
           ) : (
             <>
-              {isLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-olive-900/80 z-10">
-                  <div className="text-center">
-                    <div className="inline-block w-8 h-8 border-2 border-orange-400 border-t-transparent rounded-full animate-spin mb-3" />
-                    <p className="text-sm text-cream-400">Loading manual...</p>
+              {/* PDFs often can't be embedded (CORS/X-Frame-Options). Show open/download so view & print work. */}
+              {(iframeBlocked || pdfOftenBlockedInIframe) ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
+                  <p className="text-sm text-cream-400 mb-4 max-w-md">
+                    Use the buttons below to open or download the manual. You can view and print from the new tab.
+                  </p>
+                  <div className="flex gap-3 flex-wrap justify-center">
+                    <a
+                      href={absoluteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Button variant="primary" icon={<ExternalLink className="w-4 h-4" />}>
+                        Open in new tab
+                      </Button>
+                    </a>
+                    {isPdfUrl(manualUrl) && (
+                      <a
+                        href={absoluteUrl}
+                        download={filename}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button variant="secondary" icon={<Download className="w-4 h-4" />}>
+                          Download
+                        </Button>
+                      </a>
+                    )}
                   </div>
                 </div>
+              ) : (
+                <>
+                  {isLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-olive-900/80 z-10">
+                      <div className="text-center">
+                        <div className="inline-block w-8 h-8 border-2 border-orange-400 border-t-transparent rounded-full animate-spin mb-3" />
+                        <p className="text-sm text-cream-400">Loading manual...</p>
+                      </div>
+                    </div>
+                  )}
+                  <iframe
+                    key={absoluteUrl}
+                    src={`${absoluteUrl}#toolbar=1&navpanes=1&scrollbar=1`}
+                    className="w-full h-full border-0"
+                    title={`${engineName} Owner's Manual`}
+                    onLoad={handleIframeLoad}
+                    onError={handleIframeError}
+                    allow="fullscreen"
+                    style={{ minHeight: '600px' }}
+                    loading="eager"
+                  />
+                </>
               )}
-              <iframe
-                key={absoluteUrl} // Force re-render when URL changes
-                src={`${absoluteUrl}#toolbar=1&navpanes=1&scrollbar=1`}
-                className="w-full h-full border-0"
-                title={`${engineName} Owner's Manual`}
-                onLoad={handleIframeLoad}
-                onError={handleIframeError}
-                allow="fullscreen"
-                style={{ minHeight: '600px' }}
-                loading="eager"
-              />
             </>
           )}
         </div>

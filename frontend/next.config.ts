@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https: blob:",
               "connect-src 'self' https://*.supabase.co https://*.supabase.in https://www.google-analytics.com https://plausible.io https://api.allorigins.win https://hcaptcha.com https://*.hcaptcha.com",
-              "frame-src 'self' https://www.youtube.com https://player.vimeo.com https://newassets.hcaptcha.com https://*.hcaptcha.com",
+              "frame-src 'self' https://www.youtube.com https://player.vimeo.com https://newassets.hcaptcha.com https://*.hcaptcha.com https://*.supabase.co https://*.supabase.in",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",

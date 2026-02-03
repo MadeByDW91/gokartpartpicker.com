@@ -202,10 +202,16 @@ export default function AdminDashboardPage() {
           <p className="text-cream-300 mt-1 text-sm sm:text-base">Manage your go-kart catalog</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-          <Link href="/admin/engines/new" className="w-full sm:w-auto">
+          <Link href="/admin/add?type=gas" className="w-full sm:w-auto">
             <Button size="sm" icon={<Plus className="w-4 h-4" />} className="w-full sm:w-auto min-h-[44px] touch-manipulation">
               <span className="hidden sm:inline">Add Engine</span>
               <span className="sm:hidden">Engine</span>
+            </Button>
+          </Link>
+          <Link href="/admin/add?type=ev" className="w-full sm:w-auto">
+            <Button size="sm" variant="secondary" icon={<Plus className="w-4 h-4" />} className="w-full sm:w-auto min-h-[44px] touch-manipulation">
+              <span className="hidden sm:inline">Add Electric Motor</span>
+              <span className="sm:hidden">EV Motor</span>
             </Button>
           </Link>
           <Link href="/admin/parts/new" className="w-full sm:w-auto">

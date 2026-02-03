@@ -10,7 +10,9 @@ import { Select } from '@/components/ui/Select';
 import { slugify } from '@/lib/utils';
 import { SHAFT_TYPES } from '@/types/database';
 import { createMotor, updateMotor } from '@/actions/admin';
+import { fetchMotorFromLink } from '@/actions/admin/fetch-motor-from-link';
 import type { AdminElectricMotor, MotorFormInput } from '@/types/admin';
+import { Link2 } from 'lucide-react';
 
 interface MotorFormProps {
   motor?: AdminElectricMotor;
@@ -20,6 +22,8 @@ interface MotorFormProps {
 // Common motor brands
 const MOTOR_BRANDS = [
   'Amped Motors',
+  'Chokayaky',
+  'Kunray',
   'MY1020',
   'MY1016',
   'QS Motor',
@@ -38,6 +42,9 @@ export function MotorForm({ motor, mode }: MotorFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [fillFromLinkUrl, setFillFromLinkUrl] = useState('');
+  const [fillFromLinkLoading, setFillFromLinkLoading] = useState(false);
+  const [fillFromLinkError, setFillFromLinkError] = useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = useState<MotorFormInput>({
@@ -75,6 +82,46 @@ export function MotorForm({ motor, mode }: MotorFormProps) {
       name,
       slug: mode === 'create' ? slugify(name) : prev.slug,
     }));
+  };
+
+  const handleFillFromLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fillFromLinkUrl.trim()) return;
+    setFillFromLinkError(null);
+    setFillFromLinkLoading(true);
+    try {
+      const result = await fetchMotorFromLink(fillFromLinkUrl.trim());
+      if (!result.success) {
+        setFillFromLinkError(result.error || 'Could not fetch product');
+        return;
+      }
+      const d = result.data;
+      if (!d) {
+        setFillFromLinkError('Could not fetch product');
+        return;
+      }
+      setFormData((prev) => ({
+        ...prev,
+        name: d.name || prev.name,
+        slug: slugify(d.name || prev.name),
+        brand: d.brand || prev.brand,
+        voltage: d.voltage ?? prev.voltage ?? 48,
+        power_kw: d.power_kw ?? prev.power_kw ?? 5,
+        peak_power_kw: d.peak_power_kw ?? prev.peak_power_kw ?? null,
+        horsepower: d.horsepower ?? prev.horsepower ?? 6.7,
+        torque_lbft: d.torque_lbft ?? prev.torque_lbft ?? 10,
+        rpm_rated: d.rpm_rated ?? prev.rpm_rated ?? null,
+        rpm_max: d.rpm_max ?? prev.rpm_max ?? null,
+        price: d.price ?? prev.price ?? null,
+        image_url: d.image_url ?? prev.image_url ?? '',
+        affiliate_url: d.affiliate_url ?? prev.affiliate_url ?? '',
+      }));
+      setFillFromLinkUrl('');
+    } catch (err) {
+      setFillFromLinkError(err instanceof Error ? err.message : 'Failed to fetch');
+    } finally {
+      setFillFromLinkLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -159,6 +206,63 @@ export function MotorForm({ motor, mode }: MotorFormProps) {
             {mode === 'create' ? 'Motor created successfully!' : 'Motor updated successfully!'}
           </p>
         </div>
+      )}
+
+      {/* Fill from product link (create only) */}
+      {mode === 'create' && (
+        <Card className="border-orange-500/20 bg-orange-500/5">
+          <CardHeader>
+            <h2 className="text-lg font-semibold text-cream-100 flex items-center gap-2">
+              <Link2 className="w-5 h-5 text-orange-400" />
+              Fill from product link
+            </h2>
+            <p className="text-sm text-cream-400 mt-1">
+              Paste an Amazon product page URL to pre-fill name, brand, voltage, power, HP, torque, RPM, price, image, and affiliate link.
+            </p>
+            <p className="text-xs text-cream-500 mt-1">
+              Tip: For fastest, most reliable results, set Amazon PA API credentials (AMAZON_PAAPI_ACCESS_KEY, etc.) in your environment.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Input
+                type="url"
+                placeholder="https://www.amazon.com/dp/..."
+                value={fillFromLinkUrl}
+                onChange={(e) => {
+                  setFillFromLinkUrl(e.target.value);
+                  setFillFromLinkError(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleFillFromLink(e as unknown as React.FormEvent);
+                  }
+                }}
+                className="flex-1"
+                disabled={fillFromLinkLoading}
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                loading={fillFromLinkLoading}
+                disabled={!fillFromLinkUrl.trim()}
+                className="shrink-0"
+                onClick={(e) => handleFillFromLink(e as unknown as React.FormEvent)}
+              >
+                Fetch & fill
+              </Button>
+            </div>
+            {fillFromLinkError && (
+              <div className="mt-2 space-y-1">
+                <p className="text-sm text-[var(--error)]">{fillFromLinkError}</p>
+                {fillFromLinkError.toLowerCase().includes('pa api') && (
+                  <p className="text-xs text-cream-500">Add AMAZON_PAAPI_ACCESS_KEY, AMAZON_PAAPI_SECRET_KEY, and AMAZON_PAAPI_PARTNER_TAG to your env for reliable auto-fill.</p>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* Basic Info */}

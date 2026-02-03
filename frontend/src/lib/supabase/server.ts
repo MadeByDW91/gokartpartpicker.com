@@ -1,8 +1,22 @@
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 /**
- * Create Supabase client for server components
+ * Create a Supabase client that does NOT use cookies. Use only inside unstable_cache()
+ * for public read-only data. Never use for auth or request-scoped data.
+ */
+export function createCacheableClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error('Supabase URL and anon key are required for createCacheableClient');
+  }
+  return createSupabaseClient(url, key);
+}
+
+/**
+ * Create Supabase client for server components (uses cookies for auth)
  */
 export async function createClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

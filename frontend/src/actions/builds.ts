@@ -32,6 +32,7 @@ import {
 } from '@/lib/api/types';
 import type { Build } from '@/types/database';
 import { getImpersonationContext } from '@/lib/impersonation';
+import { getProfileDisplayMap } from '@/actions/profile';
 
 /**
  * Get the current authenticated user
@@ -353,14 +354,13 @@ export async function getBuild(
     const supabase = await createClient();
     const user = await getCurrentUser();
     
-    // Query the build - RLS will handle access control
-    const { data, error: dbError } = await supabase
+    // Query the build - RLS will handle access control (profile via profile_display to avoid leaking email)
+    const { data: row, error: dbError } = await supabase
       .from('builds')
       .select(`
         *,
         engine:engines(*),
-        motor:electric_motors(*),
-        profile:profiles(username, avatar_url)
+        motor:electric_motors(*)
       `)
       .eq('id', parsed.data.id)
       .single();
@@ -369,11 +369,17 @@ export async function getBuild(
       return handleError(dbError, 'getBuild', 'Build');
     }
     
+    if (!row) return error('Build not found');
+    
     // Check access: public builds are open, private require ownership
-    if (!data.is_public && (!user || data.user_id !== user.id)) {
+    if (!row.is_public && (!user || row.user_id !== user.id)) {
       return error('Build not found. It may be private or may have been removed.');
     }
-    
+
+    const userMap = await getProfileDisplayMap([row.user_id]);
+    const profile = userMap[row.user_id] ?? null;
+    const data = { ...row, profile };
+
     return success(data);
   } catch (err) {
     return handleError(err, 'getBuild');
@@ -432,13 +438,12 @@ export async function getBuildByShareId(
     
     const supabase = await createClient();
     
-    const { data, error: dbError } = await supabase
+    const { data: row, error: dbError } = await supabase
       .from('builds')
       .select(`
         *,
         engine:engines(*),
-        motor:electric_motors(*),
-        profile:profiles(username, avatar_url)
+        motor:electric_motors(*)
       `)
       .eq('id', parsed.data.id)
       .eq('is_public', true)
@@ -447,6 +452,10 @@ export async function getBuildByShareId(
     if (dbError) {
       return handleError(dbError, 'getBuildByShareId', 'Build');
     }
+    
+    if (!row) return error('Build not found');
+    const userMap = await getProfileDisplayMap([row.user_id]);
+    const data = { ...row, profile: userMap[row.user_id] ?? null };
     
     // Ensure it's public
     if (!data.is_public) {
@@ -659,14 +668,13 @@ export async function getBuildsForComparison(
     const supabase = await createClient();
     const user = await getCurrentUser();
 
-    // Fetch builds
-    const { data, error: dbError } = await supabase
+    // Fetch builds (profile via profile_display to avoid leaking email)
+    const { data: rows, error: dbError } = await supabase
       .from('builds')
       .select(`
         *,
         engine:engines(*),
-        motor:electric_motors(*),
-        profile:profiles(username, avatar_url)
+        motor:electric_motors(*)
       `)
       .in('id', buildIds);
 
@@ -675,9 +683,13 @@ export async function getBuildsForComparison(
       return error('Failed to fetch builds for comparison');
     }
 
-    if (!data || data.length === 0) {
+    if (!rows || rows.length === 0) {
       return error('No builds found');
     }
+
+    const userIds = [...new Set(rows.map((b: { user_id: string }) => b.user_id))] as string[];
+    const userMap = await getProfileDisplayMap(userIds);
+    const data = rows.map((b: { user_id: string }) => ({ ...b, profile: userMap[b.user_id] ?? null }));
 
     // Filter out private builds the user doesn't own
     const accessibleBuilds = data.filter((build: any) => {
@@ -724,8 +736,7 @@ export async function getPublicBuilds(
       .select(`
         *,
         engine:engines(name, brand, horsepower),
-        motor:electric_motors(name, brand, horsepower, voltage),
-        profile:profiles(username, avatar_url)
+        motor:electric_motors(name, brand, horsepower, voltage)
       `)
       .eq('is_public', true);
     
@@ -737,14 +748,18 @@ export async function getPublicBuilds(
       .order(sort, { ascending: order === 'asc' })
       .limit(limit);
     
-    const { data, error: dbError } = await query;
+    const { data: rows, error: dbError } = await query;
     
     if (dbError) {
       console.error('[getPublicBuilds] Database error:', dbError);
       return error('Failed to fetch public builds');
     }
     
-    return success(data ?? []);
+    if (!rows?.length) return success([]);
+    const userIds = [...new Set(rows.map((r: { user_id: string }) => r.user_id))] as string[];
+    const userMap = await getProfileDisplayMap(userIds);
+    const data = rows.map((r: { user_id: string }) => ({ ...r, profile: userMap[r.user_id] ?? null }));
+    return success(data);
   } catch (err) {
     return handleError(err, 'getPublicBuilds');
   }

@@ -6,7 +6,7 @@
  */
 
 import { unstable_cache } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createCacheableClient } from '@/lib/supabase/server';
 import { 
   engineFiltersSchema, 
   getEngineSchema,
@@ -44,12 +44,7 @@ export async function getEngines(
 
     return unstable_cache(
       async () => {
-        const supabase = await createClient();
-
-        if (!supabase || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
-          return error('Database connection not configured. Please check environment variables.');
-        }
-
+        const supabase = createCacheableClient();
         const {
           brand,
           min_hp,
@@ -144,7 +139,7 @@ export async function getEngineBySlug(
 
     return unstable_cache(
       async () => {
-        const supabase = await createClient();
+        const supabase = createCacheableClient();
         const { data, error: dbError } = await supabase
           .from('engines')
           .select('*')
@@ -174,7 +169,7 @@ export async function getEngineBrands(): Promise<ActionResult<string[]>> {
   try {
     return unstable_cache(
       async (): Promise<ActionResult<string[]>> => {
-        const supabase = await createClient();
+        const supabase = createCacheableClient();
         const { data, error: dbError } = await supabase
           .from('engines')
           .select('brand')

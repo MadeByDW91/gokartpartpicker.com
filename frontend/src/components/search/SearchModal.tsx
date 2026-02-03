@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { X, Search } from 'lucide-react';
+import { useFocusTrap } from '@/hooks/use-focus-trap';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { AdvancedSearch } from './AdvancedSearch';
@@ -14,6 +15,8 @@ interface SearchModalProps {
 }
 
 export function SearchModal({ isOpen, onClose, onResultClick }: SearchModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, isOpen);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -53,7 +56,13 @@ export function SearchModal({ isOpen, onClose, onResultClick }: SearchModalProps
       />
 
       {/* Modal Content */}
-      <div className="relative w-full max-w-3xl h-full sm:h-auto flex flex-col">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="search-modal-title"
+        className="relative w-full max-w-3xl h-full sm:h-auto flex flex-col"
+      >
         <Card className="border border-olive-600 shadow-2xl flex-1 sm:flex-none flex flex-col">
           <CardContent className="p-4 sm:p-6 flex-1 flex flex-col min-h-0">
             {/* Header */}
@@ -63,7 +72,7 @@ export function SearchModal({ isOpen, onClose, onResultClick }: SearchModalProps
                   <Search className="w-4 h-4 sm:w-5 sm:h-5 text-cream-100" />
                 </div>
                 <div className="min-w-0">
-                  <h2 className="text-display text-lg sm:text-xl text-cream-100">Search</h2>
+                  <h2 id="search-modal-title" className="text-display text-lg sm:text-xl text-cream-100">Search</h2>
                   <p className="text-xs sm:text-sm text-cream-400 hidden sm:block">Find engines, parts, and more</p>
                 </div>
               </div>
@@ -71,7 +80,7 @@ export function SearchModal({ isOpen, onClose, onResultClick }: SearchModalProps
                 variant="ghost" 
                 size="sm" 
                 onClick={onClose}
-                className="text-cream-400 hover:text-cream-100 flex-shrink-0 w-10 h-10 touch-manipulation"
+                className="text-cream-400 hover:text-cream-100 flex-shrink-0 min-w-[44px] min-h-[44px] touch-manipulation"
                 aria-label="Close search"
               >
                 <X className="w-5 h-5 sm:w-6 sm:h-6" />

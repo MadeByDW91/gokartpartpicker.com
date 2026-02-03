@@ -409,7 +409,8 @@ export async function createPart(
     
     if (dbError) {
       console.error('[createPart] Database error:', dbError);
-      return error('Failed to create part');
+      const message = dbError.message || 'Failed to create part';
+      return error(message);
     }
     
     // Revalidate relevant paths

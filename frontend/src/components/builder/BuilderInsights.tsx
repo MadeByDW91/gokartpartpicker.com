@@ -3,9 +3,10 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/Card';
+import { DropdownMenu } from '@/components/ui/DropdownMenu';
 import Link from 'next/link';
 import { useBuildStore } from '@/store/build-store';
-import { useRecommendations, usePopularCombinations, useUpgradePath } from '@/hooks/use-recommendations-enhanced';
 import { useBuildPerformance } from '@/hooks/use-build-performance';
 import { LiveToolsContent } from './LiveToolsContent';
 import { ManualCard } from '@/components/engines/ManualCard';
@@ -36,11 +37,12 @@ import {
   ArrowUp,
   Plus,
   Eye,
+  Download,
   Clock,
-  BarChart3,
   Flame,
   Calculator,
   FileText,
+  Printer,
   BookOpen,
   Layers,
   ChevronLeft,
@@ -52,16 +54,15 @@ import {
   Wallet,
   GraduationCap,
   Baby,
+  CalendarCheck,
 } from 'lucide-react';
-import { formatPrice, getCategoryLabel, cn } from '@/lib/utils';
+import { formatPrice, getCategoryLabel, getMotorBrandDisplay, getPartBrandDisplay, cn } from '@/lib/utils';
 import type { Engine, ElectricMotor, Part, PartCategory } from '@/types/database';
-import type { RecommendationGoal } from '@/actions/recommendations';
 import { getGuides } from '@/actions/guides';
 import type { Guide } from '@/types/guides';
 import { useTemplates } from '@/hooks/use-templates';
 import type { BuildTemplate, TemplateGoal } from '@/types/database';
 import { useRouter } from 'next/navigation';
-import { BuilderInsightsVisualComparison } from './BuilderInsightsVisualComparison';
 
 interface BuilderInsightsProps {
   // For engines page: pass engines/motors and selected item
@@ -76,6 +77,8 @@ interface BuilderInsightsProps {
   
   // Common props
   variant?: 'engines-page' | 'builder-page';
+  /** When shown on a part detail page, use friendlier copy and default expanded */
+  context?: 'part-detail';
 }
 
 interface Insight {
@@ -107,6 +110,7 @@ const GAS_REQUIRED_PARTS = [
   { category: 'throttle', label: 'Throttle Cable & Pedal', critical: true },
   { category: 'fuel_system', label: 'Fuel System (Tank, Lines, Filter)', critical: true },
   { category: 'brake', label: 'Brakes', critical: true },
+  { category: 'pedals', label: 'Pedals', critical: true },
   { category: 'wheel', label: 'Wheels', critical: true },
   { category: 'tire', label: 'Tires', critical: true },
   { category: 'frame', label: 'Frame', critical: true },
@@ -120,12 +124,13 @@ const EV_REQUIRED_PARTS = [
   { category: 'throttle_controller', label: 'Throttle', critical: true },
   { category: 'bms', label: 'BMS (Battery Management System)', critical: true },
   { category: 'brake', label: 'Brakes', critical: true },
+  { category: 'pedals', label: 'Pedals', critical: true },
   { category: 'wheel', label: 'Wheels', critical: true },
   { category: 'tire', label: 'Tires', critical: true },
   { category: 'frame', label: 'Frame', critical: true },
 ];
 
-type TabType = 'live-tools' | 'recommendations' | 'manual-specs' | 'useful-guides' | 'templates' | 'visual-comparison';
+type TabType = 'live-tools' | 'manual-specs' | 'useful-guides' | 'templates';
 
 // Template goal icons mapping
 const TEMPLATE_GOAL_ICONS: Record<TemplateGoal, React.ComponentType<{ className?: string }>> = {
@@ -160,11 +165,11 @@ export function BuilderInsights({
   category,
   onAddPart,
   variant = 'engines-page',
+  context,
 }: BuilderInsightsProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('live-tools');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['critical', 'performance']));
-  const [goal, setGoal] = useState<RecommendationGoal>('speed');
   const [relevantGuides, setRelevantGuides] = useState<Guide[]>([]);
   const [loadingGuides, setLoadingGuides] = useState(false);
   
@@ -200,29 +205,6 @@ export function BuilderInsights({
   const isEngine = currentItem && 'displacement_cc' in currentItem;
   const isMotor = currentItem && 'voltage' in currentItem;
   
-  // Recommendations hooks (for builder page)
-  const engineId = variant === 'builder-page' ? selectedEngine?.id || null : (isEngine ? (currentItem as Engine).id : null);
-  const currentParts = Array.from(selectedParts.values()).flat();
-  
-  const { data: recommendations = [], isLoading: recsLoading } = useRecommendations(
-    engineId,
-    category || null,
-    goal,
-    variant === 'builder-page' && !!category && !!engineId
-  );
-  
-  const { data: popularCombinations = [], isLoading: combosLoading } = usePopularCombinations(
-    engineId,
-    variant === 'builder-page' && !!engineId
-  );
-  
-  const { data: upgradePath = [], isLoading: upgradeLoading } = useUpgradePath(
-    variant === 'builder-page' ? selectedEngine : (isEngine ? currentItem as Engine : null),
-    variant === 'builder-page' ? currentParts : [],
-    goal,
-    variant === 'builder-page' && !!selectedEngine
-  );
-
   // Load relevant guides based on current build
   useEffect(() => {
     async function loadRelevantGuides() {
@@ -328,7 +310,7 @@ export function BuilderInsights({
           id: 'best-value',
           type: 'recommendation',
           title: 'Best Value Recommendation',
-          message: `${bestValue.brand} ${bestValue.name} offers the best cost per horsepower at $${(bestValue.price! / bestValue.horsepower!).toFixed(0)}/HP.`,
+          message: `${getMotorBrandDisplay(bestValue.brand)} ${bestValue.name} offers the best cost per horsepower at $${(bestValue.price! / bestValue.horsepower!).toFixed(0)}/HP.`,
           icon: <TrendingUp className="w-5 h-5" />,
           priority: 'high',
           category: 'recommendations',
@@ -746,13 +728,6 @@ export function BuilderInsights({
     recommendations: { label: 'Recommendations', icon: <Sparkles className="w-5 h-5" />, color: 'text-orange-400' },
   };
   
-  const goalOptions: Array<{ value: RecommendationGoal; label: string; icon: React.ReactNode }> = [
-    { value: 'speed', label: 'Speed', icon: <Zap className="w-4 h-4" /> },
-    { value: 'torque', label: 'Torque', icon: <TrendingUp className="w-4 h-4" /> },
-    { value: 'reliability', label: 'Reliability', icon: <Shield className="w-4 h-4" /> },
-    { value: 'budget', label: 'Budget', icon: <DollarSign className="w-4 h-4" /> },
-  ];
-  
   // Tab definitions
   const tabs = [
     {
@@ -780,20 +755,6 @@ export function BuilderInsights({
       icon: <BookOpen className="w-4 h-4" />,
       description: 'Guides related to your current build',
     },
-    {
-      id: 'visual-comparison' as TabType,
-      label: 'Visual Comparison',
-      icon: <BarChart3 className="w-4 h-4" />,
-      description: 'HP vs cost and EV vs gas',
-      showOnlyOnEnginesPage: true,
-    },
-    {
-      id: 'recommendations' as TabType,
-      label: 'Recommendations',
-      icon: <Sparkles className="w-4 h-4" />,
-      description: 'Suggested parts and upgrade paths',
-      showOnlyOnBuilder: true,
-    },
   ].filter(tab => {
     // Filter based on variant
     if (variant !== 'builder-page' && tab.showOnlyOnBuilder) return false;
@@ -804,19 +765,38 @@ export function BuilderInsights({
     
     return true;
   });
-  
+
+  // If activeTab is no longer in the tab list (e.g. recommendations was removed), show Live Tools
+  useEffect(() => {
+    const validIds = tabs.map((t) => t.id);
+    if (validIds.length > 0 && !validIds.includes(activeTab)) {
+      setActiveTab('live-tools');
+    }
+  }, [tabs, activeTab]);
+
+  const isPartDetailContext = context === 'part-detail';
+  const showBuilderCTA = !currentItem && (variant === 'builder-page' || isPartDetailContext);
+  const headerSubtitle = currentItem
+    ? (tabs.find(t => t.id === activeTab)?.description || 'Interactive calculators using your current build')
+    : showBuilderCTA
+      ? 'Select an engine in the Builder to unlock calculators, manuals, and guides.'
+      : 'Interactive calculators using your current build';
+
   return (
-    <div className="bg-olive-800/30 rounded-xl border border-olive-700/50 overflow-hidden shadow-lg mb-8">
+    <div className={cn(
+      'bg-olive-800/30 rounded-xl border border-olive-700/50 overflow-hidden shadow-lg mb-8',
+      isPartDetailContext && 'border-t-2 border-t-orange-500/30'
+    )}>
       {/* Header */}
       <div className="p-4 sm:p-6 border-b border-olive-700/50 bg-olive-800/40">
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3 flex-1">
-            <div className="p-2 rounded-lg bg-orange-500/10 border border-orange-500/20">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="p-2 rounded-lg bg-orange-500/10 border border-orange-500/20 shrink-0">
               <Calculator className="w-5 h-5 text-orange-400" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h2 className="text-xl font-bold text-cream-100">Builder Insights</h2>
-              <p className="text-sm text-cream-400 mt-0.5">{tabs.find(t => t.id === activeTab)?.description || 'Interactive calculators using your current build'}</p>
+              <p className="text-sm text-cream-400 mt-0.5">{headerSubtitle}</p>
             </div>
           </div>
           <button
@@ -832,8 +812,8 @@ export function BuilderInsights({
           </button>
         </div>
         
-        {/* Engine / motor context — minimal, professional */}
-        <div className="flex items-center gap-2 min-h-[28px]">
+        {/* Engine / motor context — minimal, professional; CTA when no selection */}
+        <div className="flex flex-wrap items-center gap-2 min-h-[28px]">
           {currentItem ? (
             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-cream-200 bg-olive-700/40 border border-olive-600/50 rounded-md px-2.5 py-1.5">
               {isEngine ? (
@@ -842,42 +822,55 @@ export function BuilderInsights({
                 <Battery className="w-3.5 h-3.5 text-blue-400 shrink-0" aria-hidden />
               )}
               <span className="truncate max-w-[280px] sm:max-w-none">
-                Insights for {currentItem.brand} {currentItem.name}
+                Insights for {getMotorBrandDisplay(currentItem.brand)} {currentItem.name}
               </span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 text-xs text-cream-500 bg-olive-800/50 border border-olive-700/50 rounded-md px-2.5 py-1.5">
-              <Info className="w-3.5 h-3.5 shrink-0 opacity-70" aria-hidden />
-              {variant === 'engines-page'
-                ? 'No engine or motor selected — select one below to see insights'
-                : 'No engine or motor selected — select one to see insights'}
-            </span>
+            <>
+              <span className="inline-flex items-center gap-1.5 text-xs text-cream-500 bg-olive-800/50 border border-olive-700/50 rounded-md px-2.5 py-1.5">
+                <Info className="w-3.5 h-3.5 shrink-0 opacity-70" aria-hidden />
+                {variant === 'engines-page'
+                  ? 'No engine or motor selected — select one below to see insights'
+                  : 'No engine or motor selected — select one to see insights'}
+              </span>
+              {showBuilderCTA && (
+                <Link
+                  href="/builder"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-orange-400 hover:text-orange-300 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 rounded-md px-2.5 py-1.5 transition-colors"
+                >
+                  <Wrench className="w-3.5 h-3.5 shrink-0" aria-hidden />
+                  Open Builder
+                </Link>
+              )}
+            </>
           )}
         </div>
         
-        {/* Tab Navigation */}
+        {/* Tab Navigation - horizontal scroll on mobile so all tabs are reachable */}
         {isExpanded && (
-          <div className="flex items-center gap-1 border-b border-olive-700/50 -mx-6 -mb-6 px-6 pb-0">
-            {tabs.map((tab) => {
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={cn(
-                    'relative px-4 py-2.5 text-sm font-medium transition-all border-b-2 rounded-t-lg',
-                    isActive
-                      ? 'text-orange-400 border-orange-400 bg-orange-500/5'
-                      : 'text-cream-400 border-transparent hover:text-cream-200 hover:bg-olive-800/30'
-                  )}
-                >
-                  <div className="flex items-center gap-2">
-                    {tab.icon}
-                    <span>{tab.label}</span>
-                  </div>
-                </button>
-              );
-            })}
+          <div className="border-b border-olive-700/50 -mx-4 sm:-mx-6 -mb-6 px-4 sm:px-6 pb-0 overflow-x-auto overflow-y-hidden [scrollbar-width:thin] [scrollbar-color:var(--olive-600)_transparent]">
+            <div className="flex items-center gap-1 flex-nowrap w-max min-w-full pr-2 sm:pr-0 pb-px">
+              {tabs.map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={cn(
+                      'relative flex-shrink-0 px-3 sm:px-4 py-2.5 text-sm font-medium transition-all border-b-2 rounded-t-lg whitespace-nowrap touch-manipulation',
+                      isActive
+                        ? 'text-orange-400 border-orange-400 bg-orange-500/5'
+                        : 'text-cream-400 border-transparent hover:text-cream-200 hover:bg-olive-800/30'
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      {tab.icon}
+                      <span>{tab.label}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
@@ -1065,9 +1058,15 @@ export function BuilderInsights({
             {!isEngine || !currentItem ? (
               <div className="py-8 text-center">
                 <FileText className="w-12 h-12 text-cream-400 mx-auto mb-3 opacity-50" />
-                <p className="text-cream-400">
+                <p className="text-cream-400 mb-4">
                   Select an engine or motor to view manual and torque specifications
                 </p>
+                <Link href="/engines">
+                  <Button variant="primary" size="md" className="touch-manipulation">
+                    <Cog className="w-4 h-4" />
+                    Choose engine or motor
+                  </Button>
+                </Link>
               </div>
             ) : (
               <div className="space-y-4">
@@ -1109,20 +1108,62 @@ export function BuilderInsights({
                   const itemCount = (hasManual ? 1 : 0) + (hasTorqueSpecs ? 1 : 0);
                   
                   return (
-                    <div className={itemCount > 1 ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "max-w-md"}>
-                      {hasManual && manualUrl && (
-                        <ManualCard
-                          manualUrl={manualUrl}
-                          engineName={`${engine.brand} ${engine.name}`}
-                          type="manual"
-                        />
-                      )}
-                      {hasTorqueSpecs && (
-                        <EngineTorqueSpecs
-                          engine={engine}
-                          compact={true}
-                        />
-                      )}
+                    <div className="space-y-6">
+                      <div className={itemCount > 1 ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "max-w-md"}>
+                        {hasManual && manualUrl && (
+                          <ManualCard
+                            manualUrl={manualUrl}
+                            engineName={`${engine.brand} ${engine.name}`}
+                            type="manual"
+                            torqueSpecsHref={`/engines/${engine.slug}/torque-specs`}
+                          />
+                        )}
+                        {hasTorqueSpecs && (
+                          <EngineTorqueSpecs
+                            engine={engine}
+                            compact={true}
+                          />
+                        )}
+                      </div>
+                      {/* Maintenance schedule — same format and dropdown as Manual & Torque Specs; green variant */}
+                      <Card className="rounded-xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-600/5 to-emerald-500/5 shadow-sm transition-shadow hover:shadow-md h-full flex flex-col">
+                        <CardContent className="p-5 flex flex-col flex-1">
+                          <div className="flex items-start gap-3 mb-4">
+                            <div className="p-2.5 rounded-xl bg-emerald-500/20 border border-emerald-500/20 shrink-0">
+                              <CalendarCheck className="w-5 h-5 text-emerald-400" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-base font-semibold text-cream-100 mb-2">Maintenance Schedule</h3>
+                              <p className="text-sm text-cream-400/90 leading-relaxed">
+                                Typical intervals for oil, air filter, spark plug, and valve clearance. Check your manual for your model.
+                              </p>
+                            </div>
+                          </div>
+                          <div className="mt-auto">
+                            <DropdownMenu
+                              trigger="Maintenance Options"
+                              items={[
+                                {
+                                  label: 'View',
+                                  icon: Eye,
+                                  onClick: () => window.open(`/engines/${engine.slug}/maintenance`, '_blank'),
+                                },
+                                {
+                                  label: 'Download',
+                                  icon: Download,
+                                  onClick: () => window.open(`/engines/${engine.slug}/maintenance`, '_blank'),
+                                },
+                                {
+                                  label: 'Print',
+                                  icon: Printer,
+                                  onClick: () => window.open(`/engines/${engine.slug}/maintenance?print=1`, '_blank', 'noopener,noreferrer'),
+                                },
+                              ]}
+                              variant="green"
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
                   );
                 })()}
@@ -1201,251 +1242,7 @@ export function BuilderInsights({
           </div>
         )}
         
-        {/* Visual Comparison Tab (Engines Page Only) */}
-        {activeTab === 'visual-comparison' && variant === 'engines-page' && (
-          <div className="p-4 sm:p-6">
-            <BuilderInsightsVisualComparison
-              engines={engines ?? []}
-              motors={motors ?? []}
-              maxItems={12}
-            />
-          </div>
-        )}
-        
-        {/* Recommendations Tab (Builder Page Only) */}
-        {activeTab === 'recommendations' && variant === 'builder-page' && (
-          <div className="p-4 sm:p-6">
-            {!selectedEngine && !selectedMotor ? (
-              <div className="py-8 text-center">
-                <Sparkles className="w-12 h-12 text-cream-400 mx-auto mb-3 opacity-50" />
-                <p className="text-cream-400">Select an engine or motor to see recommendations</p>
               </div>
-            ) : (
-              <div className="space-y-6">
-                {/* Goal Selector */}
-                {category && currentItem && (
-                  <div className="p-4 border border-olive-700/50 rounded-lg bg-olive-800/30">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Target className="w-4 h-4 text-orange-400" />
-                      <span className="text-sm font-semibold text-cream-200">Build Goal</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {goalOptions.map((option) => (
-                        <Button
-                          key={option.value}
-                          variant={goal === option.value ? 'primary' : 'ghost'}
-                          size="sm"
-                          onClick={() => setGoal(option.value)}
-                          icon={option.icon}
-                          className="text-xs"
-                        >
-                          {option.label}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Suggested Parts for Category */}
-                {category && recommendations.length > 0 && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Sparkles className="w-4 h-4 text-orange-400" />
-                      <h3 className="text-sm font-semibold text-cream-100">
-                        Suggested {getCategoryLabel(category)}
-                      </h3>
-                    </div>
-                    {recsLoading ? (
-                      <div className="space-y-2">
-                        {[1, 2, 3].map((i) => (
-                          <div key={i} className="h-16 bg-olive-600/50 rounded-lg animate-pulse" />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        {recommendations.slice(0, 5).map((part) => {
-                          const hpGain = (part.specifications?.hp_contribution as number) || 0;
-                          const partsArray = selectedParts.get(category) || [];
-                          const isSelected = partsArray.some(p => p.id === part.id);
-                          
-                          return (
-                            <div
-                              key={part.id}
-                              className={cn(
-                                'p-3 rounded-lg border transition-all',
-                                isSelected
-                                  ? 'bg-orange-500/20 border-orange-500/50'
-                                  : 'bg-olive-600/50 border-olive-600 hover:border-olive-500'
-                              )}
-                            >
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="font-medium text-cream-100 line-clamp-1 text-sm">
-                                    {part.name}
-                                  </h4>
-                                  <p className="text-xs text-cream-400 mt-0.5">{part.brand}</p>
-                                  {hpGain > 0 && (
-                                    <Badge variant="success" size="sm" className="mt-1.5">
-                                      +{hpGain.toFixed(1)} HP
-                                    </Badge>
-                                  )}
-                                </div>
-                                <div className="text-right flex-shrink-0">
-                                  <div className="text-sm font-bold text-orange-400 mb-1">
-                                    {part.price ? formatPrice(part.price) : 'Contact'}
-                                  </div>
-                                  {!isSelected && onAddPart && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => onAddPart(part)}
-                                      icon={<Plus className="w-3 h-3" />}
-                                      className="text-xs h-7"
-                                    >
-                                      Add
-                                    </Button>
-                                  )}
-                                  {isSelected && (
-                                    <Badge variant="success" size="sm" className="mt-1">
-                                      Selected
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {/* Popular Combinations */}
-                {popularCombinations.length > 0 && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Users className="w-4 h-4 text-blue-400" />
-                      <h3 className="text-sm font-semibold text-cream-100">Popular Combinations</h3>
-                    </div>
-                    {combosLoading ? (
-                      <div className="space-y-2">
-                        {[1, 2].map((i) => (
-                          <div key={i} className="h-16 bg-olive-600/50 rounded-lg animate-pulse" />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        {popularCombinations.slice(0, 3).map((combo, idx) => (
-                          <div
-                            key={idx}
-                            className="p-3 bg-olive-600/50 rounded-lg border border-olive-600"
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-xs font-medium text-cream-400 uppercase">
-                                Combination {idx + 1}
-                              </span>
-                              <Badge variant="info" size="sm">
-                                {combo.count} builds ({combo.percentage}%)
-                              </Badge>
-                            </div>
-                            <div className="flex flex-wrap gap-1.5">
-                              {combo.parts.slice(0, 4).map((p, pIdx) => (
-                                <Badge key={pIdx} variant="default" size="sm" className="text-xs">
-                                  {getCategoryLabel(p.category)}
-                                </Badge>
-                              ))}
-                              {combo.parts.length > 4 && (
-                                <Badge variant="default" size="sm" className="text-xs">
-                                  +{combo.parts.length - 4} more
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {/* Upgrade Path */}
-                {upgradePath.length > 0 && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <ArrowUp className="w-4 h-4 text-purple-400" />
-                      <h3 className="text-sm font-semibold text-cream-100">Upgrade Path</h3>
-                    </div>
-                    {upgradeLoading ? (
-                      <div className="space-y-2">
-                        {[1, 2, 3].map((i) => (
-                          <div key={i} className="h-16 bg-olive-600/50 rounded-lg animate-pulse" />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        {upgradePath.slice(0, 5).map((step) => (
-                          <div
-                            key={step.step}
-                            className="p-3 bg-olive-600/50 rounded-lg border border-olive-600"
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500 text-cream-100 flex items-center justify-center text-xs font-bold">
-                                {step.step}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="font-medium text-cream-100 text-sm">
-                                    {getCategoryLabel(step.category)}
-                                  </span>
-                                  {step.estimatedHPGain > 0 && (
-                                    <Badge variant="success" size="sm">
-                                      +{step.estimatedHPGain.toFixed(1)} HP
-                                    </Badge>
-                                  )}
-                                  <Badge
-                                    variant={step.priority === 'high' ? 'warning' : 'default'}
-                                    size="sm"
-                                  >
-                                    {step.priority}
-                                  </Badge>
-                                </div>
-                                <p className="text-xs text-cream-400 mb-2">{step.reason}</p>
-                                {step.recommendedPart && onAddPart && (
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-sm text-cream-300">
-                                      {step.recommendedPart.name}
-                                    </span>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => onAddPart(step.recommendedPart!)}
-                                      icon={<ArrowRight className="w-3 h-3" />}
-                                      className="text-xs h-7"
-                                    >
-                                      Add
-                                    </Button>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {/* Empty state */}
-                {!category && !combosLoading && !upgradeLoading && recommendations.length === 0 && (
-                  <div className="py-8 text-center">
-                    <Sparkles className="w-12 h-12 text-cream-400 mx-auto mb-3 opacity-50" />
-                    <p className="text-cream-400">Select a category to see recommendations</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
       )}
     </div>
   );

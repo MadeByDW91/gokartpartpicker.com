@@ -19,6 +19,7 @@ export const PART_CATEGORIES = [
   'tire_rear',
   'brake',
   'throttle',
+  'pedals',
   'frame',
   // Engine performance
   'carburetor',
@@ -121,8 +122,8 @@ export interface Part {
   slug: string;
   name: string;
   category: PartCategory;
-  brand: string;
-  specifications: Record<string, unknown>;
+  brand: string | null;
+  specifications: Record<string, unknown> | null;
   price: number | null;
   image_url: string | null;
   affiliate_url: string | null;

@@ -30,9 +30,14 @@ jobs:
         run: npm ci || npm install
 
       - name: Build
-        run: npm run build
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee build.log
         env:
           CI: true
+
+      - name: Check bundle size
+        run: node scripts/check-bundle-size.js build.log
 
       - name: Start server and wait
         run: |

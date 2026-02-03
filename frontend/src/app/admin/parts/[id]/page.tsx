@@ -10,6 +10,7 @@ import { VideoSearchAndAdd } from '@/components/admin/VideoSearchAndAdd';
 import { autoSearchAndAddVideosForPart } from '@/actions/admin/auto-video-linker';
 import { Button } from '@/components/ui/Button';
 import { ChevronLeft, Loader2, Video, CheckCircle, AlertCircle } from 'lucide-react';
+import { getPartBrandDisplay } from '@/lib/utils';
 import type { Part } from '@/types/database';
 
 interface AdminPart extends Part {
@@ -109,9 +110,9 @@ export default function EditPartPage() {
         productType="part"
         productId={part.id}
         productName={part.name}
-        productBrand={part.brand}
+        productBrand={getPartBrandDisplay(part.brand)}
         suggestedQueries={[
-          `${part.brand ? `${part.brand} ` : ''}${part.name} go kart`,
+          `${getPartBrandDisplay(part.brand)} ${part.name} go kart`,
           `${part.name} installation`,
           `${part.name} review`,
           `how to install ${part.name}`,

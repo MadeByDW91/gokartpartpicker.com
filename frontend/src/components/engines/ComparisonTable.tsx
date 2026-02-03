@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { Cog, Battery, ArrowUp, ArrowDown, ChevronUp, ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getMotorBrandDisplay } from '@/lib/utils';
 import type { Engine, ElectricMotor } from '@/types/database';
 
 interface ComparisonItem {
@@ -57,7 +57,7 @@ export function ComparisonTable({ engines, motors }: ComparisonTableProps) {
     const motorItems: ComparisonItem[] = motors.map((motor) => ({
       id: motor.id,
       name: motor.name,
-      brand: motor.brand,
+      brand: getMotorBrandDisplay(motor.brand),
       powerSource: 'electric' as const,
       horsepower: motor.horsepower,
       power_kw: motor.power_kw,

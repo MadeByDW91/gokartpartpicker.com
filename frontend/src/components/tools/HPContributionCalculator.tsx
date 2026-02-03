@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { useEngines } from '@/hooks/use-engines';
 import { useParts } from '@/hooks/use-parts';
 import { calculateBuildHP } from '@/lib/performance/calculator';
+import { getPartBrandDisplay } from '@/lib/utils';
 import type { Engine, Part } from '@/types/database';
 
 export function HPContributionCalculator() {
@@ -110,7 +111,7 @@ export function HPContributionCalculator() {
                     <div className="flex items-center justify-between">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-cream-100 truncate">{part.name}</p>
-                        <p className="text-xs text-cream-400">{part.brand}</p>
+                        <p className="text-xs text-cream-400">{getPartBrandDisplay(part.brand)}</p>
                       </div>
                       {contribution > 0 && (
                         <Badge variant="success" className="ml-2">
@@ -171,7 +172,7 @@ export function HPContributionCalculator() {
                       >
                         <div className="flex-1">
                           <p className="font-medium text-cream-100">{part.name}</p>
-                          <p className="text-sm text-cream-400">{part.brand}</p>
+                          <p className="text-sm text-cream-400">{getPartBrandDisplay(part.brand)}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           {contribution > 0 ? (

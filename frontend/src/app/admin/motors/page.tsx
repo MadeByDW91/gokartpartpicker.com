@@ -8,7 +8,7 @@ import { DataTable, StatusBadge, TableActions } from '@/components/admin/DataTab
 import { QuickActionsToolbar, type BulkAction } from '@/components/admin/QuickActionsToolbar';
 import { AdvancedFilters, type FilterOption, type FilterValue } from '@/components/admin/AdvancedFilters';
 import { EnhancedSearch, highlightSearch } from '@/components/admin/EnhancedSearch';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getMotorBrandDisplay, MOTOR_BRAND_FALLBACK } from '@/lib/utils';
 import { Plus, Pencil, Eye, Trash2, CheckCircle, XCircle, Image as ImageIcon } from 'lucide-react';
 import { getAdminMotors, deleteMotor, bulkActivateMotors, bulkDeactivateMotors } from '@/actions/admin';
 import type { AdminElectricMotor } from '@/types/admin';
@@ -74,8 +74,8 @@ export default function AdminMotorsPage() {
     }
   };
 
-  // Get unique brands and voltages for filters
-  const uniqueBrands = Array.from(new Set(motors.map((m) => m.brand).filter(Boolean))).sort();
+  // Get unique brands and voltages for filters (include "Unbranded" when any motor has no brand)
+  const uniqueBrands = Array.from(new Set(motors.map((m) => getMotorBrandDisplay(m.brand)))).sort();
   const uniqueVoltages = Array.from(new Set(motors.map((m) => m.voltage))).sort((a, b) => a - b);
 
   // Filter options
@@ -149,9 +149,10 @@ export default function AdminMotorsPage() {
     // Search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
+      const brandDisplay = getMotorBrandDisplay(motor.brand);
       const matchesSearch =
         motor.name.toLowerCase().includes(query) ||
-        motor.brand.toLowerCase().includes(query) ||
+        brandDisplay.toLowerCase().includes(query) ||
         motor.slug.toLowerCase().includes(query) ||
         motor.voltage.toString().includes(query) ||
         motor.model?.toLowerCase().includes(query) ||
@@ -160,7 +161,12 @@ export default function AdminMotorsPage() {
     }
 
     // Advanced filters
-    if (filters.brand && motor.brand !== filters.brand) return false;
+    if (filters.brand) {
+      const brandMatch = filters.brand === MOTOR_BRAND_FALLBACK
+        ? !motor.brand || !String(motor.brand).trim()
+        : motor.brand === filters.brand;
+      if (!brandMatch) return false;
+    }
     if (filters.voltage && motor.voltage !== Number(filters.voltage)) return false;
     if (filters.is_active !== undefined) {
       const isActive = filters.is_active === 'true' || filters.is_active === true;
@@ -248,7 +254,7 @@ export default function AdminMotorsPage() {
     const headers = ['Name', 'Brand', 'Voltage', 'Power (kW)', 'HP', 'Torque', 'Price', 'Status'];
     const rows = itemsToExport.map((m) => [
       m.name,
-      m.brand,
+      getMotorBrandDisplay(m.brand),
       m.voltage,
       m.power_kw,
       m.horsepower,
@@ -291,8 +297,10 @@ export default function AdminMotorsPage() {
     {
       key: 'brand',
       header: 'Brand',
-      render: (motor: AdminElectricMotor) => 
-        searchQuery ? highlightSearch(motor.brand, searchQuery) : motor.brand,
+      render: (motor: AdminElectricMotor) => {
+        const brandDisplay = getMotorBrandDisplay(motor.brand);
+        return searchQuery ? highlightSearch(brandDisplay, searchQuery) : brandDisplay;
+      },
     },
     {
       key: 'voltage',
@@ -368,7 +376,7 @@ export default function AdminMotorsPage() {
           <h1 className="text-display text-3xl text-cream-100">Electric Motors</h1>
           <p className="text-cream-400 mt-1">Manage electric motors catalog</p>
         </div>
-        <Link href="/admin/motors/new">
+        <Link href="/admin/add?type=ev">
           <Button icon={<Plus className="w-4 h-4" />}>New Motor</Button>
         </Link>
       </div>

@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { Plus, X, Check, ExternalLink, Zap, AlertTriangle, Info, Scale, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { formatPrice, getCategoryLabel, getOrderedCategoryGroupsForBuilder, GAS_ONLY_CATEGORIES, ELECTRIC_ONLY_CATEGORIES, cn } from '@/lib/utils';
+import { formatPrice, getCategoryLabel, getOrderedCategoryGroupsForBuilder, GAS_ONLY_CATEGORIES, ELECTRIC_ONLY_CATEGORIES, getMotorBrandDisplay, getPartBrandDisplay, cn } from '@/lib/utils';
 import { useBuildPerformance } from '@/hooks/use-build-performance';
 import { checkCompatibility } from '@/hooks/use-compatibility';
 import { useCompatibilityRules } from '@/hooks/use-compatibility';
@@ -253,7 +253,7 @@ export function BuilderTable({
                   <div className="flex items-center gap-2">
                     <div className="flex-1">
                       <div className="text-cream-100 font-medium">{selectedMotor.name}</div>
-                      <div className="text-sm text-cream-400">{selectedMotor.brand}</div>
+                      <div className="text-sm text-cream-400">{getMotorBrandDisplay(selectedMotor.brand)}</div>
                     </div>
                     {onRemoveMotor && (
                       <Button
@@ -519,7 +519,7 @@ export function BuilderTable({
                                     <div className="flex items-center gap-2">
                                       <div className="flex-1 min-w-0">
                                         <div className="text-cream-100 font-medium truncate">{selectedPart.name}</div>
-                                        <div className="text-sm text-cream-400">{selectedPart.brand}</div>
+                                        <div className="text-sm text-cream-400">{getPartBrandDisplay(selectedPart.brand)}</div>
                                         {selectedPart.slug && (
                                           <Link 
                                             href={`/parts/${selectedPart.slug}`}
@@ -673,7 +673,7 @@ export function BuilderTable({
                                     <div className="flex items-center gap-2">
                                       <div className="flex-1 min-w-0">
                                         <div className="text-cream-100 font-medium truncate">{selectedPart.name}</div>
-                                        <div className="text-sm text-cream-400">{selectedPart.brand}</div>
+                                        <div className="text-sm text-cream-400">{getPartBrandDisplay(selectedPart.brand)}</div>
                                         {selectedPart.slug && (
                                           <Link 
                                             href={`/parts/${selectedPart.slug}`}
@@ -824,7 +824,7 @@ export function BuilderTable({
                                     <div className="flex items-center gap-2">
                                       <div className="flex-1 min-w-0">
                                         <div className="text-cream-100 font-medium truncate">{selectedPart.name}</div>
-                                        <div className="text-sm text-cream-400">{selectedPart.brand}</div>
+                                        <div className="text-sm text-cream-400">{getPartBrandDisplay(selectedPart.brand)}</div>
                                         {selectedPart.slug && (
                                           <Link 
                                             href={`/parts/${selectedPart.slug}`}
@@ -1033,7 +1033,7 @@ export function BuilderTable({
             <div className="space-y-3">
               <div>
                 <div className="text-lg sm:text-xl font-bold text-cream-100 mb-1">{selectedMotor.name}</div>
-                <div className="text-sm sm:text-base text-cream-400">{selectedMotor.brand}</div>
+                <div className="text-sm sm:text-base text-cream-400">{getMotorBrandDisplay(selectedMotor.brand)}</div>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
@@ -1285,7 +1285,7 @@ export function BuilderTable({
                                       <div className="text-base font-bold text-cream-100 mb-1">
                                         {selectedPart.name}
                                       </div>
-                                      <div className="text-sm text-cream-400">{selectedPart.brand}</div>
+                                      <div className="text-sm text-cream-400">{getPartBrandDisplay(selectedPart.brand)}</div>
                                     </div>
                                     {selectedPart && selectedEngine && (
                                       <div className="flex items-center gap-2">
@@ -1416,7 +1416,7 @@ export function BuilderTable({
                                           <div className="text-base font-bold text-cream-100 mb-1">
                                             {selectedPart.name}
                                           </div>
-                                          <div className="text-sm text-cream-400">{selectedPart.brand}</div>
+                                          <div className="text-sm text-cream-400">{getPartBrandDisplay(selectedPart.brand)}</div>
                                         </div>
                                         {selectedPart && selectedEngine && (
                                           <div className="flex items-center gap-2">
@@ -1544,7 +1544,7 @@ export function BuilderTable({
                                           <div className="text-base font-bold text-cream-100 mb-1">
                                             {selectedPart.name}
                                           </div>
-                                          <div className="text-sm text-cream-400">{selectedPart.brand}</div>
+                                          <div className="text-sm text-cream-400">{getPartBrandDisplay(selectedPart.brand)}</div>
                                         </div>
                                         {selectedPart && selectedEngine && (
                                           <div className="flex items-center gap-2">

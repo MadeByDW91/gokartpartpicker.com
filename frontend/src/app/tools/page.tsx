@@ -360,12 +360,12 @@ export default function ToolsPage() {
               placeholder={selectedType === 'video' ? 'Search videos...' : 'Search tools, calculators, guides, and templates...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 pr-4 py-3 bg-olive-800/70 border-olive-700/50 text-cream-100 placeholder-cream-500 focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20"
+              className="pl-12 pr-12 py-3 min-h-[44px] bg-olive-800/70 border-olive-700/50 text-cream-100 placeholder-cream-500 focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 hover:bg-olive-700/50 rounded transition-colors"
+                className="absolute right-2 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-olive-700/50 rounded transition-colors touch-manipulation"
                 aria-label="Clear search"
               >
                 <span className="text-cream-400 text-sm">×</span>
@@ -394,7 +394,7 @@ export default function ToolsPage() {
                   setSelectedCategory('all');
                 }}
                 className={cn(
-                  'px-5 py-2.5 rounded-lg border transition-all duration-200',
+                  'px-5 py-2.5 min-h-[44px] rounded-lg border transition-all duration-200 touch-manipulation',
                   'flex items-center gap-2.5 font-medium text-sm',
                   colorClasses[category.color as keyof typeof colorClasses]
                 )}
@@ -479,22 +479,24 @@ export default function ToolsPage() {
                     <div className="flex items-center flex-wrap gap-2">
                       <span className="text-xs text-cream-400">Active filters:</span>
                       {selectedEngineId !== 'all' && (
-                        <Badge variant="default" className="bg-red-500/20 text-red-300 border-red-500/30 text-xs px-2.5 py-1">
+                        <Badge variant="default" className="bg-red-500/20 text-red-300 border-red-500/30 text-xs px-2.5 py-1 inline-flex items-center gap-1">
                           {engines.find(e => e.id === selectedEngineId)?.name || 'Engine'}
                           <button
                             onClick={() => setSelectedEngineId('all')}
-                            className="ml-2 hover:text-red-200"
+                            className="min-h-[44px] min-w-[44px] -m-1 flex items-center justify-center rounded hover:text-red-200 touch-manipulation"
+                            aria-label="Remove engine filter"
                           >
                             <X className="w-3 h-3" />
                           </button>
                         </Badge>
                       )}
                       {selectedTask !== 'all' && (
-                        <Badge variant="default" className="bg-red-500/20 text-red-300 border-red-500/30 text-xs px-2.5 py-1">
+                        <Badge variant="default" className="bg-red-500/20 text-red-300 border-red-500/30 text-xs px-2.5 py-1 inline-flex items-center gap-1">
                           {CATEGORY_LABELS[selectedTask]}
                           <button
                             onClick={() => setSelectedTask('all')}
-                            className="ml-2 hover:text-red-200"
+                            className="min-h-[44px] min-w-[44px] -m-1 flex items-center justify-center rounded hover:text-red-200 touch-manipulation"
+                            aria-label="Remove task filter"
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -507,7 +509,7 @@ export default function ToolsPage() {
                           setSelectedEngineId('all');
                           setSelectedTask('all');
                         }}
-                        className="text-xs h-7 px-2 text-cream-400 hover:text-cream-100"
+                        className="text-xs min-h-[44px] px-3 text-cream-400 hover:text-cream-100 touch-manipulation"
                       >
                         Clear all
                       </Button>
@@ -603,7 +605,7 @@ export default function ToolsPage() {
                     type="button"
                     onClick={() => setSelectedCalculatorId(id)}
                     className={cn(
-                      'flex items-center gap-2 px-4 py-2.5 rounded-lg border font-medium text-sm transition-colors',
+                      'flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg border font-medium text-sm transition-colors touch-manipulation',
                       isActive
                         ? 'bg-green-500/20 border-green-500/50 text-green-400'
                         : 'bg-olive-800/50 border-olive-700/50 text-cream-400 hover:bg-olive-800/70 hover:text-cream-200'
@@ -689,7 +691,7 @@ export default function ToolsPage() {
                         type="button"
                         onClick={() => setSelectedType(cat.id as ResourceType)}
                         className={cn(
-                          'rounded-lg border p-3 text-left transition-colors',
+                          'rounded-lg border p-3 min-h-[44px] text-left transition-colors touch-manipulation',
                           colorClasses[cat.color] ?? 'border-olive-600 bg-olive-800/50 hover:bg-olive-800/70'
                         )}
                       >
@@ -785,173 +787,189 @@ export default function ToolsPage() {
                     {categories.find(c => c.id === selectedType)?.label}
                   </h2>
                   <p className="text-cream-400 text-sm">
-                    {filteredResources.length} {filteredResources.length === 1 ? 'resource' : 'resources'} available
-                    {searchQuery && ` matching "${searchQuery}"`}
-                    {selectedCategory !== 'all' && ` in ${selectedCategory}`}
+                    {selectedType === 'tool'
+                      ? 'Engine manuals, torque specs, and chassis layout'
+                      : `${filteredResources.length} ${filteredResources.length === 1 ? 'resource' : 'resources'} available${searchQuery ? ` matching "${searchQuery}"` : ''}${selectedCategory !== 'all' ? ` in ${selectedCategory}` : ''}`}
                   </p>
                 </div>
               </div>
 
-              {/* Tools tab: expandable Engine Manuals and Torque Specs by engine – side by side, compact */}
+              {/* Tools tab: unified 3-card grid, equal sizing */}
               {selectedType === 'tool' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Engine & EV Manuals */}
-                  <Card className="border-olive-700/50 bg-olive-800/30 overflow-hidden">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setToolsPanelsExpanded((prev) => ({ ...prev, manuals: !prev.manuals }));
-                      }}
-                      className="w-full flex items-center justify-between gap-2 p-3 sm:p-4 text-left hover:bg-olive-700/20 transition-colors"
-                      aria-expanded={toolsPanelsExpanded.manuals}
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="p-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 shrink-0">
-                          <FileText className="w-4 h-4 text-blue-400" />
+                  <Card className="h-full min-h-[300px] flex flex-col border-olive-700/50 bg-olive-800/40 border-blue-500/20 overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:border-blue-500/40">
+                    <CardContent className="p-6 flex flex-col flex-1 min-h-0">
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-blue-500/10 border border-blue-500/20 text-blue-400">
+                          <FileText className="w-6 h-6" />
                         </div>
-                        <div className="min-w-0">
-                          <h3 className="text-sm font-semibold text-cream-100 truncate">Engine & EV Manuals</h3>
-                          <p className="text-xs text-cream-400 mt-0.5 line-clamp-2">
-                            Access owner&apos;s manuals for engines with manuals available
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-lg leading-tight text-cream-100 mb-1">Engine & EV Manuals</h3>
+                          <p className="text-sm text-cream-400 line-clamp-3 leading-relaxed">
+                            Access owner&apos;s manuals for engines with manuals available.
                           </p>
                         </div>
                       </div>
-                      {toolsPanelsExpanded.manuals ? (
-                        <ChevronUp className="w-4 h-4 text-cream-400 shrink-0" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-cream-400 shrink-0" />
-                      )}
-                    </button>
-                    {toolsPanelsExpanded.manuals && (
-                      <div className="px-3 sm:px-4 pb-3 sm:pb-4 pt-0 border-t border-olive-700/50">
-                        <label className="block text-xs font-medium text-cream-200 mb-1.5">Choose engine</label>
-                        <Select
-                          value={selectedManualEngineSlug}
-                          onChange={(e) => setSelectedManualEngineSlug(e.target.value)}
-                          placeholder={enginesLoading ? 'Loading...' : 'Select engine...'}
-                          options={allEnginesSorted.map((e) => ({
-                            value: e.slug,
-                            label: `${e.brand} ${e.name}`,
-                          }))}
-                          disabled={enginesLoading}
-                          className="mb-3 bg-olive-800/70 border-olive-700/50 hover:border-blue-500/50 focus:border-blue-500 text-sm"
-                        />
-                        {enginesLoading ? (
-                          <p className="text-sm text-cream-500 py-2">Loading engines...</p>
-                        ) : allEnginesSorted.length === 0 ? (
-                          <p className="text-sm text-cream-500 py-2">No engines in database yet.</p>
-                        ) : selectedManualEngineSlug ? (
-                          (() => {
-                            const engine = allEnginesSorted.find((e) => e.slug === selectedManualEngineSlug);
-                            if (!engine) return null;
-                            const hasManual = engine.manual_url && engine.manual_url.trim() !== '';
-                            if (hasManual) {
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setToolsPanelsExpanded((prev) => ({ ...prev, manuals: !prev.manuals }));
+                        }}
+                        className="flex items-center gap-2 text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors mt-auto pt-4 border-t border-olive-700/50 -mb-2 touch-manipulation"
+                        aria-expanded={toolsPanelsExpanded.manuals}
+                      >
+                        {toolsPanelsExpanded.manuals ? 'Hide engine selector' : 'Choose engine'}
+                        {toolsPanelsExpanded.manuals ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </button>
+                      {toolsPanelsExpanded.manuals && (
+                        <div className="mt-4 pt-4 border-t border-olive-700/50 space-y-3">
+                          <label className="block text-xs font-medium text-cream-200">Choose engine</label>
+                          <Select
+                            value={selectedManualEngineSlug}
+                            onChange={(e) => setSelectedManualEngineSlug(e.target.value)}
+                            placeholder={enginesLoading ? 'Loading...' : 'Select engine...'}
+                            options={allEnginesSorted.map((e) => ({
+                              value: e.slug,
+                              label: `${e.brand} ${e.name}`,
+                            }))}
+                            disabled={enginesLoading}
+                            className="bg-olive-800/70 border-olive-700/50 hover:border-blue-500/50 focus:border-blue-500 text-sm"
+                          />
+                          {enginesLoading ? (
+                            <p className="text-sm text-cream-500">Loading engines...</p>
+                          ) : allEnginesSorted.length === 0 ? (
+                            <p className="text-sm text-cream-500">No engines in database yet.</p>
+                          ) : selectedManualEngineSlug ? (
+                            (() => {
+                              const engine = allEnginesSorted.find((e) => e.slug === selectedManualEngineSlug);
+                              if (!engine) return null;
+                              const hasManual = engine.manual_url && engine.manual_url.trim() !== '';
+                              if (hasManual) {
+                                return (
+                                  <ManualCard
+                                    manualUrl={engine.manual_url!}
+                                    engineName={`${engine.brand} ${engine.name}`}
+                                  />
+                                );
+                              }
                               return (
-                                <ManualCard
-                                  manualUrl={engine.manual_url!}
-                                  engineName={`${engine.brand} ${engine.name}`}
-                                />
+                                <p className="text-sm text-cream-500">
+                                  No manual for this engine.{' '}
+                                  <Link href={`/engines/${engine.slug}`} className="text-blue-400 hover:underline">
+                                    View engine details
+                                  </Link>
+                                </p>
                               );
-                            }
-                            return (
-                              <p className="text-sm text-cream-500 py-2">
-                                No manual for this engine.{' '}
-                                <Link href={`/engines/${engine.slug}`} className="text-blue-400 hover:underline">
+                            })()
+                          ) : (
+                            <p className="text-sm text-cream-500">Select an engine to view manual options.</p>
+                          )}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Torque Specs by Engine */}
+                  <Card className="h-full min-h-[300px] flex flex-col border-olive-700/50 bg-olive-800/40 border-orange-500/20 overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:border-orange-500/40">
+                    <CardContent className="p-6 flex flex-col flex-1 min-h-0">
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-orange-500/10 border border-orange-500/20 text-orange-400">
+                          <Wrench className="w-6 h-6" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-lg leading-tight text-cream-100 mb-1">Torque Specs by Engine</h3>
+                          <p className="text-sm text-cream-400 line-clamp-3 leading-relaxed">
+                            Fastener torque values for each engine.
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setToolsPanelsExpanded((prev) => ({ ...prev, torque: !prev.torque }));
+                        }}
+                        className="flex items-center gap-2 text-sm font-medium text-orange-400 hover:text-orange-300 transition-colors mt-auto pt-4 border-t border-olive-700/50 -mb-2 touch-manipulation"
+                        aria-expanded={toolsPanelsExpanded.torque}
+                      >
+                        {toolsPanelsExpanded.torque ? 'Hide engine selector' : 'Choose engine'}
+                        {toolsPanelsExpanded.torque ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </button>
+                      {toolsPanelsExpanded.torque && (
+                        <div className="mt-4 pt-4 border-t border-olive-700/50 space-y-3">
+                          <label className="block text-xs font-medium text-cream-200">Choose engine</label>
+                          <Select
+                            value={selectedTorqueEngineSlug}
+                            onChange={(e) => setSelectedTorqueEngineSlug(e.target.value)}
+                            placeholder={enginesLoading ? 'Loading...' : 'Select engine...'}
+                            options={allEnginesSorted.map((e) => ({
+                              value: e.slug,
+                              label: `${e.brand} ${e.name}`,
+                            }))}
+                            disabled={enginesLoading}
+                            className="bg-olive-800/70 border-olive-700/50 hover:border-orange-500/50 focus:border-orange-500 text-sm"
+                          />
+                          {enginesLoading ? (
+                            <p className="text-sm text-cream-500">Loading engines...</p>
+                          ) : allEnginesSorted.length === 0 ? (
+                            <p className="text-sm text-cream-500">No engines in database yet.</p>
+                          ) : selectedTorqueEngineSlug ? (
+                            getTorqueSpecs(selectedTorqueEngineSlug) ? (
+                              <Link
+                                href={`/engines/${selectedTorqueEngineSlug}/torque-specs`}
+                                className="flex items-center gap-2 py-2 px-3 rounded-lg text-sm font-medium text-cream-100 bg-orange-500/20 border border-orange-500/30 hover:bg-orange-500/30 hover:border-orange-500/50 transition-colors w-fit"
+                              >
+                                <Wrench className="w-4 h-4 text-orange-400 shrink-0" />
+                                View torque specifications
+                                <ArrowRight className="w-4 h-4 shrink-0" />
+                              </Link>
+                            ) : (
+                              <p className="text-sm text-cream-500">
+                                No torque specs for this engine.{' '}
+                                <Link
+                                  href={`/engines/${selectedTorqueEngineSlug}`}
+                                  className="text-orange-400 hover:underline"
+                                >
                                   View engine details
                                 </Link>
                               </p>
-                            );
-                          })()
-                        ) : (
-                          <p className="text-sm text-cream-500 py-2">Select an engine to view manual options.</p>
-                        )}
-                      </div>
-                    )}
+                            )
+                          ) : (
+                            <p className="text-sm text-cream-500">Select an engine to view torque specifications.</p>
+                          )}
+                        </div>
+                      )}
+                    </CardContent>
                   </Card>
 
-                  {/* Torque Specifications by Engine */}
-                  <Card className="border-olive-700/50 bg-olive-800/30 overflow-hidden">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setToolsPanelsExpanded((prev) => ({ ...prev, torque: !prev.torque }));
-                      }}
-                      className="w-full flex items-center justify-between gap-2 p-3 sm:p-4 text-left hover:bg-olive-700/20 transition-colors"
-                      aria-expanded={toolsPanelsExpanded.torque}
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="p-1.5 rounded-lg bg-orange-500/10 border border-orange-500/20 shrink-0">
-                          <Wrench className="w-4 h-4 text-orange-400" />
-                        </div>
-                        <div className="min-w-0">
-                          <h3 className="text-sm font-semibold text-cream-100 truncate">Torque Specs by Engine</h3>
-                          <p className="text-xs text-cream-400 mt-0.5 line-clamp-2">
-                            Fastener torque values for each engine
-                          </p>
-                        </div>
-                      </div>
-                      {toolsPanelsExpanded.torque ? (
-                        <ChevronUp className="w-4 h-4 text-cream-400 shrink-0" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-cream-400 shrink-0" />
-                      )}
-                    </button>
-                    {toolsPanelsExpanded.torque && (
-                      <div className="px-3 sm:px-4 pb-3 sm:pb-4 pt-0 border-t border-olive-700/50">
-                        <label className="block text-xs font-medium text-cream-200 mb-1.5">Choose engine</label>
-                        <Select
-                          value={selectedTorqueEngineSlug}
-                          onChange={(e) => setSelectedTorqueEngineSlug(e.target.value)}
-                          placeholder={enginesLoading ? 'Loading...' : 'Select engine...'}
-                          options={allEnginesSorted.map((e) => ({
-                            value: e.slug,
-                            label: `${e.brand} ${e.name}`,
-                          }))}
-                          disabled={enginesLoading}
-                          className="mb-3 bg-olive-800/70 border-olive-700/50 hover:border-orange-500/50 focus:border-orange-500 text-sm"
+                  {/* Chassis Layout – same card style as other tools */}
+                  <div className="h-full min-h-[300px] [&>a]:block [&>a]:h-full">
+                    {(() => {
+                      const chassisTool = tools.find((t) => t.id === 'chassis-layout');
+                      if (!chassisTool) return null;
+                      return (
+                        <ResourceCard
+                          resource={{
+                            ...chassisTool,
+                            guide: undefined,
+                          }}
                         />
-                        {enginesLoading ? (
-                          <p className="text-sm text-cream-500 py-2">Loading engines...</p>
-                        ) : allEnginesSorted.length === 0 ? (
-                          <p className="text-sm text-cream-500 py-2">No engines in database yet.</p>
-                        ) : selectedTorqueEngineSlug ? (
-                          getTorqueSpecs(selectedTorqueEngineSlug) ? (
-                            <Link
-                              href={`/engines/${selectedTorqueEngineSlug}/torque-specs`}
-                              className="flex items-center gap-2 py-2 px-3 rounded-lg text-sm font-medium text-cream-100 bg-orange-500/20 border border-orange-500/30 hover:bg-orange-500/30 hover:border-orange-500/50 transition-colors w-fit"
-                            >
-                              <Wrench className="w-4 h-4 text-orange-400 shrink-0" />
-                              View torque specifications
-                              <ArrowRight className="w-4 h-4 shrink-0" />
-                            </Link>
-                          ) : (
-                            <p className="text-sm text-cream-500 py-2">
-                              No torque specs for this engine.{' '}
-                              <Link
-                                href={`/engines/${selectedTorqueEngineSlug}`}
-                                className="text-orange-400 hover:underline"
-                              >
-                                View engine details
-                              </Link>
-                            </p>
-                          )
-                        ) : (
-                          <p className="text-sm text-cream-500 py-2">Select an engine to view torque specifications.</p>
-                        )}
-                      </div>
-                    )}
-                  </Card>
+                      );
+                    })()}
+                  </div>
                 </div>
               )}
 
-              {/* Resources Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredResources.map((resource) => (
-                  <ResourceCard key={resource.id} resource={resource} />
-                ))}
-              </div>
+              {/* Resources Grid (non-Tools: calculators, guides, templates by type) */}
+              {selectedType !== 'tool' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredResources.map((resource) => (
+                    <ResourceCard key={resource.id} resource={resource} />
+                  ))}
+                </div>
+              )}
             </div>
             )}
           </div>

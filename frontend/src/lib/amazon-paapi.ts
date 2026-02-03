@@ -174,6 +174,12 @@ export const categorySearchKeywords: Record<string, string[]> = {
     'go kart throttle',
     'throttle cable go kart',
   ],
+  pedals: [
+    'go kart pedals',
+    'go kart gas pedal',
+    'go kart brake pedal',
+    'pedal set go kart',
+  ],
   frame: [
     'go kart frame',
     'go kart chassis',

@@ -26,12 +26,8 @@ export function EngineTorqueSpecs({ engine, compact = false }: EngineTorqueSpecs
   };
 
   const handlePrint = () => {
-    const printWindow = window.open(`/engines/${engine.slug}/torque-specs`, '_blank');
-    if (printWindow) {
-      printWindow.onload = () => {
-        printWindow.print();
-      };
-    }
+    // Open torque-specs page with ?print=1 so it auto-opens print dialog when loaded
+    window.open(`/engines/${engine.slug}/torque-specs?print=1`, '_blank', 'noopener,noreferrer');
   };
 
   const handleDownload = () => {

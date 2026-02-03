@@ -26,7 +26,7 @@ import {
   Cog, Battery, Zap, Gauge, DollarSign, TrendingUp, 
   ExternalLink, Plus, Filter, X, Activity, BarChart3
 } from 'lucide-react';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getMotorBrandDisplay } from '@/lib/utils';
 import { useBuildStore } from '@/store/build-store';
 import type { Engine, ElectricMotor } from '@/types/database';
 
@@ -107,7 +107,7 @@ export function EngineComparisonCharts({ engines, motors, maxItems = 20 }: Engin
       return {
         id: motor.id,
         name: motor.name,
-        brand: motor.brand,
+        brand: getMotorBrandDisplay(motor.brand),
         shortName: motor.name.length > 20 ? `${motor.name.substring(0, 17)}...` : motor.name,
         slug: motor.slug,
         powerSource: 'electric' as const,

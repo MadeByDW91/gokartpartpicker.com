@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { formatPrice } from '@/lib/utils';
-import { Search, Check, ExternalLink, Loader2, Cog, Battery } from 'lucide-react';
+import { formatPrice, getMotorBrandDisplay } from '@/lib/utils';
+import { Search, Check, ExternalLink, Loader2, Cog, Battery, Layers } from 'lucide-react';
 import { 
   searchAmazonByCategory, 
   createAmazonCategoryImport,
@@ -14,13 +14,24 @@ import {
 import { useEngines } from '@/hooks/use-engines';
 import { useMotors } from '@/hooks/use-motors';
 import { PART_CATEGORIES } from '@/types/database';
-import { getCategoryLabel } from '@/lib/utils';
+import { getCategoryLabel, GAS_ONLY_CATEGORIES, ELECTRIC_ONLY_CATEGORIES } from '@/lib/utils';
 import type { PartCategory, Engine, ElectricMotor } from '@/types/database';
+
+type PartTypeFilter = 'gas' | 'electric' | 'both';
 
 export default function AmazonCategorySearchPage() {
   const router = useRouter();
+  const [partType, setPartType] = useState<PartTypeFilter>('both');
   const [category, setCategory] = useState<PartCategory>('clutch');
   const [selectedPowerSourceId, setSelectedPowerSourceId] = useState<string>('');
+
+  const allowedCategories = (
+    partType === 'gas'
+      ? PART_CATEGORIES.filter((c) => !ELECTRIC_ONLY_CATEGORIES.includes(c))
+      : partType === 'electric'
+        ? PART_CATEGORIES.filter((c) => !GAS_ONLY_CATEGORIES.includes(c))
+        : [...PART_CATEGORIES]
+  ) as PartCategory[];
   const [maxResults, setMaxResults] = useState(20);
   const [minPrice, setMinPrice] = useState<number | undefined>();
   const [maxPrice, setMaxPrice] = useState<number | undefined>();
@@ -129,7 +140,46 @@ export default function AmazonCategorySearchPage() {
 
       {/* Search Form */}
       <div className="bg-olive-800 border border-olive-600 rounded-lg p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-cream-200 mb-2">
+              Part type (EV or Gas)
+            </label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {(
+                [
+                  { value: 'gas' as const, label: 'Gas only', icon: Cog },
+                  { value: 'electric' as const, label: 'Electric (EV) only', icon: Battery },
+                  { value: 'both' as const, label: 'Both (universal)', icon: Layers },
+                ]
+              ).map(({ value, label, icon: Icon }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => {
+                    setPartType(value);
+                    const nextAllowed = value === 'gas'
+                      ? PART_CATEGORIES.filter((c) => !ELECTRIC_ONLY_CATEGORIES.includes(c))
+                      : value === 'electric'
+                        ? PART_CATEGORIES.filter((c) => !GAS_ONLY_CATEGORIES.includes(c))
+                        : [...PART_CATEGORIES];
+                    if (!nextAllowed.includes(category)) setCategory(nextAllowed[0] as PartCategory);
+                  }}
+                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-sm font-medium transition-colors ${
+                    partType === value
+                      ? 'border-orange-500 bg-orange-500/20 text-orange-400'
+                      : 'border-olive-600 bg-olive-800/50 text-cream-300 hover:border-olive-500 hover:text-cream-100'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-cream-500">Identify whether you're searching for gas, EV, or universal parts. Category list updates to match.</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <div>
             <label className="block text-sm font-medium text-cream-200 mb-2">
               Part Category *
@@ -139,7 +189,7 @@ export default function AmazonCategorySearchPage() {
               onChange={(e) => setCategory(e.target.value as PartCategory)}
               className="w-full px-3 py-2 bg-olive-900 border border-olive-600 rounded-md text-cream-100"
             >
-              {PART_CATEGORIES.map((cat) => (
+              {allowedCategories.map((cat) => (
                 <option key={cat} value={cat}>
                   {getCategoryLabel(cat)}
                 </option>
@@ -171,7 +221,7 @@ export default function AmazonCategorySearchPage() {
                 <optgroup label="Electric Motors">
                   {(motors || []).map((motor: ElectricMotor) => (
                     <option key={motor.id} value={motor.id}>
-                      {motor.brand} {motor.name}
+                      {getMotorBrandDisplay(motor.brand)} {motor.name}
                     </option>
                   ))}
                 </optgroup>

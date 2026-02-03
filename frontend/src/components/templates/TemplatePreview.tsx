@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { formatPrice, getCategoryLabel } from '@/lib/utils';
+import { formatPrice, getCategoryLabel, getPartBrandDisplay } from '@/lib/utils';
 import type { BuildTemplate } from '@/types/database';
 import { useParts } from '@/hooks/use-parts';
 import { X, DollarSign, Package, Rocket, Zap, Wallet, GraduationCap, Trophy, Baby } from 'lucide-react';
@@ -128,7 +128,7 @@ export function TemplatePreview({ template, onClose, onApply }: TemplatePreviewP
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-cream-100">{part.name}</p>
                         <p className="text-sm text-cream-400">
-                          {getCategoryLabel(category)} • {part.brand}
+                          {getCategoryLabel(category)} • {getPartBrandDisplay(part.brand)}
                         </p>
                       </div>
                       {part.price && (

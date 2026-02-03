@@ -8,10 +8,9 @@ import { DataTable, StatusBadge, TableActions } from '@/components/admin/DataTab
 import { QuickActionsToolbar, type BulkAction } from '@/components/admin/QuickActionsToolbar';
 import { AdvancedFilters, type FilterOption, type FilterValue } from '@/components/admin/AdvancedFilters';
 import { EnhancedSearch, highlightSearch } from '@/components/admin/EnhancedSearch';
-import { formatPrice } from '@/lib/utils';
-import { Plus, Pencil, Eye, Trash2, Upload, Download, ShoppingCart, CheckCircle, XCircle, Image as ImageIcon } from 'lucide-react';
+import { formatPrice, getPartBrandDisplay, BRAND_FALLBACK } from '@/lib/utils';
+import { Plus, Pencil, Eye, Trash2, Download, CheckCircle, XCircle, Image as ImageIcon } from 'lucide-react';
 import { getAdminParts, deletePart, bulkActivateParts, bulkDeactivateParts } from '@/actions/admin';
-import { AmazonProductImporter } from '@/components/admin/AmazonProductImporter';
 import { PART_CATEGORIES } from '@/types/database';
 import type { Part } from '@/types/database';
 
@@ -83,8 +82,8 @@ export default function AdminPartsPage() {
     }
   };
 
-  // Get unique brands and categories for filters
-  const uniqueBrands = Array.from(new Set(parts.map((p) => p.brand).filter(Boolean))).sort();
+  // Get unique brands and categories for filters (include "Unbranded" when any part has no brand)
+  const uniqueBrands = Array.from(new Set(parts.map((p) => getPartBrandDisplay(p.brand)))).sort();
   const uniqueCategories = Array.from(new Set(parts.map((p) => p.category))).sort();
 
   // Filter options
@@ -151,7 +150,7 @@ export default function AdminPartsPage() {
       const query = searchQuery.toLowerCase();
       const matchesSearch =
         part.name.toLowerCase().includes(query) ||
-        part.brand?.toLowerCase().includes(query) ||
+        getPartBrandDisplay(part.brand).toLowerCase().includes(query) ||
         part.slug?.toLowerCase().includes(query) ||
         part.category.toLowerCase().includes(query);
       if (!matchesSearch) return false;
@@ -159,7 +158,12 @@ export default function AdminPartsPage() {
 
     // Advanced filters
     if (filters.category && part.category !== filters.category) return false;
-    if (filters.brand && part.brand !== filters.brand) return false;
+    if (filters.brand) {
+      const brandMatch = filters.brand === BRAND_FALLBACK
+        ? !part.brand || !String(part.brand).trim()
+        : part.brand === filters.brand;
+      if (!brandMatch) return false;
+    }
     if (filters.is_active !== undefined) {
       const isActive = filters.is_active === 'true' || filters.is_active === true;
       if (part.is_active !== isActive) return false;
@@ -246,7 +250,7 @@ export default function AdminPartsPage() {
       p.name,
       p.slug || '',
       p.category,
-      p.brand || '',
+      getPartBrandDisplay(p.brand),
       p.price || '',
       p.is_active ? 'Active' : 'Inactive',
     ]);
@@ -294,8 +298,10 @@ export default function AdminPartsPage() {
     {
       key: 'brand',
       header: 'Brand',
-      render: (part: AdminPart) => 
-        part.brand ? (searchQuery ? highlightSearch(part.brand, searchQuery) : part.brand) : '—',
+      render: (part: AdminPart) => {
+        const brandDisplay = getPartBrandDisplay(part.brand);
+        return searchQuery ? highlightSearch(brandDisplay, searchQuery) : brandDisplay;
+      },
     },
     {
       key: 'price',
@@ -354,24 +360,14 @@ export default function AdminPartsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Link href="/admin/parts/import">
-            <Button variant="primary" size="sm" icon={<ShoppingCart className="w-4 h-4" />}>
-              Import from Amazon
-            </Button>
-          </Link>
-          <Link href="/admin/parts/import">
-            <Button variant="secondary" size="sm" icon={<Upload className="w-4 h-4" />}>
-              CSV Import
+          <Link href="/admin/parts/add">
+            <Button variant="primary" icon={<Plus className="w-4 h-4" />}>
+              Add Part
             </Button>
           </Link>
           <Link href="/admin/parts/export">
             <Button variant="secondary" size="sm" icon={<Download className="w-4 h-4" />}>
               Export
-            </Button>
-          </Link>
-          <Link href="/admin/parts/new">
-            <Button variant="secondary" icon={<Plus className="w-4 h-4" />}>
-              Add Part
             </Button>
           </Link>
         </div>

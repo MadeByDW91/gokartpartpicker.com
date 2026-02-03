@@ -6,7 +6,7 @@
  */
 
 import { unstable_cache } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createCacheableClient } from '@/lib/supabase/server';
 import { 
   partFiltersSchema, 
   getPartSchema,
@@ -44,12 +44,7 @@ export async function getParts(
 
     return unstable_cache(
       async () => {
-        const supabase = await createClient();
-
-        if (!supabase || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
-          return error('Database connection not configured. Please check environment variables.');
-        }
-
+        const supabase = createCacheableClient();
         const { category, brand, min_price, max_price, sort, order, limit } = parsed.data;
 
         let query = supabase.from('parts').select('*').eq('is_active', true);
@@ -139,7 +134,7 @@ export async function getPartBySlug(
 
     return unstable_cache(
       async () => {
-        const supabase = await createClient();
+        const supabase = createCacheableClient();
         const { data, error: dbError } = await supabase
           .from('parts')
           .select('*')
@@ -169,7 +164,7 @@ export async function getPartCategories(): Promise<ActionResult<PartCategoryInfo
   try {
     return unstable_cache(
       async () => {
-        const supabase = await createClient();
+        const supabase = createCacheableClient();
         const { data, error: dbError } = await supabase
           .from('part_categories')
           .select('id, slug, name, description, icon, sort_order, is_active')

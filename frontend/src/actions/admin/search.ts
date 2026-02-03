@@ -9,6 +9,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireAdmin } from '../admin';
 import { checkRateLimitByIp } from '@/lib/rate-limit';
+import { getMotorBrandDisplay, getPartBrandDisplay } from '@/lib/utils';
 import { 
   type ActionResult, 
   success, 
@@ -126,8 +127,8 @@ export async function adminGlobalSearch(
             id: motor.id,
             type: 'motor' as const,
             title: motor.name,
-            description: `${motor.brand} ${motor.voltage}V motor`,
-            metadata: { brand: motor.brand, voltage: motor.voltage, slug: motor.slug },
+            description: `${getMotorBrandDisplay(motor.brand)} ${motor.voltage}V motor`,
+            metadata: { brand: getMotorBrandDisplay(motor.brand), voltage: motor.voltage, slug: motor.slug },
             url: `/admin/motors/${motor.id}`,
             status: motor.is_active ? ('active' as const) : ('inactive' as const),
           }))
@@ -157,8 +158,8 @@ export async function adminGlobalSearch(
             id: motor.id,
             type: 'motor' as const,
             title: motor.name,
-            description: `${motor.brand} ${motor.voltage}V motor`,
-            metadata: { brand: motor.brand, voltage: motor.voltage, slug: motor.slug },
+            description: `${getMotorBrandDisplay(motor.brand)} ${motor.voltage}V motor`,
+            metadata: { brand: getMotorBrandDisplay(motor.brand), voltage: motor.voltage, slug: motor.slug },
             url: `/admin/motors/${motor.id}`,
             status: motor.is_active ? ('active' as const) : ('inactive' as const),
           }))
@@ -192,8 +193,8 @@ export async function adminGlobalSearch(
             id: part.id,
             type: 'part' as const,
             title: part.name,
-            description: `${part.brand || 'No brand'} • ${part.category}`,
-            metadata: { brand: part.brand, category: part.category, slug: part.slug },
+            description: `${getPartBrandDisplay(part.brand)} • ${part.category}`,
+            metadata: { brand: getPartBrandDisplay(part.brand), category: part.category, slug: part.slug },
             url: `/admin/parts/${part.id}`,
             status: part.is_active ? ('active' as const) : ('inactive' as const),
           }))

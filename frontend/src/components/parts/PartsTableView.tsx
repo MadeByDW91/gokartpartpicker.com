@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { formatPrice, getCategoryLabel, cn } from '@/lib/utils';
+import { formatPrice, getCategoryLabel, getPartBrandDisplay, cn } from '@/lib/utils';
 import { ExternalLink, Plus, Check, ChevronUp, ChevronDown } from 'lucide-react';
 import type { Part, PartCategory } from '@/types/database';
 
@@ -151,7 +151,7 @@ export function PartsTableView({
                       >
                         {part.name}
                       </Link>
-                      <p className="text-xs text-cream-400 uppercase tracking-wide">{part.brand}</p>
+                      <p className="text-xs text-cream-400 uppercase tracking-wide">{getPartBrandDisplay(part.brand)}</p>
                     </div>
                   </div>
                 </td>
@@ -165,7 +165,7 @@ export function PartsTableView({
 
                 {/* Brand (hidden on tablet) */}
                 <td className="px-4 py-4 hidden lg:table-cell">
-                  <span className="text-sm text-cream-300 uppercase tracking-wide">{part.brand}</span>
+                  <span className="text-sm text-cream-300 uppercase tracking-wide">{getPartBrandDisplay(part.brand)}</span>
                 </td>
 
                 {/* Specs (hidden on smaller screens) */}

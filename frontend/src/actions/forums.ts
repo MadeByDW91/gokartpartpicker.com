@@ -8,7 +8,7 @@
 import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import type { ForumCategory } from '@/types/database';
+import type { ForumCategory, ForumPost, ForumTopic } from '@/types/database';
 import {
   createForumTopicSchema,
   updateForumTopicSchema,
@@ -37,6 +37,7 @@ import {
   handleError,
 } from '@/lib/api/types';
 import { sanitizeContent, detectSpam } from '@/lib/sanitization';
+import { getProfileDisplayMap } from '@/actions/profile';
 
 // ============================================================================
 // Helpers
@@ -152,12 +153,17 @@ export async function getForumCategories(): Promise<
   >
 > {
   try {
-    const supabase = await createClient();
-    
-    // Check if Supabase is properly configured
+    let supabase;
+    try {
+      supabase = await createClient();
+    } catch (clientErr) {
+      console.warn('[getForumCategories] Supabase client failed:', clientErr);
+      return success([]);
+    }
+
     if (!supabase || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      console.error('[getForumCategories] Supabase not configured');
-      return error('Database connection not configured. Please check environment variables.');
+      console.warn('[getForumCategories] Supabase not configured');
+      return success([]);
     }
 
     const { data, error: dbError } = await supabase
@@ -241,13 +247,13 @@ export async function getForumCategories(): Promise<
       post_count: 0,
     })));
   } catch (err) {
-    // If it's a table not found error, return empty array
     const errorMessage = err instanceof Error ? err.message : String(err);
     if (errorMessage.includes('relation') || errorMessage.includes('does not exist') || errorMessage.includes('42P01')) {
       console.warn('[getForumCategories] Forum tables not found. Migration may not have been run.');
       return success([]);
     }
-    return handleError(err, 'getForumCategories');
+    console.error('[getForumCategories] Unexpected error:', err);
+    return success([]);
   }
 }
 
@@ -342,7 +348,6 @@ export async function getForumTopics(
       .from('forum_topics')
       .select(`
         *,
-        user:profiles!forum_topics_user_id_fkey(id, username, avatar_url),
         category:forum_categories!forum_topics_category_id_fkey(id, slug, name)
       `)
       .eq('is_archived', false);
@@ -372,14 +377,23 @@ export async function getForumTopics(
     const to = from + limit - 1;
     query = query.range(from, to);
 
-    const { data, error: dbError } = await query;
+    const { data: topics, error: dbError } = await query;
 
     if (dbError) {
       console.error('[getForumTopics] Database error:', dbError);
       return error('Failed to fetch forum topics');
     }
 
-    return success(data ?? []);
+    if (!topics?.length) return success([]);
+
+    const userIds = [...new Set((topics as ForumTopic[]).map((t) => t.user_id).filter(Boolean))] as string[];
+    const userMap = await getProfileDisplayMap(userIds);
+    const data = (topics as ForumTopic[]).map((t) => ({
+      ...t,
+      user: t.user_id ? userMap[t.user_id] ?? null : null,
+    }));
+
+    return success(data);
   } catch (err) {
     return handleError(err, 'getForumTopics');
   }
@@ -428,12 +442,11 @@ export async function getForumTopic(
       return error('Category not found');
     }
 
-    // Then get the topic with user and category data
-    const { data, error: dbError } = await supabase
+    // Then get the topic with category (user from profile_display to avoid leaking email)
+    const { data: topicRow, error: dbError } = await supabase
       .from('forum_topics')
       .select(`
         *,
-        user:profiles!forum_topics_user_id_fkey(id, username, avatar_url),
         category:forum_categories!forum_topics_category_id_fkey(id, slug, name, description)
       `)
       .eq('category_id', category.id)
@@ -446,15 +459,21 @@ export async function getForumTopic(
       return error('Topic not found');
     }
 
-    if (!data) {
+    if (!topicRow) {
       return error('Topic not found');
     }
+
+    const userMap = await getProfileDisplayMap([(topicRow as { user_id: string }).user_id]);
+    const user = (topicRow as { user_id: string }).user_id
+      ? userMap[(topicRow as { user_id: string }).user_id] ?? null
+      : null;
+    const data = { ...topicRow, user, category: (topicRow as { category?: unknown }).category };
 
     // Increment view count (non-blocking)
     supabase
       .from('forum_topics')
-      .update({ views_count: data.views_count + 1 })
-      .eq('id', data.id)
+      .update({ views_count: (topicRow as { views_count: number }).views_count + 1 })
+      .eq('id', (topicRow as { id: string }).id)
       .then(() => {})
       .catch(console.error);
 
@@ -682,10 +701,7 @@ export async function getForumPosts(
 
     let query = supabase
       .from('forum_posts')
-      .select(`
-        *,
-        user:profiles!forum_posts_user_id_fkey(id, username, avatar_url)
-      `)
+      .select('*')
       .eq('topic_id', topic_id);
 
     // Apply sorting
@@ -706,14 +722,23 @@ export async function getForumPosts(
     const to = from + limit - 1;
     query = query.range(from, to);
 
-    const { data, error: dbError } = await query;
+    const { data: posts, error: dbError } = await query;
 
     if (dbError) {
       console.error('[getForumPosts] Database error:', dbError);
       return error('Failed to fetch forum posts');
     }
 
-    return success(data ?? []);
+    if (!posts?.length) return success([]);
+
+    const userIds = [...new Set((posts as ForumPost[]).map((p) => p.user_id).filter(Boolean))] as string[];
+    const userMap = await getProfileDisplayMap(userIds);
+    const data = (posts as ForumPost[]).map((p) => ({
+      ...p,
+      user: p.user_id ? userMap[p.user_id] ?? null : null,
+    }));
+
+    return success(data);
   } catch (err) {
     return handleError(err, 'getForumPosts');
   }

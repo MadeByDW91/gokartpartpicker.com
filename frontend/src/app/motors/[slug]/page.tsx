@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getMotorBySlug, getCompatibleMotorParts } from '@/actions/motors';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getMotorBrandDisplay } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
@@ -47,12 +47,13 @@ export async function generateMetadata({ params }: MotorPageProps): Promise<Meta
   const motor = result.data;
   const description = `${motor.name} - ${motor.voltage}V, ${motor.power_kw}kW (${motor.horsepower}HP) electric motor. View specs, price, and compatible EV components.`;
   
+  const brandDisplay = getMotorBrandDisplay(motor.brand);
   return {
-    title: `${motor.name} | ${motor.brand} Electric Motor`,
+    title: `${motor.name} | ${brandDisplay} Electric Motor`,
     description,
     keywords: [
       motor.name.toLowerCase(),
-      motor.brand.toLowerCase(),
+      brandDisplay.toLowerCase(),
       `${motor.voltage}v motor`,
       `${motor.power_kw}kw motor`,
       'electric go-kart motor',
@@ -94,7 +95,8 @@ export default async function MotorPage({ params }: MotorPageProps) {
   }
   
   const motor = result.data;
-  
+  const brandDisplay = getMotorBrandDisplay(motor.brand);
+
   // Fetch compatible EV parts (batteries, controllers, chargers matching voltage)
   const compatiblePartsResult = await getCompatibleMotorParts(motor.id);
   const compatibleParts = compatiblePartsResult.success ? compatiblePartsResult.data : [];
@@ -142,7 +144,7 @@ export default async function MotorPage({ params }: MotorPageProps) {
   const breadcrumbs = [
     { name: 'Home', url: 'https://gokartpartpicker.com' },
     { name: 'Engines', url: 'https://gokartpartpicker.com/engines' },
-    { name: motor.brand, url: `https://gokartpartpicker.com/engines?brand=${encodeURIComponent(motor.brand)}` },
+    { name: brandDisplay, url: `https://gokartpartpicker.com/engines?brand=${encodeURIComponent(brandDisplay)}` },
     { name: motor.name, url: motorUrl },
   ];
 
@@ -152,7 +154,7 @@ export default async function MotorPage({ params }: MotorPageProps) {
       <ProductStructuredData
         name={motor.name}
         description={`${motor.name} - ${motor.voltage}V, ${motor.power_kw}kW (${motor.horsepower}HP) electric motor`}
-        brand={motor.brand}
+        brand={brandDisplay}
         price={motor.price}
         image={motor.image_url || undefined}
         category="Electric Go-Kart Motor"
@@ -173,7 +175,7 @@ export default async function MotorPage({ params }: MotorPageProps) {
               Back to Motors
             </Link>
             <span className="text-cream-600">/</span>
-            <span className="text-cream-300">{motor.brand}</span>
+            <span className="text-cream-300">{brandDisplay}</span>
             <span className="text-cream-600">/</span>
             <span className="text-cream-100">{motor.name}</span>
           </nav>
@@ -189,7 +191,7 @@ export default async function MotorPage({ params }: MotorPageProps) {
                 {motor.image_url ? (
                   <Image
                     src={motor.image_url}
-                    alt={`${motor.brand} ${motor.name}`}
+                    alt={`${brandDisplay} ${motor.name}`}
                     fill
                     className="object-cover"
                     priority
@@ -227,7 +229,7 @@ export default async function MotorPage({ params }: MotorPageProps) {
             {/* Brand Badge */}
             <Badge variant="default" className="text-sm bg-blue-500/20 text-blue-400 border-blue-500/30">
               <Battery className="w-3 h-3 mr-1" />
-              {motor.brand}
+              {brandDisplay}
             </Badge>
             
             {/* Title */}

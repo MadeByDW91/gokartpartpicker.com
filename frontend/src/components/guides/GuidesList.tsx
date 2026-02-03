@@ -169,7 +169,7 @@ export function GuidesList() {
               placeholder="Search guides..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-olive-800/70 border-olive-700/50 text-cream-100 placeholder-cream-500 focus:border-purple-500/50"
+              className="pl-10 min-h-[44px] bg-olive-800/70 border-olive-700/50 text-cream-100 placeholder-cream-500 focus:border-purple-500/50"
             />
           </div>
 
@@ -179,11 +179,11 @@ export function GuidesList() {
               <div className="flex items-center flex-wrap gap-2">
                 <span className="text-xs text-cream-400">Active:</span>
                 {searchQuery.trim() !== '' && (
-                  <Badge variant="default" className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs px-2.5 py-1">
+                  <Badge variant="default" className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs px-2.5 py-1 inline-flex items-center gap-1">
                     &quot;{searchQuery.trim().slice(0, 12)}{searchQuery.trim().length > 12 ? '…' : ''}&quot;
                     <button
                       onClick={() => setSearchQuery('')}
-                      className="ml-2 hover:text-purple-200"
+                      className="min-h-[44px] min-w-[44px] -m-1 flex items-center justify-center rounded hover:text-purple-200 touch-manipulation"
                       aria-label="Clear search"
                     >
                       <X className="w-3 h-3" />
@@ -194,7 +194,7 @@ export function GuidesList() {
                   variant="ghost"
                   size="sm"
                   onClick={clearAllFilters}
-                  className="text-xs h-7 px-2 text-cream-400 hover:text-cream-100"
+                  className="text-xs min-h-[44px] px-3 text-cream-400 hover:text-cream-100 touch-manipulation"
                 >
                   Clear all
                 </Button>

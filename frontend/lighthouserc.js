@@ -14,7 +14,7 @@ module.exports = {
       ],
       numberOfRuns: 1,
       settings: {
-        preset: 'mobile',
+        preset: 'desktop',
         onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
       },
     },

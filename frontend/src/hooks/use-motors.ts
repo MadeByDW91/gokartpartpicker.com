@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import { getMotorBrandDisplay, MOTOR_BRAND_FALLBACK } from '@/lib/utils';
 import type { ElectricMotor, MotorFilters } from '@/types/database';
 
 const MOTORS_STALE_MS = 5 * 60 * 1000; // 5 min — reduces refetches for public data
@@ -29,7 +30,11 @@ export function useMotors(filters?: MotorFilters) {
         
         // Apply filters
         if (filters?.brand) {
-          query = query.eq('brand', filters.brand);
+          if (filters.brand === MOTOR_BRAND_FALLBACK) {
+            query = query.or('brand.is.null,brand.eq.');
+          } else {
+            query = query.eq('brand', filters.brand);
+          }
         }
         if (filters?.voltage) {
           query = query.eq('voltage', filters.voltage);
@@ -295,9 +300,9 @@ export function useMotorBrands() {
           throw new Error(`Failed to load brands: ${errorMessage || 'Unknown error'}`);
         }
         
-        // Get unique brands
-        const brandList: string[] = data?.map((m: { brand: string }) => m.brand) ?? [];
-        const brands: string[] = [...new Set(brandList)];
+        // Get unique brands (display "Unbranded" for null/empty)
+        const brandList: string[] = data?.map((m: { brand: string | null }) => getMotorBrandDisplay(m.brand)) ?? [];
+        const brands: string[] = [...new Set(brandList)].sort();
         return brands;
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {

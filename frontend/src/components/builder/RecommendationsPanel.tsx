@@ -17,7 +17,7 @@ import {
   ArrowUp,
   Zap,
 } from 'lucide-react';
-import { formatPrice, getCategoryLabel } from '@/lib/utils';
+import { formatPrice, getCategoryLabel, getPartBrandDisplay } from '@/lib/utils';
 import type { PartCategory, Part } from '@/types/database';
 import type { RecommendationGoal } from '@/actions/recommendations';
 
@@ -151,7 +151,7 @@ export function RecommendationsPanel({
                           <h4 className="font-medium text-cream-100 line-clamp-1">
                             {part.name}
                           </h4>
-                          <p className="text-xs text-cream-400 mt-1">{part.brand}</p>
+                          <p className="text-xs text-cream-400 mt-1">{getPartBrandDisplay(part.brand)}</p>
                           {hpGain > 0 && (
                             <Badge variant="success" size="sm" className="mt-1">
                               +{hpGain.toFixed(1)} HP

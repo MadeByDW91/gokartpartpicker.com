@@ -21,7 +21,7 @@ import { useInfiniteScroll } from '@/hooks/use-infinite-scroll';
 import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
 import { Package, Search, SlidersHorizontal, X, Grid, List, Filter, Loader2, ChevronDown, ChevronRight, Cog, Battery } from 'lucide-react';
 import { PART_CATEGORIES, type PartCategory, type PartFilters, type Part, type PowerSourceType } from '@/types/database';
-import { getCategoryLabel, cn, CATEGORY_GROUPS, GAS_ONLY_CATEGORIES, ELECTRIC_ONLY_CATEGORIES, isCategoryCompatibleWithPowerSource } from '@/lib/utils';
+import { getCategoryLabel, getPartBrandDisplay, cn, CATEGORY_GROUPS, GAS_ONLY_CATEGORIES, ELECTRIC_ONLY_CATEGORIES, isCategoryCompatibleWithPowerSource } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
 
 function PartsPageContent() {
@@ -71,7 +71,7 @@ function PartsPageContent() {
         const query = searchQuery.toLowerCase();
         return (
           part.name.toLowerCase().includes(query) ||
-          part.brand?.toLowerCase().includes(query) ||
+          getPartBrandDisplay(part.brand).toLowerCase().includes(query) ||
           getCategoryLabel(part.category).toLowerCase().includes(query)
         );
       }
@@ -182,10 +182,10 @@ function PartsPageContent() {
         )}
 
         <div className="flex gap-8">
-          {/* Sidebar - Categories with Groups */}
+          {/* Sidebar - Categories: desktop only; on mobile use the drawer (Categories button) */}
           <aside className={cn(
             'w-64 flex-shrink-0 transition-all duration-300',
-            'block' // Always visible - will make responsive after confirming it works
+            'hidden lg:block'
           )}>
             <div className="sticky top-24 bg-olive-800/50 rounded-xl border border-olive-700/50 p-4">
               <div className="flex items-center justify-between mb-4">
@@ -193,12 +193,6 @@ function PartsPageContent() {
                   <Filter className="w-5 h-5 text-orange-400" />
                   Categories
                 </h2>
-                <button
-                  onClick={() => setShowSidebar(false)}
-                  className="lg:hidden text-cream-400 hover:text-cream-100"
-                >
-                  <X className="w-4 h-4" />
-                </button>
               </div>
               
               <nav className="space-y-1">
@@ -445,55 +439,49 @@ function PartsPageContent() {
                   </button>
                 </div>
                 
-                {/* Mobile Action Buttons Row - Compact & Professional */}
-                <div className="flex items-center gap-2 lg:hidden">
-                  {/* Categories Button */}
-                  <Button
-                    variant={filters.category ? "primary" : "secondary"}
-                    size="sm"
-                    onClick={() => setShowSidebar(!showSidebar)}
-                    className="flex-1 min-h-[44px] touch-manipulation justify-center"
-                    icon={<Filter className="w-4 h-4" />}
-                  >
-                    <span className="hidden min-[380px]:inline">
-                      {filters.category ? getCategoryLabel(filters.category) : 'Categories'}
-                    </span>
-                    <span className="min-[380px]:hidden">Filter</span>
-                  </Button>
-                  
-                  {/* Filters/Advanced Button */}
-                  <Button
-                    variant={hasActiveFilters ? "primary" : "secondary"}
-                    size="sm"
-                    onClick={() => setShowFilters(!showFilters)}
-                    className="flex-1 min-h-[44px] touch-manipulation justify-center"
-                    icon={<SlidersHorizontal className="w-4 h-4" />}
-                  >
-                    Filters
-                  </Button>
-                  
-                  {/* View Toggle - Compact Icon Only */}
-                  <div className="flex items-center bg-olive-800/50 rounded-lg p-1 border border-olive-700/50">
-                    <button
-                      onClick={() => setViewMode('grid')}
-                      className={cn(
-                        'p-2 rounded transition-colors touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center',
-                        viewMode === 'grid' ? 'bg-olive-700 text-orange-400' : 'text-cream-400 hover:text-cream-100 active:bg-olive-600'
-                      )}
-                      aria-label="Grid view"
+                {/* Mobile: scrollable row so nothing is cut off */}
+                <div className="lg:hidden overflow-x-auto overflow-y-hidden -mx-4 px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  <div className="flex items-center gap-2 flex-nowrap w-max min-w-full pb-1">
+                    <Button
+                      variant={filters.category ? "primary" : "secondary"}
+                      size="sm"
+                      onClick={() => setShowSidebar(!showSidebar)}
+                      className="flex-shrink-0 min-h-[44px] touch-manipulation"
+                      icon={<Filter className="w-4 h-4" />}
                     >
-                      <Grid className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setViewMode('list')}
-                      className={cn(
-                        'p-2 rounded transition-colors touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center',
-                        viewMode === 'list' ? 'bg-olive-700 text-orange-400' : 'text-cream-400 hover:text-cream-100 active:bg-olive-600'
-                      )}
-                      aria-label="List view"
+                      {filters.category ? getCategoryLabel(filters.category) : 'Category'}
+                    </Button>
+                    <Button
+                      variant={hasActiveFilters ? "primary" : "secondary"}
+                      size="sm"
+                      onClick={() => setShowFilters(!showFilters)}
+                      className="flex-shrink-0 min-h-[44px] touch-manipulation"
+                      icon={<SlidersHorizontal className="w-4 h-4" />}
                     >
-                      <List className="w-4 h-4" />
-                    </button>
+                      Filters
+                    </Button>
+                    <div className="flex items-center bg-olive-800/50 rounded-lg p-1 border border-olive-700/50 flex-shrink-0">
+                      <button
+                        onClick={() => setViewMode('grid')}
+                        className={cn(
+                          'p-2 rounded min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation',
+                          viewMode === 'grid' ? 'bg-olive-700 text-orange-400' : 'text-cream-400 hover:text-cream-100 active:bg-olive-600'
+                        )}
+                        aria-label="Grid view"
+                      >
+                        <Grid className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setViewMode('list')}
+                        className={cn(
+                          'p-2 rounded min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation',
+                          viewMode === 'list' ? 'bg-olive-700 text-orange-400' : 'text-cream-400 hover:text-cream-100 active:bg-olive-600'
+                        )}
+                        aria-label="List view"
+                      >
+                        <List className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
                 
@@ -686,70 +674,69 @@ function PartsPageContent() {
               )}
             </div>
 
-            {/* Mobile Categories Drawer - Professional Slide-in */}
+            {/* Mobile Categories - Bottom sheet with chip grid for easier tapping */}
             {showSidebar && (
-              <div className="lg:hidden fixed inset-0 z-50 flex" aria-modal="true" role="dialog" aria-label="Parts categories">
-                {/* Backdrop */}
-                <div 
-                  className="flex-1 bg-black/60 backdrop-blur-sm touch-manipulation transition-opacity duration-200"
+              <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end" aria-modal="true" role="dialog" aria-label="Choose category">
+                <div
+                  className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
                   onClick={() => setShowSidebar(false)}
                   aria-hidden="true"
                 />
-                {/* Drawer Panel */}
-                <aside 
-                  ref={drawerSwipeRef as React.RefObject<HTMLElement>}
-                  className="w-80 max-w-[90vw] bg-olive-800 border-l border-olive-700 shadow-xl transform transition-transform duration-300 ease-out touch-pan-y"
+                <div
+                  ref={drawerSwipeRef as React.RefObject<HTMLDivElement>}
+                  className="relative bg-olive-900 border-t border-olive-700 rounded-t-2xl shadow-[0_-8px_32px_rgba(0,0,0,0.4)] max-h-[70vh] flex flex-col safe-area-bottom"
                 >
-                  {/* Header */}
-                  <div className="sticky top-0 bg-olive-800 border-b border-olive-700 p-4 flex items-center justify-between z-10">
-                    <h2 className="text-lg font-semibold text-cream-100 flex items-center gap-2">
-                      <Filter className="w-5 h-5 text-orange-400" />
-                      Categories
-                    </h2>
-                    <button
-                      onClick={() => setShowSidebar(false)}
-                      className="min-w-[44px] min-h-[44px] flex items-center justify-center text-cream-400 hover:text-cream-100 hover:bg-olive-700 rounded-md touch-manipulation transition-colors"
-                      aria-label="Close categories"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
+                  <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+                    <div className="w-10 h-1 rounded-full bg-olive-600" aria-hidden />
                   </div>
-                  
-                  {/* Categories List */}
-                  <nav className="p-4 space-y-1 overflow-y-auto safe-area-bottom">
-                    <button
-                      onClick={() => {
-                        setFilters({ ...filters, category: undefined });
-                        setShowSidebar(false);
-                      }}
-                      className={cn(
-                        'w-full text-left px-4 py-3 min-h-[48px] flex items-center text-sm font-medium rounded-lg transition-all touch-manipulation',
-                        !filters.category
-                          ? 'bg-orange-500 text-cream-100 shadow-md'
-                          : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700 active:bg-olive-600'
-                      )}
-                    >
-                      <span className="font-semibold">All Parts</span>
-                    </button>
-                    {PART_CATEGORIES.map((category) => (
+                  <div className="px-4 pb-6 pt-2 flex flex-col flex-1 min-h-0">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-base font-semibold text-cream-100">Choose category</h2>
                       <button
-                        key={category}
+                        onClick={() => setShowSidebar(false)}
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-cream-400 hover:text-cream-100 rounded-lg touch-manipulation"
+                        aria-label="Close"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <nav className="overflow-y-auto flex-1 -mx-1" aria-label="Part categories">
+                      <button
                         onClick={() => {
-                          setFilters({ ...filters, category });
+                          setFilters({ ...filters, category: undefined });
                           setShowSidebar(false);
                         }}
                         className={cn(
-                          'w-full text-left px-4 py-3 min-h-[48px] flex items-center text-sm font-medium rounded-lg transition-all touch-manipulation',
-                          filters.category === category
-                            ? 'bg-orange-500 text-cream-100 shadow-md'
-                            : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700 active:bg-olive-600'
+                          'w-full text-center py-2.5 px-3 rounded-xl text-sm font-medium transition-colors touch-manipulation mb-3',
+                          !filters.category
+                            ? 'bg-orange-500 text-cream-100'
+                            : 'bg-olive-800 text-cream-200 hover:bg-olive-700 active:bg-olive-600'
                         )}
                       >
-                        {getCategoryLabel(category)}
+                        All Parts
                       </button>
-                    ))}
-                  </nav>
-                </aside>
+                      <div className="grid grid-cols-2 gap-2">
+                        {PART_CATEGORIES.map((category) => (
+                          <button
+                            key={category}
+                            onClick={() => {
+                              setFilters({ ...filters, category });
+                              setShowSidebar(false);
+                            }}
+                            className={cn(
+                              'py-2.5 px-3 rounded-xl text-sm font-medium text-left transition-colors touch-manipulation min-h-[44px]',
+                              filters.category === category
+                                ? 'bg-orange-500/20 text-orange-400 border border-orange-500/40'
+                                : 'bg-olive-800/80 text-cream-200 hover:bg-olive-700 border border-transparent active:bg-olive-700'
+                            )}
+                          >
+                            {getCategoryLabel(category)}
+                          </button>
+                        ))}
+                      </div>
+                    </nav>
+                  </div>
+                </div>
               </div>
             )}
             

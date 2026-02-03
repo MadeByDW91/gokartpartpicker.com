@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Search, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, getPartBrandDisplay } from '@/lib/utils';
 import { useEngines } from '@/hooks/use-engines';
 import { useParts } from '@/hooks/use-parts';
 import type { Engine, Part } from '@/types/database';
@@ -43,7 +43,7 @@ export function AdvancedSearch({
     // Search parts
     const partResults = allParts.filter((part) =>
       part.name.toLowerCase().includes(searchQuery) ||
-      part.brand.toLowerCase().includes(searchQuery) ||
+      getPartBrandDisplay(part.brand).toLowerCase().includes(searchQuery) ||
       part.slug.toLowerCase().includes(searchQuery) ||
       part.category.toLowerCase().includes(searchQuery)
     );
@@ -168,7 +168,7 @@ export function AdvancedSearch({
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-sm font-medium text-cream-100">{part.name}</p>
-                            <p className="text-xs text-cream-400">{part.brand} • {part.category}</p>
+                            <p className="text-xs text-cream-400">{getPartBrandDisplay(part.brand)} • {part.category}</p>
                           </div>
                           {part.price && (
                             <span className="text-sm font-bold text-orange-400">

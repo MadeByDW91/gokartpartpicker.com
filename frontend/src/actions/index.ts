@@ -33,6 +33,7 @@ export {
   getBuildByShareId,
   getUserBuilds,
   getPublicBuilds,
+  getBuildsForComparison,
   addPartToBuild,
   removePartFromBuild 
 } from './builds';

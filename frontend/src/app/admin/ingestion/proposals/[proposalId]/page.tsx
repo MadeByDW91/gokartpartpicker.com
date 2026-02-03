@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
-import { formatDate } from '@/lib/utils';
+import { formatDate, getPartBrandDisplay } from '@/lib/utils';
 import { ArrowLeft, Check, X, Plus, ExternalLink, Play } from 'lucide-react';
 import { 
   getPartProposal,
@@ -261,7 +261,7 @@ export default function ProposalDetailPage() {
                   </div>
                   <div>
                     <p className="text-cream-400 text-sm">Brand</p>
-                    <p className="text-cream-100 mt-1">{proposal.proposed_part.brand || 'N/A'}</p>
+                    <p className="text-cream-100 mt-1">{getPartBrandDisplay(proposal.proposed_part.brand)}</p>
                   </div>
                   <div>
                     <p className="text-cream-400 text-sm">Price</p>

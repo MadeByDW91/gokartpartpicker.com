@@ -137,6 +137,31 @@ body {
   }
 }
 
+/* Skip to main content - visible on focus for keyboard users */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  z-index: 100;
+}
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+  width: auto;
+  height: auto;
+  padding: 0.5rem 1rem;
+  background: var(--orange-500);
+  color: var(--cream-100);
+  border-radius: var(--radius-md);
+  clip: auto;
+  overflow: visible;
+  outline: 2px solid var(--cream-100);
+  outline-offset: 2px;
+}
+
 .touch-manipulation {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -596,11 +621,12 @@ header nav > div > div:last-child {
    ===================================================== */
 
 @media print {
-  /* Hide navigation, buttons, and non-essential UI */
-  /* Note: Tailwind's print:hidden class is handled by Tailwind itself */
-  body > div:not(.shopping-list-container),
-  button,
-  .bg-olive-800 {
+  /* Hide site chrome (header, footer, banner) so content pages print cleanly */
+  .no-print {
+    display: none !important;
+  }
+  /* Legacy: hide nav/buttons only when printing a shopping list context */
+  .shopping-list-container ~ * button {
     display: none !important;
   }
   

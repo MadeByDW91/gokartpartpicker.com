@@ -101,10 +101,17 @@ export default function RootLayout({
           <AnalyticsProvider>
             <AffiliateLinkTracker />
             <div className="w-full max-w-full overflow-x-hidden">
-              <ImpersonationBanner />
-              <Header />
-              <main className="flex-1 w-full max-w-full overflow-x-hidden">{children}</main>
-              <Footer />
+              <a href="#main-content" className="skip-link">
+                Skip to main content
+              </a>
+              <div className="no-print">
+                <ImpersonationBanner />
+                <Header />
+              </div>
+              <main id="main-content" className="flex-1 w-full max-w-full overflow-x-hidden">{children}</main>
+              <div className="no-print">
+                <Footer />
+              </div>
             </div>
             <Toaster richColors position="top-center" closeButton />
           </AnalyticsProvider>

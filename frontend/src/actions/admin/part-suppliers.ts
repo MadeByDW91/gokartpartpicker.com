@@ -2,11 +2,13 @@
 
 /**
  * Server actions for managing part supplier links
- * All actions require admin or super_admin role
+ * Admin actions require admin or super_admin role.
+ * getPartSupplierLinksPublic is for public part pages (no auth).
  */
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
+import { unstable_cache } from 'next/cache';
+import { createClient, createCacheableClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 import { 
   type ActionResult, 
@@ -15,7 +17,7 @@ import {
   handleError 
 } from '@/lib/api/types';
 import { requireAdmin } from '../admin';
-import { parseInput } from '@/lib/validation/schemas';
+import { parseInput, getPartSchema } from '@/lib/validation/schemas';
 
 // ============================================================================
 // Validation Schemas
@@ -32,6 +34,8 @@ const supplierLinkSchema = z.object({
   display_order: z.coerce.number().int().default(0).optional(),
   is_active: z.boolean().default(true).optional(),
   notes: z.string().max(500).optional().nullable(),
+  variant_label: z.string().max(50).optional().nullable(),
+  variant_image_url: z.string().max(2000).optional().nullable(),
 });
 
 export type SupplierLinkInput = z.infer<typeof supplierLinkSchema>;
@@ -50,6 +54,48 @@ export interface PartSupplierLink {
   created_at: string;
   updated_at: string;
   created_by: string | null;
+  variant_label?: string | null;
+  variant_image_url?: string | null;
+}
+
+/** Cache TTL for public supplier links (10 min) */
+const SUPPLIER_LINKS_CACHE_TTL = 600;
+
+/**
+ * Get active supplier links for a part (public – no auth).
+ * Used on part detail page for "Where to buy".
+ */
+export async function getPartSupplierLinksPublic(
+  partId: string
+): Promise<ActionResult<PartSupplierLink[]>> {
+  try {
+    const parsed = parseInput(getPartSchema, { id: partId });
+    if (!parsed.success) return error('Invalid part ID');
+
+    const validId = parsed.data.id;
+    return unstable_cache(
+      async () => {
+        const supabase = createCacheableClient();
+        const { data, error: dbError } = await supabase
+          .from('part_supplier_links')
+          .select('*')
+          .eq('part_id', validId)
+          .eq('is_active', true)
+          .order('display_order', { ascending: true })
+          .order('created_at', { ascending: true });
+
+        if (dbError) {
+          console.error('[getPartSupplierLinksPublic]', dbError);
+          return error('Failed to fetch supplier links');
+        }
+        return success((data ?? []) as PartSupplierLink[]);
+      },
+      ['part-supplier-links', validId],
+      { revalidate: SUPPLIER_LINKS_CACHE_TTL }
+    )() as Promise<ActionResult<PartSupplierLink[]>>;
+  } catch (err) {
+    return handleError(err, 'getPartSupplierLinksPublic');
+  }
 }
 
 /**
@@ -117,7 +163,7 @@ export async function createPartSupplierLink(
 
     if (dbError) {
       console.error('[createPartSupplierLink] Database error:', dbError);
-      return error('Failed to create supplier link');
+      return error(dbError.message || 'Failed to create supplier link');
     }
 
     revalidatePath('/admin/parts');
@@ -278,6 +324,8 @@ export async function updatePartSupplierLinks(
             display_order: link.display_order ?? idx,
             is_active: link.is_active ?? true,
             notes: link.notes ?? null,
+            variant_label: link.variant_label?.trim() || null,
+            variant_image_url: link.variant_image_url?.trim() || null,
             part_id: partId,
             created_by: userId,
           }))
@@ -285,7 +333,7 @@ export async function updatePartSupplierLinks(
 
       if (createError) {
         console.error('[updatePartSupplierLinks] Create error:', createError);
-        return error('Failed to create supplier links');
+        return error(createError.message || 'Failed to create supplier links');
       }
       created = newLinks.length;
     }
@@ -304,6 +352,8 @@ export async function updatePartSupplierLinks(
             display_order: link.display_order ?? 0,
             is_active: link.is_active ?? true,
             notes: link.notes ?? null,
+            variant_label: link.variant_label?.trim() || null,
+            variant_image_url: link.variant_image_url?.trim() || null,
             updated_at: new Date().toISOString(),
           })
           .eq('id', link.id);
@@ -325,7 +375,7 @@ export async function updatePartSupplierLinks(
 
       if (deleteError) {
         console.error('[updatePartSupplierLinks] Delete error:', deleteError);
-        return error('Failed to delete supplier links');
+        return error(deleteError.message || 'Failed to delete supplier links');
       }
       deleted = linksToDelete.length;
     }

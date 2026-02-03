@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { getEngineBySlug } from '@/actions/engines';
 import { getTorqueSpecs } from '@/data/torque-specs';
@@ -80,5 +81,9 @@ export default async function EngineTorqueSpecsPage({ params }: TorqueSpecsPageP
     );
   }
   
-  return <EngineTorqueSpecsView engine={engine} specs={specs} />;
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-olive-900 flex items-center justify-center"><div className="text-cream-400">Loading...</div></div>}>
+      <EngineTorqueSpecsView engine={engine} specs={specs} />
+    </Suspense>
+  );
 }

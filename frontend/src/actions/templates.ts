@@ -14,6 +14,7 @@ import {
   handleError 
 } from '@/lib/api/types';
 import type { BuildTemplate, TemplateGoal } from '@/types/database';
+import { getProfileDisplayMap } from '@/actions/profile';
 
 /**
  * Get the current authenticated user
@@ -115,12 +116,11 @@ export async function getAdminTemplates(): Promise<ActionResult<BuildTemplate[]>
 
     const supabase = await createClient();
     
-    const { data, error: dbError } = await supabase
+    const { data: rows, error: dbError } = await supabase
       .from('build_templates')
       .select(`
         *,
-        engine:engines(*),
-        profile:profiles(username, avatar_url)
+        engine:engines(*)
       `)
       .order('created_at', { ascending: false });
 
@@ -129,7 +129,14 @@ export async function getAdminTemplates(): Promise<ActionResult<BuildTemplate[]>
       return error('Failed to fetch templates');
     }
 
-    return success(data ?? []);
+    if (!rows?.length) return success([]);
+    const userIds = [...new Set(rows.map((t: { submitted_by?: string; created_by?: string }) => t.submitted_by ?? t.created_by).filter(Boolean))] as string[];
+    const userMap = await getProfileDisplayMap(userIds);
+    const data = rows.map((t: { submitted_by?: string; created_by?: string }) => ({
+      ...t,
+      profile: (t.submitted_by ?? t.created_by) ? userMap[t.submitted_by ?? t.created_by!] ?? null : null,
+    }));
+    return success(data);
   } catch (err) {
     return handleError(err, 'getAdminTemplates');
   }
@@ -152,8 +159,7 @@ export async function getTemplate(
       .from('build_templates')
       .select(`
         *,
-        engine:engines(*),
-        profile:profiles(username, avatar_url)
+        engine:engines(*)
       `)
       .eq('id', id)
       .single();
@@ -163,12 +169,16 @@ export async function getTemplate(
       query = query.eq('is_public', true).eq('is_active', true);
     }
 
-    const { data, error: dbError } = await query;
+    const { data: row, error: dbError } = await query;
 
     if (dbError) {
       return handleError(dbError, 'getTemplate', 'Template');
     }
 
+    if (!row) return error('Template not found');
+    const uid = (row as { submitted_by?: string; created_by?: string }).submitted_by ?? (row as { created_by?: string }).created_by;
+    const userMap = uid ? await getProfileDisplayMap([uid]) : {};
+    const data = { ...row, profile: uid ? userMap[uid] ?? null : null };
     return success(data);
   } catch (err) {
     return handleError(err, 'getTemplate');
@@ -186,12 +196,11 @@ export async function getAllTemplates(): Promise<ActionResult<BuildTemplate[]>> 
 
     const supabase = await createClient();
     
-    const { data, error: dbError } = await supabase
+    const { data: rows, error: dbError } = await supabase
       .from('build_templates')
       .select(`
         *,
-        engine:engines(*),
-        profile:profiles(username, avatar_url)
+        engine:engines(*)
       `)
       .order('created_at', { ascending: false });
 
@@ -200,7 +209,14 @@ export async function getAllTemplates(): Promise<ActionResult<BuildTemplate[]>> 
       return error('Failed to fetch templates');
     }
 
-    return success(data ?? []);
+    if (!rows?.length) return success([]);
+    const userIds = [...new Set(rows.map((t: { submitted_by?: string; created_by?: string }) => t.submitted_by ?? t.created_by).filter(Boolean))] as string[];
+    const userMap = await getProfileDisplayMap(userIds);
+    const data = rows.map((t: { submitted_by?: string; created_by?: string }) => ({
+      ...t,
+      profile: (t.submitted_by ?? t.created_by) ? userMap[t.submitted_by ?? t.created_by!] ?? null : null,
+    }));
+    return success(data);
   } catch (err) {
     return handleError(err, 'getAllTemplates');
   }
@@ -376,13 +392,11 @@ export async function getPendingTemplates(): Promise<ActionResult<BuildTemplate[
 
     const supabase = await createClient();
 
-    const { data, error: dbError } = await supabase
+    const { data: rows, error: dbError } = await supabase
       .from('build_templates')
       .select(`
         *,
-        engine:engines(*),
-        profile:profiles(username, avatar_url),
-        submitter:profiles!build_templates_submitted_by_fkey(username, avatar_url)
+        engine:engines(*)
       `)
       .eq('approval_status', 'pending')
       .order('created_at', { ascending: false });
@@ -392,7 +406,15 @@ export async function getPendingTemplates(): Promise<ActionResult<BuildTemplate[
       return error('Failed to fetch pending templates');
     }
 
-    return success(data ?? []);
+    if (!rows?.length) return success([]);
+    const userIds = [...new Set(rows.flatMap((t: { submitted_by?: string; created_by?: string }) => [t.submitted_by, t.created_by].filter(Boolean)))] as string[];
+    const userMap = await getProfileDisplayMap(userIds);
+    const data = rows.map((t: { submitted_by?: string; created_by?: string }) => ({
+      ...t,
+      profile: (t.submitted_by ?? t.created_by) ? userMap[t.submitted_by ?? t.created_by!] ?? null : null,
+      submitter: t.submitted_by ? userMap[t.submitted_by] ?? null : null,
+    }));
+    return success(data);
   } catch (err) {
     return handleError(err, 'getPendingTemplates');
   }

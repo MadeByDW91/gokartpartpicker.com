@@ -1,7 +1,8 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Printer, Download, ArrowLeft, Wrench, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
@@ -15,10 +16,21 @@ interface EngineTorqueSpecsViewProps {
 
 export function EngineTorqueSpecsView({ engine, specs }: EngineTorqueSpecsViewProps) {
   const printRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
 
   const handlePrint = () => {
     window.print();
   };
+
+  // When opened with ?print=1 (e.g. from "Print" on engine page), open print dialog after content is ready
+  useEffect(() => {
+    if (searchParams.get('print') === '1') {
+      const t = setTimeout(() => {
+        window.print();
+      }, 800);
+      return () => clearTimeout(t);
+    }
+  }, [searchParams]);
 
   const handleExportCSV = () => {
     const csvRows = [
@@ -48,13 +60,20 @@ export function EngineTorqueSpecsView({ engine, specs }: EngineTorqueSpecsViewPr
 
   // Normalize torque values to ensure consistent formatting
   const normalizeTorqueValue = (value: string): string => {
-    // Ensure all values have units if they're missing
     if (!value.toLowerCase().includes('ft-lb') && !value.toLowerCase().includes('in-lb')) {
-      // If it's just numbers, assume ft-lb format
       return value.includes('-') ? `${value} ft-lb` : `${value} ft-lb`;
     }
     return value;
   };
+
+  // Avoid "Predator Predator 212 Hemi" — show "Predator 212 Hemi" when name already starts with brand
+  const engineDisplayName =
+    engine.name.trim().toLowerCase().startsWith(engine.brand.trim().toLowerCase())
+      ? engine.name.trim()
+      : `${engine.brand} ${engine.name}`.trim();
+
+  const isCriticalNote = (notes: string | undefined) =>
+    notes?.toLowerCase().includes('critical') ?? false;
 
   return (
     <>
@@ -100,8 +119,13 @@ export function EngineTorqueSpecsView({ engine, specs }: EngineTorqueSpecsViewPr
           .print-table {
             border-collapse: collapse;
             width: 100%;
+            min-width: 0;
             margin-bottom: 24px;
             page-break-inside: avoid;
+          }
+          
+          .print-table thead tr {
+            page-break-after: avoid;
           }
           
           .print-table th {
@@ -189,6 +213,16 @@ export function EngineTorqueSpecsView({ engine, specs }: EngineTorqueSpecsViewPr
         </div>
         
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 print:py-0">
+          {/* Related link — hidden when printing */}
+          <div className="no-print mb-4">
+            <Link
+              href={`/engines/${engine.slug}`}
+              className="text-sm text-cream-400 hover:text-orange-400 transition-colors inline-flex items-center gap-1.5"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Engine page: manual, specs &amp; compatible parts
+            </Link>
+          </div>
           {/* Printable Content */}
           <div ref={printRef} className="print-container bg-white text-black rounded-xl shadow-2xl print:shadow-none p-8 sm:p-12 print:p-0">
             {/* Professional Header */}
@@ -199,7 +233,7 @@ export function EngineTorqueSpecsView({ engine, specs }: EngineTorqueSpecsViewPr
                     Torque Specifications
                   </h1>
                   <h2 className="text-2xl font-semibold text-gray-700 print:text-xl">
-                    {engine.brand} {engine.name}
+                    {engineDisplayName}
                   </h2>
                 </div>
                 <div className="hidden print:block text-right">
@@ -214,6 +248,12 @@ export function EngineTorqueSpecsView({ engine, specs }: EngineTorqueSpecsViewPr
               </div>
               <p className="text-base text-gray-600 print:text-sm">
                 Complete fastener torque values for all engine components. Use a calibrated torque wrench for all installations.
+              </p>
+              <p className="text-xs text-gray-500 mt-2 print:text-xs">
+                Reference only; the manufacturer&apos;s current manual is authoritative when in doubt.
+              </p>
+              <p className="text-xs text-gray-500 mt-1 print:hidden">
+                Use a wrench that covers the range needed (e.g. 5–80 ft-lb for most small engines). For break-in procedure, maintenance intervals, and tightening sequences, see the full manual on the engine page.
               </p>
             </div>
 
@@ -249,9 +289,10 @@ export function EngineTorqueSpecsView({ engine, specs }: EngineTorqueSpecsViewPr
               </div>
             </div>
 
-            {/* Clean Professional Table */}
-            <div className="overflow-x-auto mb-8 print:mb-6">
-              <table className="w-full border-collapse print-table bg-white">
+            {/* Table: horizontal scroll on small screens; full width when printing */}
+            <p className="text-xs text-gray-500 mb-2 print:hidden sm:hidden">Scroll horizontally to see all columns</p>
+            <div className="overflow-x-auto mb-8 print:mb-6 -mx-2 sm:mx-0 px-2 sm:px-0 print:overflow-visible" role="region" aria-label="Torque specifications table">
+              <table className="w-full min-w-[600px] sm:min-w-0 border-collapse print-table bg-white print:min-w-0">
                 <thead>
                   <tr className="bg-gray-100 print:bg-gray-100">
                     <th className="text-left py-4 px-6 text-sm font-bold text-gray-900 uppercase tracking-wide print:py-3 print:px-4 print:text-xs">
@@ -287,7 +328,10 @@ export function EngineTorqueSpecsView({ engine, specs }: EngineTorqueSpecsViewPr
                       <td className="py-4 px-6 text-gray-900 print:py-3 print:px-4 torque-value">
                         {spec.torqueInLb}
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-700 print:py-3 print:px-4 print:text-xs">
+                      <td className={cn(
+                        'py-4 px-6 text-sm print:py-3 print:px-4 print:text-xs',
+                        isCriticalNote(spec.notes) ? 'text-gray-900 font-semibold print:font-bold' : 'text-gray-700'
+                      )}>
                         {spec.notes || '—'}
                       </td>
                     </tr>
@@ -296,19 +340,14 @@ export function EngineTorqueSpecsView({ engine, specs }: EngineTorqueSpecsViewPr
               </table>
             </div>
 
-            {/* Professional Footer */}
+            {/* Compact footer when printing; no repeat of safety text */}
             <div className="print-footer pt-6 border-t-2 border-gray-300 print:border-black">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 print:flex-row print:gap-2">
-                <div>
-                  <p className="text-sm font-semibold text-gray-900 print:text-xs print:font-bold">
-                    Always use a calibrated torque wrench
-                  </p>
-                  <p className="text-xs text-gray-600 print:text-xs print:mt-1">
-                    Overtightening or undertightening can cause component failure or safety hazards
-                  </p>
-                </div>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 print:flex-row">
                 <p className="text-xs text-gray-500 print:text-xs">
                   GoKartPartPicker.com • {new Date().toLocaleDateString()}
+                </p>
+                <p className="text-xs text-gray-400 print:text-xs print:max-w-[50%] print:text-right">
+                  For full safety guidelines, see above.
                 </p>
               </div>
             </div>

@@ -34,11 +34,12 @@
 - [x] **Touch targets ≥44px** on header mobile buttons (Phase 1), builder actions, parts/engines filter bars (Phase 2).
 - [x] **Canonical logo** on auth pages (Phase 1).
 - [x] **Power source / filters** — `aria-label` and `role="radio"` where applicable (PowerSourceSelector, Engines).
-- [ ] **Focus trap in modals** — Ensure Tab cycles within modal and Esc closes; set focus to first focusable on open and return focus on close.
-- [ ] **Skip link** — “Skip to main content” for keyboard users (optional, P2).
+- [x] **Focus trap in modals** — PartSelectionModal and SearchModal use `useFocusTrap`; Tab cycles within modal, Esc closes; focus moves to first focusable on open and restores on close.
+- [x] **Skip link** — “Skip to main content” link in root layout; visible on focus (`.skip-link` in globals.css); main has `id="main-content"`.
 
 ---
 
 ## Changelog
 
 - **Phase 2:** Added doc; documented current state and gaps; quick wins partially done (touch targets, aria on filters).
+- **Phase 4:** Focus trap in PartSelectionModal and SearchModal (`use-focus-trap.ts`); Escape closes PartSelectionModal; skip link + `#main-content` in root layout; Guides/Tools/Forums touch targets (clear search, category pills, calculator tabs, badge X, Clear all, expandable panels, ForumCategoryCard Preview/Browse).

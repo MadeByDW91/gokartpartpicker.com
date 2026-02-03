@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Badge } from '@/components/ui/Badge';
-import { slugify } from '@/lib/utils';
+import { slugify, getCategoryLabel, GAS_ONLY_CATEGORIES, ELECTRIC_ONLY_CATEGORIES } from '@/lib/utils';
+import { getSpecFieldsForCategory } from '@/lib/part-category-specs';
 import { PART_CATEGORIES } from '@/types/database';
+import type { PartCategory } from '@/types/database';
 import { createPart, updatePart } from '@/actions/admin';
 import { getPartCategories } from '@/actions/parts';
 import { autoSearchAndAddVideosForPart } from '@/actions/admin/auto-video-linker';
@@ -18,7 +20,7 @@ import {
   type PartSupplierLink 
 } from '@/actions/admin/part-suppliers';
 import type { Part } from '@/types/database';
-import { Plus, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Trash2, ArrowUp, ArrowDown, Cog, Battery, Layers } from 'lucide-react';
 
 interface AdminPart extends Part {
   slug: string;
@@ -33,7 +35,8 @@ interface PartFormProps {
   mode: 'create' | 'edit';
 }
 
-interface PartCategory {
+/** Category list item (from getPartCategories); PartCategory from database is the slug union. */
+interface PartCategoryOption {
   id?: string;
   slug: string;
   name: string;
@@ -49,6 +52,8 @@ interface SupplierLinkFormData {
   display_order: number;
   is_active: boolean;
   notes: string | null;
+  variant_label?: string | null;
+  variant_image_url?: string | null;
 }
 
 export function PartForm({ part, mode }: PartFormProps) {
@@ -56,12 +61,49 @@ export function PartForm({ part, mode }: PartFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [categories, setCategories] = useState<PartCategory[]>([]);
+  const [categories, setCategories] = useState<PartCategoryOption[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [autoAddVideos, setAutoAddVideos] = useState(false);
   const [videoStatus, setVideoStatus] = useState<string | null>(null);
   const [supplierLinks, setSupplierLinks] = useState<SupplierLinkFormData[]>([]);
   const [loadingLinks, setLoadingLinks] = useState(false);
+
+  // Part type: Gas, Electric (EV), or Both (universal). Drives which categories are shown.
+  type PartTypeFilter = 'gas' | 'electric' | 'both';
+  const inferPartType = (category: PartCategory): PartTypeFilter => {
+    if (GAS_ONLY_CATEGORIES.includes(category)) return 'gas';
+    if (ELECTRIC_ONLY_CATEGORIES.includes(category)) return 'electric';
+    return 'both';
+  };
+  const [partType, setPartType] = useState<PartTypeFilter>(() =>
+    part?.category ? inferPartType(part.category as PartCategory) : 'both'
+  );
+
+  // Categories allowed for current part type
+  const allowedCategories: PartCategory[] =
+    partType === 'gas'
+      ? PART_CATEGORIES.filter((c) => !ELECTRIC_ONLY_CATEGORIES.includes(c))
+      : partType === 'electric'
+        ? PART_CATEGORIES.filter((c) => !GAS_ONLY_CATEGORIES.includes(c))
+        : [...PART_CATEGORIES];
+
+  // When part type changes, clear category if it's no longer allowed
+  const handlePartTypeChange = (value: PartTypeFilter) => {
+    setPartType(value);
+    const nextAllowed: PartCategory[] =
+      value === 'gas'
+        ? PART_CATEGORIES.filter((c) => !ELECTRIC_ONLY_CATEGORIES.includes(c))
+        : value === 'electric'
+          ? PART_CATEGORIES.filter((c) => !GAS_ONLY_CATEGORIES.includes(c))
+          : [...PART_CATEGORIES];
+    const current = formData.category as PartCategory;
+    if (current && !nextAllowed.includes(current)) {
+      setFormData((prev) => ({ ...prev, category: (nextAllowed[0] as PartCategory) || '', category_id: null }));
+    }
+  };
+
+  // No-brand checkbox: when checked, part is unbranded and brand input is disabled
+  const [noBrand, setNoBrand] = useState(() => !part?.brand || part.brand.trim() === '');
 
   // Form state
   const [formData, setFormData] = useState({
@@ -127,6 +169,8 @@ export function PartForm({ part, mode }: PartFormProps) {
               display_order: link.display_order,
               is_active: link.is_active,
               notes: link.notes,
+              variant_label: link.variant_label ?? null,
+              variant_image_url: link.variant_image_url ?? null,
             }));
             
             // If no supplier links exist but there's a legacy affiliate_url, migrate it
@@ -150,6 +194,8 @@ export function PartForm({ part, mode }: PartFormProps) {
                 display_order: 0,
                 is_active: true,
                 notes: 'Migrated from legacy affiliate_url',
+                variant_label: null,
+                variant_image_url: null,
               }]);
             } else {
               setSupplierLinks(links);
@@ -174,6 +220,8 @@ export function PartForm({ part, mode }: PartFormProps) {
               display_order: 0,
               is_active: true,
               notes: 'Migrated from legacy affiliate_url',
+              variant_label: null,
+              variant_image_url: null,
             }]);
           }
         })
@@ -198,11 +246,32 @@ export function PartForm({ part, mode }: PartFormProps) {
   // Handle category change - update both enum and category_id
   const handleCategoryChange = (categorySlug: string) => {
     const matched = categories.find(cat => cat.slug === categorySlug);
-    setFormData((prev) => ({
-      ...prev,
-      category: categorySlug as typeof prev.category,
-      category_id: matched?.id || null,
-    }));
+    const nextCategory = categorySlug as PartCategory;
+    const specFields = getSpecFieldsForCategory(nextCategory);
+    const validKeys = new Set(specFields.map((f) => f.key));
+    setFormData((prev) => {
+      const prunedSpecs: Record<string, unknown> = {};
+      for (const key of validKeys) {
+        const v = prev.specifications?.[key];
+        if (v !== undefined && v !== null && v !== '') prunedSpecs[key] = v;
+      }
+      return {
+        ...prev,
+        category: nextCategory,
+        category_id: matched?.id || null,
+        specifications: prunedSpecs,
+      };
+    });
+  };
+
+  const setSpecValue = (key: string, value: string | number | boolean) => {
+    setFormData((prev) => {
+      const next = { ...prev.specifications };
+      const isEmpty = value === '' || value === null || value === undefined;
+      if (isEmpty) delete next[key];
+      else next[key] = value;
+      return { ...prev, specifications: next };
+    });
   };
 
   const addSupplierLink = () => {
@@ -217,6 +286,8 @@ export function PartForm({ part, mode }: PartFormProps) {
         display_order: supplierLinks.length,
         is_active: true,
         notes: null,
+        variant_label: null,
+        variant_image_url: null,
       },
     ]);
   };
@@ -248,23 +319,22 @@ export function PartForm({ part, mode }: PartFormProps) {
     setError(null);
 
     try {
-      // Validate required fields
-      if (!formData.name || !formData.brand || !formData.slug || !formData.category) {
-        throw new Error('Name, brand, slug, and category are required');
+      // Validate required fields (brand is optional — display as "Unbranded" when empty)
+      if (!formData.name || !formData.slug || !formData.category) {
+        throw new Error('Name, slug, and category are required');
       }
 
       // Prepare data - convert empty strings to null
-      // Note: affiliate_url is deprecated - use supplier links instead
       const data = {
         slug: formData.slug,
         name: formData.name,
         category: formData.category,
         category_id: formData.category_id,
-        brand: formData.brand,
+        brand: noBrand ? null : (formData.brand?.trim() || null),
         description: formData.description || null,
         price: formData.price || null,
         image_url: formData.image_url || null,
-        affiliate_url: null, // Deprecated - use supplier links instead
+        affiliate_url: formData.affiliate_url?.trim() || null,
         specifications: formData.specifications,
         is_active: formData.is_active,
       };
@@ -319,6 +389,8 @@ export function PartForm({ part, mode }: PartFormProps) {
             display_order: link.display_order ?? idx,
             is_active: link.is_active,
             notes: link.notes,
+            variant_label: link.variant_label?.trim() || null,
+            variant_image_url: link.variant_image_url?.trim() || null,
           }));
         
         const linksResult = await updatePartSupplierLinks(partId, validLinks);
@@ -360,8 +432,44 @@ export function PartForm({ part, mode }: PartFormProps) {
       <Card>
         <CardHeader>
           <h2 className="text-lg font-semibold text-cream-100">Basic Information</h2>
+          <p className="text-sm text-cream-400 mt-1">
+            Parts can be from any retailer or manufacturer (Amazon, Harbor Freight, eBay, OEM, etc.). Add supplier links below.
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Part type: Gas / EV / Both — filters category list */}
+          <div>
+            <label className="block text-sm font-medium text-cream-200 mb-2">Part type</label>
+            <div className="flex flex-wrap gap-2">
+              {(
+                [
+                  { value: 'gas' as const, label: 'Gas only', icon: Cog },
+                  { value: 'electric' as const, label: 'Electric (EV) only', icon: Battery },
+                  { value: 'both' as const, label: 'Both (universal)', icon: Layers },
+                ]
+              ).map(({ value, label, icon: Icon }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => handlePartTypeChange(value)}
+                  className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 text-sm font-medium transition-colors ${
+                    partType === value
+                      ? 'border-orange-500 bg-orange-500/20 text-orange-400'
+                      : 'border-olive-600 bg-olive-800/50 text-cream-300 hover:border-olive-500 hover:text-cream-100'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-cream-500 mt-1.5">
+              {partType === 'gas' && 'Category list shows gas-engine parts (drivetrain, chassis, engine parts).'}
+              {partType === 'electric' && 'Category list shows EV parts (drivetrain, chassis, EV system).'}
+              {partType === 'both' && 'Category list shows all categories (universal parts like clutch, chain, tire).'}
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Part Name"
@@ -388,19 +496,34 @@ export function PartForm({ part, mode }: PartFormProps) {
               disabled={loadingCategories}
             >
               <option value="">Select Category</option>
-              {PART_CATEGORIES.map((cat) => (
+              {allowedCategories.map((cat) => (
                 <option key={cat} value={cat}>
-                  {cat.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  {getCategoryLabel(cat)}
                 </option>
               ))}
             </Select>
-            <Input
-              label="Brand"
-              placeholder="e.g., MaxTorque, Comet, Hilliard"
-              value={formData.brand}
-              onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-              required
-            />
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={noBrand}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setNoBrand(checked);
+                    if (checked) setFormData((prev) => ({ ...prev, brand: '' }));
+                  }}
+                  className="rounded border-olive-500 bg-olive-800 text-orange-500 focus:ring-orange-500"
+                />
+                <span className="text-sm font-medium text-cream-200">No brand (unbranded part)</span>
+              </label>
+              <Input
+                label="Brand"
+                placeholder="Enter brand name, or check above for unbranded"
+                value={formData.brand}
+                onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                disabled={noBrand}
+              />
+            </div>
           </div>
 
           <div>
@@ -416,6 +539,80 @@ export function PartForm({ part, mode }: PartFormProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Category-specific Specifications */}
+      {(() => {
+        const specFields = getSpecFieldsForCategory(formData.category as PartCategory);
+        if (specFields.length === 0) return null;
+        return (
+          <Card>
+            <CardHeader>
+              <h2 className="text-lg font-semibold text-cream-100">Specifications</h2>
+              <p className="text-sm text-cream-400 mt-1">
+                Fields for {getCategoryLabel(formData.category)}. Optional unless marked required.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {specFields.map((field) => {
+                  const value = formData.specifications?.[field.key];
+                  const labelSuffix = field.unit ? ` (${field.unit})` : '';
+                  if (field.type === 'boolean') {
+                    return (
+                      <div key={field.key} className="flex items-center gap-3 md:col-span-2">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={value === true || value === 'true'}
+                            onChange={(e) => setSpecValue(field.key, e.target.checked)}
+                            className="rounded border-olive-500 bg-olive-800 text-orange-500 focus:ring-orange-500"
+                          />
+                          <span className="text-sm font-medium text-cream-200">
+                            {field.label}
+                            {field.required && <span className="text-orange-400 ml-0.5">*</span>}
+                          </span>
+                        </label>
+                        {field.hint && (
+                          <span className="text-xs text-cream-500">{field.hint}</span>
+                        )}
+                      </div>
+                    );
+                  }
+                  if (field.type === 'number') {
+                    const numVal = value !== undefined && value !== null && value !== '' ? Number(value) : '';
+                    return (
+                      <Input
+                        key={field.key}
+                        label={`${field.label}${labelSuffix}`}
+                        type="number"
+                        step="any"
+                        placeholder={field.placeholder}
+                        value={numVal === '' ? '' : numVal}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setSpecValue(field.key, v === '' ? '' : Number(v));
+                        }}
+                        required={field.required}
+                      />
+                    );
+                  }
+                  return (
+                    <Input
+                      key={field.key}
+                      label={field.label + labelSuffix}
+                      type="text"
+                      placeholder={field.placeholder}
+                      value={typeof value === 'string' ? value : value != null ? String(value) : ''}
+                      onChange={(e) => setSpecValue(field.key, e.target.value)}
+                      required={field.required}
+                    />
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Media & Pricing */}
       <Card>
@@ -440,6 +637,16 @@ export function PartForm({ part, mode }: PartFormProps) {
               onChange={(e) => setFormData({ ...formData, price: e.target.value ? Number(e.target.value) : null })}
             />
           </div>
+          <Input
+            label="Affiliate link"
+            type="url"
+            placeholder="https://... (Amazon, Harbor Freight, eBay, etc.)"
+            value={formData.affiliate_url || ''}
+            onChange={(e) => setFormData({ ...formData, affiliate_url: e.target.value?.trim() || null })}
+          />
+          <p className="text-xs text-cream-400">
+            Primary buy link shown on the part page. Optional. You can also add multiple retailer links in Supplier Links below.
+          </p>
           <p className="text-xs text-cream-400">
             Base price is optional. Add supplier-specific pricing in the Supplier Links section below.
           </p>
@@ -453,7 +660,7 @@ export function PartForm({ part, mode }: PartFormProps) {
             <div>
               <h2 className="text-lg font-semibold text-cream-100">Supplier Links & Price Comparison</h2>
               <p className="text-sm text-cream-400 mt-1">
-                Add supplier links for price comparison. These will display when there are multiple sellers. Each supplier can have its own price, shipping cost, and availability.
+                Add links from any retailer or source (Amazon, Harbor Freight, eBay, OEM, etc.). Each supplier can have its own price, shipping cost, and availability.
               </p>
             </div>
             <Button
@@ -477,7 +684,7 @@ export function PartForm({ part, mode }: PartFormProps) {
               <div className="max-w-md mx-auto space-y-3">
                 <p className="text-cream-300 font-medium">No supplier links added yet</p>
                 <p className="text-sm text-cream-400">
-                  Add supplier links to enable price comparison. Users will see all active suppliers with their prices, shipping costs, and availability.
+                  Add links from any retailer. Users will see all active suppliers with their prices, shipping costs, and availability.
                 </p>
                 <Button
                   type="button"
@@ -547,7 +754,7 @@ export function PartForm({ part, mode }: PartFormProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input
                       label="Supplier Name *"
-                      placeholder="e.g., Amazon, eBay, Harbor Freight"
+                      placeholder="e.g., Amazon, eBay, Harbor Freight, OEM"
                       value={link.supplier_name}
                       onChange={(e) => updateSupplierLink(index, { supplier_name: e.target.value })}
                       required
@@ -625,6 +832,22 @@ export function PartForm({ part, mode }: PartFormProps) {
                         Show in price comparison
                       </label>
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-olive-600/50">
+                    <Input
+                      label="Variant (e.g. color)"
+                      placeholder="Red, Black, Silver..."
+                      value={link.variant_label || ''}
+                      onChange={(e) => updateSupplierLink(index, { variant_label: e.target.value || null })}
+                    />
+                    <Input
+                      label="Variant image URL"
+                      type="url"
+                      placeholder="https://... (image for this variant)"
+                      value={link.variant_image_url || ''}
+                      onChange={(e) => updateSupplierLink(index, { variant_image_url: e.target.value || null })}
+                    />
                   </div>
                 </div>
               ))}

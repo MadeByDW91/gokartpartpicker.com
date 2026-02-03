@@ -148,6 +148,7 @@ function detectCategory(title: string, description: string): string | null {
     tire: ['tire', 'tyre'],
     brake: ['brake', 'disc brake', 'brake kit'],
     throttle: ['throttle', 'throttle cable', 'throttle kit'],
+    pedals: ['pedal', 'pedals', 'go kart pedal', 'gas pedal', 'brake pedal'],
     exhaust: ['exhaust', 'muffler', 'header'],
     air_filter: ['air filter', 'air cleaner', 'filter'],
     carburetor: ['carburetor', 'carb', 'carburettor'],

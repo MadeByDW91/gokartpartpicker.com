@@ -201,6 +201,13 @@ Before treating the app as “ready for production traffic” (or after a major 
 
 ---
 
+## Security & user data
+
+- **Profile privacy:** Profiles (including email) are no longer world-readable. Public display uses `profile_display` (id, username, avatar_url only). See `docs/SECURITY-IMPROVEMENTS.md`.
+- **Logging:** Use `secureError` / `sanitizeLogData` so PII and stack traces are not written to logs.
+
+---
+
 ## Contacts & Links
 
 - **Supabase:** [Dashboard](https://supabase.com/dashboard), [Status](https://status.supabase.com/)

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getMotorBrandDisplay } from '@/lib/utils';
 import { Upload, ExternalLink, Loader2, Check } from 'lucide-react';
 import { 
   importAmazonProductsFromLinks,
@@ -14,15 +14,26 @@ import {
 import { useEngines } from '@/hooks/use-engines';
 import { useMotors } from '@/hooks/use-motors';
 import { PART_CATEGORIES } from '@/types/database';
-import { getCategoryLabel } from '@/lib/utils';
-import { Cog, Battery } from 'lucide-react';
+import { getCategoryLabel, GAS_ONLY_CATEGORIES, ELECTRIC_ONLY_CATEGORIES } from '@/lib/utils';
+import { Cog, Battery, Layers } from 'lucide-react';
 import type { PartCategory, Engine, ElectricMotor } from '@/types/database';
+
+type PartTypeFilter = 'gas' | 'electric' | 'both';
 
 export default function AmazonLinksImportPage() {
   const router = useRouter();
   const [urlsText, setUrlsText] = useState('');
+  const [partType, setPartType] = useState<PartTypeFilter>('both');
   const [category, setCategory] = useState<PartCategory | ''>('');
   const [selectedPowerSourceId, setSelectedPowerSourceId] = useState<string>('');
+
+  const allowedCategories = (
+    partType === 'gas'
+      ? PART_CATEGORIES.filter((c) => !ELECTRIC_ONLY_CATEGORIES.includes(c))
+      : partType === 'electric'
+        ? PART_CATEGORIES.filter((c) => !GAS_ONLY_CATEGORIES.includes(c))
+        : [...PART_CATEGORIES]
+  ) as PartCategory[];
   const [useSiteStripeTags, setUseSiteStripeTags] = useState(true);
   const [previewProducts, setPreviewProducts] = useState<Array<AmazonProduct & { affiliateLink: string; url: string }>>([]);
   const [loading, setLoading] = useState(false);
@@ -142,6 +153,42 @@ export default function AmazonLinksImportPage() {
             </p>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-cream-200 mb-2">
+              Part type (EV or Gas)
+            </label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {(
+                [
+                  { value: 'gas' as const, label: 'Gas only', icon: Cog },
+                  { value: 'electric' as const, label: 'Electric (EV) only', icon: Battery },
+                  { value: 'both' as const, label: 'Both (universal)', icon: Layers },
+                ]
+              ).map(({ value, label, icon: Icon }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => {
+                    setPartType(value);
+                    if (category && (
+                      value === 'gas' ? ELECTRIC_ONLY_CATEGORIES.includes(category) :
+                      value === 'electric' ? GAS_ONLY_CATEGORIES.includes(category) : false
+                    )) setCategory('');
+                  }}
+                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-sm font-medium transition-colors ${
+                    partType === value
+                      ? 'border-orange-500 bg-orange-500/20 text-orange-400'
+                      : 'border-olive-600 bg-olive-800/50 text-cream-300 hover:border-olive-500 hover:text-cream-100'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-cream-500">Identify whether these parts are for gas, EV, or universal builds. Category list updates to match.</p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-cream-200 mb-2">
@@ -153,7 +200,7 @@ export default function AmazonLinksImportPage() {
                 className="w-full px-3 py-2 bg-olive-900 border border-olive-600 rounded-md text-cream-100"
               >
                 <option value="">Auto-detect</option>
-                {PART_CATEGORIES.map((cat) => (
+                {allowedCategories.map((cat) => (
                   <option key={cat} value={cat}>
                     {getCategoryLabel(cat)}
                   </option>

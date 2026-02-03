@@ -246,8 +246,14 @@ export const createPartSchema = z.object({
   brand: z.string().max(100).optional().nullable(),
   specifications: z.record(z.string(), z.unknown()).default({}),
   price: z.coerce.number().nonnegative().optional().nullable(),
-  image_url: z.string().url().optional().nullable(),
-  affiliate_url: z.string().url().optional().nullable(),
+  image_url: z.preprocess(
+    (val) => (val === '' || val === undefined ? null : val),
+    z.string().url().nullable()
+  ).optional(),
+  affiliate_url: z.preprocess(
+    (val) => (val === '' || val === undefined ? null : val),
+    z.string().url().nullable()
+  ).optional(),
   is_active: z.boolean().default(true),
 });
 
@@ -265,8 +271,14 @@ export const updatePartSchema = z.object({
   brand: z.string().max(100).optional().nullable(),
   specifications: z.record(z.string(), z.unknown()).optional(),
   price: z.coerce.number().nonnegative().optional().nullable(),
-  image_url: z.string().url().optional().nullable(),
-  affiliate_url: z.string().url().optional().nullable(),
+  image_url: z.preprocess(
+    (val) => (val === '' || val === undefined ? null : val),
+    z.string().url().nullable()
+  ).optional(),
+  affiliate_url: z.preprocess(
+    (val) => (val === '' || val === undefined ? null : val),
+    z.string().url().nullable()
+  ).optional(),
   is_active: z.boolean().optional(),
 });
 

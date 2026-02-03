@@ -165,6 +165,7 @@ function getCategoryLabel(category: PartCategory): string {
     tire_rear: 'rear tire',
     brake: 'brake',
     throttle: 'throttle',
+    pedals: 'pedals',
     exhaust: 'exhaust',
     air_filter: 'air filter',
     carburetor: 'carburetor',

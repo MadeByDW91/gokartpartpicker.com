@@ -218,6 +218,7 @@ export default async function EnginePage({ params }: EnginePageProps) {
                       manualUrl={engine.manual_url || engine.schematic_url || ''}
                       engineName={engine.name}
                       type="manual"
+                      torqueSpecsHref={`/engines/${engine.slug}/torque-specs`}
                     />
                   )}
                   

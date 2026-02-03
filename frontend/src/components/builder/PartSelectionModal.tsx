@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { X, Search, Filter } from 'lucide-react';
+import { useFocusTrap } from '@/hooks/use-focus-trap';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
@@ -10,8 +11,7 @@ import { EngineCard } from '@/components/EngineCard';
 import { MotorCard } from '@/components/MotorCard';
 import { PartCardSkeleton, EngineCardSkeleton } from '@/components/ui/Skeleton';
 import { useSwipe } from '@/hooks/use-swipe';
-import { getCategoryLabel } from '@/lib/utils';
-import { cn } from '@/lib/utils';
+import { getCategoryLabel, getMotorBrandDisplay, getPartBrandDisplay, cn } from '@/lib/utils';
 import type { Engine, Part, PartCategory, ElectricMotor } from '@/types/database';
 
 interface PartSelectionModalProps {
@@ -42,6 +42,17 @@ export function PartSelectionModal({
   onSearchChange,
 }: PartSelectionModalProps) {
   const [brakeTypeFilter, setBrakeTypeFilter] = useState<'all' | 'mechanical' | 'hydraulic'>('all');
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, isOpen);
+
+  // Escape to close
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) onClose();
+    };
+    if (isOpen) document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
 
   // Swipe down to dismiss on mobile
   const { ref: swipeRef } = useSwipe({
@@ -82,13 +93,13 @@ export function PartSelectionModal({
           const motor = item as ElectricMotor;
           return (
             motor.name.toLowerCase().includes(query) ||
-            motor.brand.toLowerCase().includes(query)
+            getMotorBrandDisplay(motor.brand).toLowerCase().includes(query)
           );
         } else {
           const part = item as Part;
           return (
             part.name.toLowerCase().includes(query) ||
-            part.brand?.toLowerCase().includes(query) ||
+            getPartBrandDisplay(part.brand).toLowerCase().includes(query) ||
             false
           );
         }
@@ -101,14 +112,20 @@ export function PartSelectionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm">
-      <div 
-        ref={swipeRef as React.RefObject<HTMLDivElement>}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm" aria-hidden={!isOpen}>
+      <div
+        ref={(el) => {
+          (swipeRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+          (dialogRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+        }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="part-selection-modal-title"
         className="bg-olive-800 rounded-none sm:rounded-lg border-0 sm:border border-olive-600 w-full h-full sm:h-auto sm:max-w-6xl sm:max-h-[90vh] flex flex-col touch-pan-y"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-olive-600 flex-shrink-0">
-          <h2 className="text-display text-xl sm:text-2xl text-cream-100">
+          <h2 id="part-selection-modal-title" className="text-display text-xl sm:text-2xl text-cream-100">
             {category === 'engine' 
               ? 'Choose An Engine' 
               : category === 'motor'

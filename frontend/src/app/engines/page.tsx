@@ -17,7 +17,7 @@ import { useInfiniteScroll } from '@/hooks/use-infinite-scroll';
 import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
 import { PageHero } from '@/components/layout/PageHero';
 import { BuilderInsights } from '@/components/builder/BuilderInsights';
-import { formatPrice, cn } from '@/lib/utils';
+import { formatPrice, cn, getMotorBrandDisplay } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 import {
   Flame,
@@ -129,7 +129,7 @@ export default function EnginesPage() {
     if (activePowerSource === 'all') {
       items = [...(engines || []), ...(motors || [])];
       if (selectedBrand) {
-        items = items.filter(item => item.brand === selectedBrand);
+        items = items.filter(item => getMotorBrandDisplay(item.brand) === selectedBrand);
       }
       // Client-side sort when viewing all
       const getSortVal = (item: Engine | ElectricMotor) => {
@@ -151,7 +151,7 @@ export default function EnginesPage() {
     const query = searchQuery.toLowerCase();
     return items.filter(item => 
       item.name.toLowerCase().includes(query) ||
-      item.brand?.toLowerCase().includes(query) ||
+      getMotorBrandDisplay(item.brand).toLowerCase().includes(query) ||
       item.slug.toLowerCase().includes(query)
     );
   }, [engines, motors, activePowerSource, searchQuery, selectedBrand, sortBy]);
@@ -275,7 +275,7 @@ export default function EnginesPage() {
                   {selectedEngine 
                     ? `${selectedEngine.brand} ${selectedEngine.name}`
                     : selectedMotor
-                      ? `${selectedMotor.brand} ${selectedMotor.name}`
+                      ? `${getMotorBrandDisplay(selectedMotor.brand)} ${selectedMotor.name}`
                       : 'None selected'}
                 </span>
                 {' '}selected for your build
@@ -335,11 +335,11 @@ export default function EnginesPage() {
           </div>
         )}
 
-        {/* Search + Engine Type + Results Count + View Toggle — down by engine cards */}
+        {/* Search + Engine Type + Filters — less cluttered on mobile: one row for search, one for type + Filters */}
         <div className="mb-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-            {/* Search + clear */}
-            <div className="relative flex-1 sm:max-w-xs min-w-0">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            {/* Search — full width on mobile */}
+            <div className="relative flex-1 w-full sm:max-w-xs min-w-0">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cream-500 pointer-events-none" aria-hidden />
               <input
                 type="search"
@@ -363,68 +363,70 @@ export default function EnginesPage() {
                 </button>
               )}
             </div>
-            {/* Engine type: All | Gas | EV — distinct colors per selection */}
-            <div
-              className="inline-flex p-1 rounded-xl bg-olive-800/60 border border-olive-700/50"
-              role="radiogroup"
-              aria-label="Engine type"
-            >
-              <button
-                type="button"
-                onClick={() => handlePowerSourceChange('all')}
-                className={cn(
-                  'inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800 touch-manipulation',
-                  powerSourceView === 'all'
-                    ? 'bg-cream-500/15 text-cream-100 border border-cream-500/30 focus-visible:ring-cream-400'
-                    : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700/50 focus-visible:ring-orange-500'
-                )}
-                role="radio"
-                aria-checked={powerSourceView === 'all'}
-                aria-label="All engines and motors"
+            {/* One row on mobile: engine type + Filters (brand/sort live inside Filters panel on mobile) */}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+              {/* Engine type: All | Gas | EV */}
+              <div
+                className="inline-flex p-1 rounded-xl bg-olive-800/60 border border-olive-700/50"
+                role="radiogroup"
+                aria-label="Engine type"
               >
-                <LayoutGrid className={cn('w-4 h-4 shrink-0', powerSourceView === 'all' && 'text-cream-300')} aria-hidden />
-                All
-              </button>
-              <button
-                type="button"
-                onClick={() => handlePowerSourceChange('gas')}
-                className={cn(
-                  'inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800 touch-manipulation',
-                  powerSourceView === 'gas'
-                    ? 'bg-orange-500/25 text-orange-400 border border-orange-500/50 focus-visible:ring-orange-500'
-                    : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700/50 focus-visible:ring-orange-500'
-                )}
-                role="radio"
-                aria-checked={powerSourceView === 'gas'}
-                aria-label="Gas engines"
-              >
-                <Cog className={cn('w-4 h-4 shrink-0', powerSourceView === 'gas' && 'text-orange-400')} aria-hidden />
-                Gas
-              </button>
-              <button
-                type="button"
-                onClick={() => handlePowerSourceChange('electric')}
-                className={cn(
-                  'inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800 touch-manipulation',
-                  powerSourceView === 'electric'
-                    ? 'bg-blue-500/25 text-blue-400 border border-blue-500/50 focus-visible:ring-blue-500'
-                    : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700/50 focus-visible:ring-blue-500'
-                )}
-                role="radio"
-                aria-checked={powerSourceView === 'electric'}
-                aria-label="Electric motors"
-              >
-                <Zap className={cn('w-4 h-4 shrink-0', powerSourceView === 'electric' && 'text-blue-400')} aria-hidden />
-                EV
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => handlePowerSourceChange('all')}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800 touch-manipulation',
+                    powerSourceView === 'all'
+                      ? 'bg-cream-500/15 text-cream-100 border border-cream-500/30 focus-visible:ring-cream-400'
+                      : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700/50 focus-visible:ring-orange-500'
+                  )}
+                  role="radio"
+                  aria-checked={powerSourceView === 'all'}
+                  aria-label="All engines and motors"
+                >
+                  <LayoutGrid className={cn('w-4 h-4 shrink-0', powerSourceView === 'all' && 'text-cream-300')} aria-hidden />
+                  All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handlePowerSourceChange('gas')}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800 touch-manipulation',
+                    powerSourceView === 'gas'
+                      ? 'bg-orange-500/25 text-orange-400 border border-orange-500/50 focus-visible:ring-orange-500'
+                      : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700/50 focus-visible:ring-orange-500'
+                  )}
+                  role="radio"
+                  aria-checked={powerSourceView === 'gas'}
+                  aria-label="Gas engines"
+                >
+                  <Cog className={cn('w-4 h-4 shrink-0', powerSourceView === 'gas' && 'text-orange-400')} aria-hidden />
+                  Gas
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handlePowerSourceChange('electric')}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800 touch-manipulation',
+                    powerSourceView === 'electric'
+                      ? 'bg-blue-500/25 text-blue-400 border border-blue-500/50 focus-visible:ring-blue-500'
+                      : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700/50 focus-visible:ring-blue-500'
+                  )}
+                  role="radio"
+                  aria-checked={powerSourceView === 'electric'}
+                  aria-label="Electric motors"
+                >
+                  <Zap className={cn('w-4 h-4 shrink-0', powerSourceView === 'electric' && 'text-blue-400')} aria-hidden />
+                  EV
+                </button>
+              </div>
 
-            {/* Filters button — highlighted when any filter active */}
-            <button
+              {/* Filters: on mobile brand/sort are inside the panel below */}
+              <button
               type="button"
               onClick={() => setShowFiltersPanel((p) => !p)}
               className={cn(
-                'inline-flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-xl text-sm font-medium transition-all border focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800 touch-manipulation',
+                'inline-flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-xl text-sm font-medium transition-all border focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800 touch-manipulation flex-shrink-0',
                 hasActiveFilters
                   ? 'bg-olive-700/60 border-cream-200 text-cream-100'
                   : 'bg-olive-800/60 border-olive-700/50 text-cream-400 hover:text-cream-100 hover:bg-olive-700/50'
@@ -433,51 +435,55 @@ export default function EnginesPage() {
               aria-label={hasActiveFilters ? 'Filters active (click to toggle options)' : 'Show filter options'}
             >
               <Filter className="w-4 h-4 shrink-0" aria-hidden />
-              <span className="hidden sm:inline">Filters</span>
+              <span>Filters</span>
+              {hasActiveFilters && (
+                <span className="ml-0.5 w-1.5 h-1.5 rounded-full bg-orange-400" aria-hidden />
+              )}
             </button>
-
-            {/* All Brands dropdown */}
-            <div className="relative min-w-0">
-              <label htmlFor="engine-brand-filter" className="sr-only">
-                Filter by brand
-              </label>
-              <select
-                id="engine-brand-filter"
-                value={selectedBrand}
-                onChange={(e) => setSelectedBrand(e.target.value)}
-                className="w-full min-w-[120px] sm:min-w-[140px] pl-3 pr-8 py-2 rounded-xl bg-olive-800/60 border border-olive-700/50 text-cream-100 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 appearance-none cursor-pointer"
-                aria-label="Filter by brand"
-              >
-                <option value="">All Brands</option>
-                {brandsList.map((brand) => (
-                  <option key={brand} value={brand}>
-                    {brand}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-cream-500 pointer-events-none" aria-hidden />
             </div>
 
-            {/* Sort dropdown */}
-            <div className="relative min-w-0">
-              <label htmlFor="engine-sort" className="sr-only">
-                Sort by
-              </label>
-              <select
-                id="engine-sort"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                className="w-full min-w-[140px] sm:min-w-[160px] pl-3 pr-8 py-2 rounded-xl bg-olive-800/60 border border-olive-700/50 text-cream-100 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 appearance-none cursor-pointer"
-                aria-label="Sort by"
-              >
-                <option value="horsepower_desc">Horsepower (high first)</option>
-                <option value="horsepower_asc">Horsepower (low first)</option>
-                <option value="price_asc">Price (low to high)</option>
-                <option value="price_desc">Price (high to low)</option>
-                <option value="displacement_desc">Displacement (high first)</option>
-                <option value="displacement_asc">Displacement (low first)</option>
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-cream-500 pointer-events-none" aria-hidden />
+            {/* Brand + Sort: desktop only; on mobile they live inside the Filters panel */}
+            <div className="hidden sm:flex items-center gap-3 flex-wrap min-w-0">
+              <div className="relative min-w-0">
+                <label htmlFor="engine-brand-filter" className="sr-only">
+                  Filter by brand
+                </label>
+                <select
+                  id="engine-brand-filter"
+                  value={selectedBrand}
+                  onChange={(e) => setSelectedBrand(e.target.value)}
+                  className="w-full min-w-[120px] sm:min-w-[140px] pl-3 pr-8 py-2 rounded-xl bg-olive-800/60 border border-olive-700/50 text-cream-100 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 appearance-none cursor-pointer"
+                  aria-label="Filter by brand"
+                >
+                  <option value="">All Brands</option>
+                  {brandsList.map((brand) => (
+                    <option key={brand} value={brand}>
+                      {brand}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-cream-500 pointer-events-none" aria-hidden />
+              </div>
+              <div className="relative min-w-0">
+                <label htmlFor="engine-sort" className="sr-only">
+                  Sort by
+                </label>
+                <select
+                  id="engine-sort"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                  className="w-full min-w-[140px] sm:min-w-[160px] pl-3 pr-8 py-2 rounded-xl bg-olive-800/60 border border-olive-700/50 text-cream-100 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 appearance-none cursor-pointer"
+                  aria-label="Sort by"
+                >
+                  <option value="horsepower_desc">Horsepower (high first)</option>
+                  <option value="horsepower_asc">Horsepower (low first)</option>
+                  <option value="price_asc">Price (low to high)</option>
+                  <option value="price_desc">Price (high to low)</option>
+                  <option value="displacement_desc">Displacement (high first)</option>
+                  <option value="displacement_asc">Displacement (low first)</option>
+                </select>
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-cream-500 pointer-events-none" aria-hidden />
+              </div>
             </div>
           </div>
 

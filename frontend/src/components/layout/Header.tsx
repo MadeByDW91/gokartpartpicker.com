@@ -502,155 +502,183 @@ export function Header() {
           document.body
         )}
         
-        {/* Mobile Menu - Slide Animation */}
+        {/* Mobile Menu - Bottom sheet style, cleaner UX */}
         {mobileMenuOpen && (
           <>
-            {/* Backdrop - lg:hidden so tablet can use the menu too */}
             <div 
-              className="lg:hidden fixed inset-0 top-14 sm:top-16 bg-black/50 backdrop-blur-sm z-30 transition-opacity duration-300"
+              className="lg:hidden fixed inset-0 top-0 bg-black/40 backdrop-blur-[2px] z-30 transition-opacity duration-200"
               onClick={() => setMobileMenuOpen(false)}
               aria-hidden="true"
             />
-            
-            {/* Menu Panel - lg:hidden so tablet can use the menu too */}
             <div 
               className={cn(
-                'lg:hidden fixed inset-x-0 top-14 sm:top-16 bottom-0 bg-olive-900 border-t border-olive-700 overflow-y-auto overscroll-contain z-40 safe-area-bottom',
-                'transition-transform duration-300 ease-in-out',
-                mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+                'lg:hidden fixed inset-x-0 bottom-0 z-40 overflow-y-auto overscroll-contain safe-area-bottom',
+                'bg-olive-900/98 border-t border-olive-700/80 rounded-t-2xl shadow-[0_-8px_32px_rgba(0,0,0,0.4)]',
+                'transition-transform duration-250 ease-out',
+                mobileMenuOpen ? 'translate-y-0' : 'translate-y-full'
               )}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menu"
             >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
-            {/* Search Button in Menu - For easy access */}
-            <div className="mb-4 sm:mb-6">
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  setSearchModalOpen(true);
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3.5 bg-olive-800 hover:bg-olive-700 rounded-lg transition-colors touch-manipulation min-h-[48px]"
-              >
-                <Search className="w-5 h-5 text-orange-400 flex-shrink-0" />
-                <span className="text-cream-200 font-medium">Search engines, parts...</span>
-              </button>
-            </div>
-
-            {/* Navigation Links */}
-            <nav className="space-y-1.5 sm:space-y-2 mb-6 sm:mb-8">
-              {navigation.map((item) => {
-                const isActive = pathname === item.href || 
-                  (item.href !== '/' && pathname.startsWith(item.href));
-                
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={cn(
-                      'flex items-center gap-3 px-4 py-3.5 text-base font-medium uppercase tracking-wide rounded-lg transition-colors touch-manipulation min-h-[48px]',
-                      isActive 
-                        ? 'text-orange-400 bg-olive-800' 
-                        : 'text-cream-200 hover:text-orange-400 hover:bg-olive-800 active:bg-olive-700'
-                    )}
-                  >
-                    <item.icon className="w-5 h-5 flex-shrink-0" />
-                    <span>{item.name}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-
-            {/* Divider */}
-            <div className="border-t border-olive-700 my-6" />
-
-            {/* User Actions */}
-            {isActuallyLoading ? (
-              <div className="space-y-2">
-                <div className="h-12 bg-olive-700 rounded-lg animate-pulse" />
-                <div className="h-12 bg-olive-700 rounded-lg animate-pulse" />
+              {/* Drag handle - visual cue */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 rounded-full bg-olive-600" aria-hidden />
               </div>
-            ) : isAuthenticated ? (
-              <div className="space-y-1.5">
-                <Link
-                  href="/dashboard"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 text-base font-medium uppercase tracking-wide text-cream-200 hover:text-orange-400 hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[48px] active:bg-olive-700"
-                >
-                  <LayoutDashboard className="w-5 h-5 flex-shrink-0" />
-                  <span>Dashboard</span>
-                </Link>
-                <Link
-                  href="/builds"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 text-base font-medium uppercase tracking-wide text-cream-200 hover:text-orange-400 hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[48px] active:bg-olive-700"
-                >
-                  <Bookmark className="w-5 h-5 flex-shrink-0" />
-                  <span>Saved Builds</span>
-                </Link>
-                {!adminLoading && isAdmin && (
-                  <Link
-                    href="/admin"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3.5 text-base font-medium uppercase tracking-wide text-orange-400 hover:text-orange-300 hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[48px] active:bg-olive-700"
-                  >
-                    <Shield className="w-5 h-5 flex-shrink-0" />
-                    <span>Admin Panel</span>
-                  </Link>
-                )}
-                {!adminLoading && isAdmin && (impersonating ? (
-                  <button
-                    type="button"
-                    onClick={handleExitViewAs}
-                    className="flex items-center gap-3 w-full px-4 py-3.5 text-base font-medium uppercase tracking-wide text-amber-400 hover:text-amber-300 hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[48px] active:bg-olive-700 text-left"
-                  >
-                    <UserX className="w-5 h-5 flex-shrink-0" />
-                    <span>Exit view-as</span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => { setMobileMenuOpen(false); void handleViewAsNormalUser(); }}
-                    disabled={viewAsLoading}
-                    className="flex items-center gap-3 w-full px-4 py-3.5 text-base font-medium uppercase tracking-wide text-orange-400 hover:text-orange-300 hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[48px] active:bg-olive-700 text-left disabled:opacity-50"
-                    >
-                      <UserCog className="w-5 h-5 flex-shrink-0" />
-                      <span>{viewAsLoading ? '…' : 'View as normal user'}</span>
-                  </button>
-                ))}
+
+              <div className="px-4 pb-6 pt-2 max-w-md mx-auto">
+                {/* Search - compact pill */}
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
-                    signOut();
+                    setSearchModalOpen(true);
                   }}
-                  className="flex items-center gap-3 w-full px-4 py-3.5 text-base font-medium uppercase tracking-wide text-cream-200 hover:text-[var(--error)] hover:bg-olive-800 rounded-lg transition-colors touch-manipulation min-h-[48px] active:bg-olive-700"
+                  className="w-full flex items-center gap-2.5 px-4 py-3 rounded-full bg-olive-800/80 border border-olive-700/60 hover:bg-olive-700/80 hover:border-olive-600 transition-colors touch-manipulation min-h-[48px] text-left"
                 >
-                  <LogOut className="w-5 h-5 flex-shrink-0" />
-                  <span>Sign Out</span>
+                  <Search className="w-4 h-4 text-cream-400 flex-shrink-0" />
+                  <span className="text-sm text-cream-300">Search engines, parts...</span>
                 </button>
+
+                {/* Nav - normal case, clear hierarchy */}
+                <nav className="mt-6" aria-label="Main navigation">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-cream-500 px-1 mb-2">
+                    Menu
+                  </p>
+                  <ul className="space-y-0.5">
+                    {navigation.map((item) => {
+                      const isActive = pathname === item.href ||
+                        (item.href !== '/' && pathname.startsWith(item.href));
+                      return (
+                        <li key={item.name}>
+                          <Link
+                            href={item.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className={cn(
+                              'flex items-center gap-3 px-3 py-3 rounded-xl text-[15px] font-medium transition-colors touch-manipulation min-h-[48px]',
+                              isActive
+                                ? 'text-orange-400 bg-orange-500/10'
+                                : 'text-cream-200 hover:bg-olive-800/60 active:bg-olive-800'
+                            )}
+                          >
+                            <span className={cn(
+                              'flex items-center justify-center w-9 h-9 rounded-lg flex-shrink-0',
+                              isActive ? 'bg-orange-500/20 text-orange-400' : 'bg-olive-800/80 text-cream-400'
+                            )}>
+                              <item.icon className="w-4 h-4" />
+                            </span>
+                            <span>{item.name}</span>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </nav>
+
+                {/* Account section */}
+                <div className="mt-6 pt-4 border-t border-olive-700/60">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-cream-500 px-1 mb-2">
+                    Account
+                  </p>
+                  {isActuallyLoading ? (
+                    <div className="flex gap-2">
+                      <div className="h-12 flex-1 rounded-xl bg-olive-800 animate-pulse" />
+                      <div className="h-12 flex-1 rounded-xl bg-olive-800 animate-pulse" />
+                    </div>
+                  ) : isAuthenticated ? (
+                    <ul className="space-y-0.5">
+                      <li>
+                        <Link
+                          href="/dashboard"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="flex items-center gap-3 px-3 py-3 rounded-xl text-[15px] font-medium text-cream-200 hover:bg-olive-800/60 active:bg-olive-800 transition-colors touch-manipulation min-h-[48px]"
+                        >
+                          <LayoutDashboard className="w-4 h-4 text-cream-400 flex-shrink-0" />
+                          <span>Dashboard</span>
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href="/builds"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="flex items-center gap-3 px-3 py-3 rounded-xl text-[15px] font-medium text-cream-200 hover:bg-olive-800/60 active:bg-olive-800 transition-colors touch-manipulation min-h-[48px]"
+                        >
+                          <Bookmark className="w-4 h-4 text-cream-400 flex-shrink-0" />
+                          <span>Saved Builds</span>
+                        </Link>
+                      </li>
+                      {!adminLoading && isAdmin && (
+                        <li>
+                          <Link
+                            href="/admin"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center gap-3 px-3 py-3 rounded-xl text-[15px] font-medium text-orange-400 hover:bg-olive-800/60 active:bg-olive-800 transition-colors touch-manipulation min-h-[48px]"
+                          >
+                            <Shield className="w-4 h-4 flex-shrink-0" />
+                            <span>Admin Panel</span>
+                          </Link>
+                        </li>
+                      )}
+                      {!adminLoading && isAdmin && (impersonating ? (
+                        <li>
+                          <button
+                            type="button"
+                            onClick={handleExitViewAs}
+                            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-[15px] font-medium text-amber-400 hover:bg-olive-800/60 active:bg-olive-800 transition-colors touch-manipulation min-h-[48px] text-left"
+                          >
+                            <UserX className="w-4 h-4 flex-shrink-0" />
+                            <span>Exit view-as</span>
+                          </button>
+                        </li>
+                      ) : (
+                        <li>
+                          <button
+                            type="button"
+                            onClick={() => { setMobileMenuOpen(false); void handleViewAsNormalUser(); }}
+                            disabled={viewAsLoading}
+                            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-[15px] font-medium text-orange-400 hover:bg-olive-800/60 active:bg-olive-800 transition-colors touch-manipulation min-h-[48px] text-left disabled:opacity-50"
+                          >
+                            <UserCog className="w-4 h-4 flex-shrink-0" />
+                            <span>{viewAsLoading ? '…' : 'View as normal user'}</span>
+                          </button>
+                        </li>
+                      ))}
+                      <li>
+                        <button
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            signOut();
+                          }}
+                          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-[15px] font-medium text-cream-200 hover:bg-olive-800/60 hover:text-[var(--error)] active:bg-olive-800 transition-colors touch-manipulation min-h-[48px] text-left"
+                        >
+                          <LogOut className="w-4 h-4 flex-shrink-0" />
+                          <span>Sign Out</span>
+                        </button>
+                      </li>
+                    </ul>
+                  ) : (
+                    <div className="flex gap-3">
+                      <Link
+                        href="/auth/login"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex-1"
+                      >
+                        <Button variant="secondary" size="md" className="w-full touch-manipulation min-h-[48px] rounded-xl">
+                          Login
+                        </Button>
+                      </Link>
+                      <Link
+                        href="/auth/register"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex-1"
+                      >
+                        <Button variant="primary" size="md" className="w-full touch-manipulation min-h-[48px] rounded-xl">
+                          Sign Up
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
               </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                <Link 
-                  href="/auth/login" 
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full"
-                >
-                  <Button variant="secondary" size="lg" className="w-full touch-manipulation min-h-[48px]">
-                    Login
-                  </Button>
-                </Link>
-                <Link 
-                  href="/auth/register" 
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full"
-                >
-                  <Button variant="primary" size="lg" className="w-full touch-manipulation min-h-[48px]">
-                    Sign Up
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </div>
             </div>
           </>
         )}

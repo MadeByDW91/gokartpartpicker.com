@@ -1,27 +1,9 @@
-import Link from 'next/link';
-import { ChevronLeft } from 'lucide-react';
-import { MotorForm } from '@/components/admin/MotorForm';
+import { redirect } from 'next/navigation';
 
+/**
+ * Redirect to unified Add page with EV selected.
+ * Admin chooses Gas or EV there; form and fill-from-link are tailored to type.
+ */
 export default function NewMotorPage() {
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <Link
-          href="/admin/motors"
-          className="inline-flex items-center gap-1 text-sm text-cream-400 hover:text-orange-400 transition-colors mb-4"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          Back to Electric Motors
-        </Link>
-        <h1 className="text-display text-3xl text-cream-100">Add New Electric Motor</h1>
-        <p className="text-cream-300 mt-1">
-          Create a new electric motor in the catalog
-        </p>
-      </div>
-
-      {/* Form */}
-      <MotorForm mode="create" />
-    </div>
-  );
+  redirect('/admin/add?type=ev');
 }

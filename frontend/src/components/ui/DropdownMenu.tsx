@@ -15,7 +15,7 @@ interface DropdownMenuItem {
 interface DropdownMenuProps {
   trigger: React.ReactNode;
   items: DropdownMenuItem[];
-  variant?: 'blue' | 'orange';
+  variant?: 'blue' | 'orange' | 'green';
   className?: string;
 }
 
@@ -117,6 +117,12 @@ export function DropdownMenu({ trigger, items, variant = 'blue', className }: Dr
       menu: 'bg-olive-800 border-olive-600',
       item: 'hover:bg-olive-700 text-cream-200',
       itemHover: 'hover:bg-orange-500/10',
+    },
+    green: {
+      button: 'bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500/30 text-emerald-400 hover:text-emerald-300',
+      menu: 'bg-olive-800 border-olive-600',
+      item: 'hover:bg-olive-700 text-cream-200',
+      itemHover: 'hover:bg-emerald-500/10',
     },
   };
 

@@ -5,12 +5,12 @@ import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { AlertCircle, Loader2, ExternalLink, Check, X } from 'lucide-react';
+import { AlertCircle, Loader2, ExternalLink, Check, X, Cog, Battery, Layers } from 'lucide-react';
 import { fetchAmazonProduct } from '@/actions/admin/amazon-import';
 import { createPart } from '@/actions/admin';
 import { suggestEngineCompatibility, searchVideosForPart, autoLinkVideosToPart } from '@/actions/admin/auto-video-linker';
 import { PART_CATEGORIES } from '@/types/database';
-import { getCategoryLabel } from '@/lib/utils';
+import { getCategoryLabel, GAS_ONLY_CATEGORIES, ELECTRIC_ONLY_CATEGORIES } from '@/lib/utils';
 import { slugify } from '@/lib/utils';
 import type { ActionResult } from '@/lib/api/types';
 import type { PartCategory } from '@/types/database';
@@ -40,6 +40,22 @@ export function AmazonProductImporter() {
   const [suggestedEngines, setSuggestedEngines] = useState<any[]>([]);
   const [linkingVideos, setLinkingVideos] = useState(false);
 
+  // Part type: Gas / EV / Both — filters which categories are shown
+  type PartTypeFilter = 'gas' | 'electric' | 'both';
+  const [partType, setPartType] = useState<PartTypeFilter>('both');
+
+  // Categories allowed for current part type (same logic as PartForm)
+  const allowedCategories = (
+    partType === 'gas'
+      ? PART_CATEGORIES.filter((c) => !ELECTRIC_ONLY_CATEGORIES.includes(c))
+      : partType === 'electric'
+        ? PART_CATEGORIES.filter((c) => !GAS_ONLY_CATEGORIES.includes(c))
+        : [...PART_CATEGORIES]
+  ) as PartCategory[];
+
+  // No-brand checkbox for unbranded parts
+  const [noBrand, setNoBrand] = useState(false);
+
   // Form state for editing before saving
   const [formData, setFormData] = useState({
     name: '',
@@ -50,6 +66,21 @@ export function AmazonProductImporter() {
     affiliateUrl: '',
     specifications: {} as Record<string, any>,
   });
+
+  // When part type changes, if current category is not in allowed list, reset to first allowed
+  const handlePartTypeChange = (value: PartTypeFilter) => {
+    setPartType(value);
+    const nextAllowed =
+      value === 'gas'
+        ? PART_CATEGORIES.filter((c) => !ELECTRIC_ONLY_CATEGORIES.includes(c))
+        : value === 'electric'
+          ? PART_CATEGORIES.filter((c) => !GAS_ONLY_CATEGORIES.includes(c))
+          : [...PART_CATEGORIES];
+    const current = formData.category;
+    if (current && !nextAllowed.includes(current as PartCategory)) {
+      setFormData((prev) => ({ ...prev, category: (nextAllowed[0] as string) || 'clutch' }));
+    }
+  };
 
   const handleFetch = async () => {
     if (!url.trim()) {
@@ -67,10 +98,16 @@ export function AmazonProductImporter() {
       
       if (result.success && result.data) {
         const data = result.data;
+        const category = (data.category || 'clutch') as PartCategory;
         setProductData(data);
+        // Infer part type from suggested category so admin sees the right filter
+        if (GAS_ONLY_CATEGORIES.includes(category)) setPartType('gas');
+        else if (ELECTRIC_ONLY_CATEGORIES.includes(category)) setPartType('electric');
+        else setPartType('both');
+        setNoBrand(!data.brand || data.brand.trim() === '');
         setFormData({
           name: data.name,
-          category: data.category || 'clutch',
+          category,
           brand: data.brand || '',
           price: data.price,
           imageUrl: data.imageUrl,
@@ -103,10 +140,10 @@ export function AmazonProductImporter() {
         slug,
         name: formData.name,
         category: formData.category as any,
-        brand: formData.brand || null,
+        brand: noBrand ? null : (formData.brand?.trim() || null),
         price: formData.price,
-        image_url: formData.imageUrl,
-        affiliate_url: formData.affiliateUrl,
+        image_url: formData.imageUrl?.trim() || null,
+        affiliate_url: formData.affiliateUrl?.trim() || null,
         specifications: formData.specifications,
         is_active: true,
       });
@@ -226,13 +263,44 @@ export function AmazonProductImporter() {
               required
             />
 
+            {/* Part type: Gas / EV / Both — identifies whether this part is for gas, electric, or universal builds */}
+            <div>
+              <label className="block text-sm font-medium text-cream-300 mb-2">Part type (EV or Gas)</label>
+              <div className="flex flex-wrap gap-2">
+                {(
+                  [
+                    { value: 'gas' as const, label: 'Gas only', icon: Cog },
+                    { value: 'electric' as const, label: 'Electric (EV) only', icon: Battery },
+                    { value: 'both' as const, label: 'Both (universal)', icon: Layers },
+                  ]
+                ).map(({ value, label, icon: Icon }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => handlePartTypeChange(value)}
+                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-sm font-medium transition-colors ${
+                      partType === value
+                        ? 'border-orange-500 bg-orange-500/20 text-orange-400'
+                        : 'border-olive-600 bg-olive-800/50 text-cream-300 hover:border-olive-500 hover:text-cream-100'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-cream-500 mt-1.5">
+                Choose whether this part is for gas builds, EV builds, or both. Category list below updates to match.
+              </p>
+            </div>
+
             <Select
               label="Category"
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               options={[
                 { value: '', label: 'Select Category' },
-                ...PART_CATEGORIES.map(cat => ({
+                ...allowedCategories.map((cat) => ({
                   value: cat,
                   label: getCategoryLabel(cat),
                 })),
@@ -240,11 +308,27 @@ export function AmazonProductImporter() {
               required
             />
 
-            <Input
-              label="Brand"
-              value={formData.brand}
-              onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-            />
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={noBrand}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setNoBrand(checked);
+                    if (checked) setFormData((prev) => ({ ...prev, brand: '' }));
+                  }}
+                  className="rounded border-olive-500 bg-olive-800 text-orange-500 focus:ring-orange-500"
+                />
+                <span className="text-sm font-medium text-cream-200">No brand (unbranded part)</span>
+              </label>
+              <Input
+                label="Brand"
+                value={formData.brand}
+                onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                disabled={noBrand}
+              />
+            </div>
 
             <Input
               label="Price (USD)"

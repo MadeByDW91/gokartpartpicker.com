@@ -78,6 +78,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
   tire_rear: 'Rear Tire',
   brake: 'Brake',
   throttle: 'Throttle',
+  pedals: 'Pedals',
   frame: 'Frame',
   // Engine parts
   carburetor: 'Carburetor',
@@ -174,7 +175,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
   {
     id: 'chassis',
     label: 'Chassis',
-    categories: ['axle', 'wheel', 'tire', 'tire_front', 'tire_rear', 'brake', 'throttle', 'frame'],
+    categories: ['axle', 'wheel', 'tire', 'tire_front', 'tire_rear', 'brake', 'throttle', 'pedals', 'frame'],
   },
   {
     id: 'engine',
@@ -231,6 +232,29 @@ export function getOrderedCategoryGroupsForBuilder(powerSource: 'gas' | 'electri
   const order = powerSource === 'electric' ? EV_BUILDER_GROUP_ORDER : GAS_BUILDER_GROUP_ORDER;
   const byId = new Map(CATEGORY_GROUPS.map((g) => [g.id, g]));
   return order.map((id) => byId.get(id)).filter((g): g is CategoryGroup => !!g);
+}
+
+/** Display label when brand is missing (motors, parts). */
+export const BRAND_FALLBACK = 'Unbranded';
+
+/** @deprecated Use BRAND_FALLBACK */
+export const MOTOR_BRAND_FALLBACK = BRAND_FALLBACK;
+
+/**
+ * Display string for electric motor brand. Use everywhere we show motor.brand in the UI.
+ */
+export function getMotorBrandDisplay(brand: string | null | undefined): string {
+  const trimmed = typeof brand === 'string' ? brand.trim() : '';
+  return trimmed || BRAND_FALLBACK;
+}
+
+/**
+ * Display string for part brand. Use everywhere we show part.brand in the UI.
+ * Shows "Unbranded" when null/empty for a consistent, professional look.
+ */
+export function getPartBrandDisplay(brand: string | null | undefined): string {
+  const trimmed = typeof brand === 'string' ? brand.trim() : '';
+  return trimmed || BRAND_FALLBACK;
 }
 
 /**

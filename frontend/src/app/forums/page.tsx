@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
-import { getForumCategories } from '@/actions/forums';
 import { ForumCategoryList } from '@/components/forums/ForumCategoryList';
 import { PageHero } from '@/components/layout/PageHero';
+import type { ForumCategory } from '@/types/database';
 import { MessageSquare } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -9,17 +9,23 @@ export const metadata: Metadata = {
   description: 'Join the GoKartPartPicker community! Discuss engines, parts, builds, and get help from fellow go-kart enthusiasts.',
 };
 
-// ISR: revalidate every 5 min (forum categories change infrequently)
-export const revalidate = 300;
+// Uses server Supabase client (cookies) — render at request time to avoid static/cookie warning
+export const dynamic = 'force-dynamic';
 
 /**
- * Main forums page - displays all forum categories
+ * Main forums page - displays all forum categories.
+ * Uses dynamic import for getForumCategories so module load failures don't 500 the page.
  */
 export default async function ForumsPage() {
-  const categoriesResult = await getForumCategories();
-
-  // Handle errors gracefully - if tables don't exist, show empty state
-  const categories = categoriesResult.success ? categoriesResult.data : [];
+  let categories: (ForumCategory & { topic_count?: number; post_count?: number })[] = [];
+  try {
+    const { getForumCategories } = await import('@/actions/forums');
+    const categoriesResult = await getForumCategories();
+    categories = categoriesResult.success ? categoriesResult.data : [];
+  } catch (err) {
+    console.error('[ForumsPage] Failed to load categories:', err);
+    categories = [];
+  }
 
   return (
     <div className="min-h-screen bg-olive-900">

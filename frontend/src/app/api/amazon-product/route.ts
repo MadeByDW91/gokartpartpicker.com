@@ -4,9 +4,71 @@ import { createClient } from '@/lib/supabase/server';
 /** ASIN format: 10 alphanumeric (e.g. B001234567) */
 const ASIN_REGEX = /^[A-Z0-9]{10}$/;
 
+const FETCH_TIMEOUT_MS = 14_000;
+const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
+/** Fetch URL with timeout; returns null on failure. */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit & { timeoutMs?: number } = {}
+): Promise<Response | null> {
+  const { timeoutMs = FETCH_TIMEOUT_MS, ...fetchOptions } = options;
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      ...fetchOptions,
+      signal: controller.signal,
+      headers: {
+        'User-Agent': BROWSER_UA,
+        'Accept': 'text/html,application/xhtml+xml',
+        ...fetchOptions.headers,
+      },
+    });
+    clearTimeout(id);
+    return res;
+  } catch {
+    clearTimeout(id);
+    return null;
+  }
+}
+
+/** Try to get HTML for an Amazon product page. Tries direct fetch, then proxies. */
+async function fetchAmazonHtml(amazonUrl: string): Promise<{ html: string; source: string } | null> {
+  // 1) Direct fetch from server (no CORS). Amazon may allow or block.
+  const direct = await fetchWithTimeout(amazonUrl, { timeoutMs: 12_000 });
+  if (direct?.ok) {
+    const text = await direct.text();
+    if (text && text.length > 500 && (text.includes('productTitle') || text.includes('product-title'))) {
+      return { html: text, source: 'direct' };
+    }
+  }
+
+  // 2) allorigins.win proxy (returns JSON with .contents)
+  const allOriginsUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(amazonUrl)}`;
+  const r1 = await fetchWithTimeout(allOriginsUrl, { timeoutMs: FETCH_TIMEOUT_MS });
+  if (r1?.ok) {
+    try {
+      const data = await r1.json() as { contents?: string };
+      const text = (data.contents || '').trim();
+      if (text.length > 500) return { html: text, source: 'allorigins' };
+    } catch { /* ignore parse error */ }
+  }
+
+  // 3) corsproxy.io fallback (no .json wrapper, returns raw body)
+  const corsProxyUrl = `https://corsproxy.io/?${encodeURIComponent(amazonUrl)}`;
+  const r2 = await fetchWithTimeout(corsProxyUrl, { timeoutMs: FETCH_TIMEOUT_MS });
+  if (r2?.ok) {
+    const text = await r2.text();
+    if (text && text.length > 500) return { html: text, source: 'corsproxy' };
+  }
+
+  return null;
+}
+
 /**
  * API Route for fetching Amazon product data
- * Requires authentication. Uses a CORS proxy to bypass Amazon's bot detection.
+ * Requires authentication. Tries direct fetch then CORS proxies. For best reliability, use Amazon PA API.
  * Rate limited by middleware (60/min per IP).
  */
 export async function GET(request: NextRequest) {
@@ -37,23 +99,26 @@ export async function GET(request: NextRequest) {
 
   try {
     const amazonUrl = `https://www.amazon.com/dp/${normalized}`;
-    
-    // Option 1: Use CORS proxy service (free tier available)
-    // Using allorigins.win as a free CORS proxy
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(amazonUrl)}`;
-    
-    const response = await fetch(proxyUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      },
-    });
+    const result = await fetchAmazonHtml(amazonUrl);
 
-    if (!response.ok) {
-      throw new Error(`Proxy request failed: ${response.status}`);
+    if (!result) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Could not load the product page (timeout or blocked). For reliable Fill from link, add Amazon PA API credentials in your environment.',
+          data: {
+            title: null,
+            price: null,
+            imageUrl: `https://images-na.ssl-images-amazon.com/images/I/${normalized}.jpg`,
+            brand: null,
+            description: null,
+          },
+        },
+        { status: 502 }
+      );
     }
 
-    const data = await response.json();
-    const html = data.contents || '';
+    const html = result.html;
     
     // Check if we got HTML content
     if (!html || html.length < 100) {

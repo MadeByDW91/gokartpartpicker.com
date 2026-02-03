@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
-import { getUserBuilds } from '@/actions';
+import { getUserBuilds, getPublicBuilds, getBuild, getBuildsForComparison } from '@/actions';
 import type { Build, BuildParts } from '@/types/database';
 
 /**
@@ -21,64 +21,31 @@ export function useUserBuilds() {
 }
 
 /**
- * Fetch public/community builds
- * Per db-query-contract.md: GET /api/builds/public
+ * Fetch public/community builds (via server action so profile comes from profile_display, no email leak).
  */
 export function usePublicBuilds(limit = 20) {
-  const supabase = createClient();
-  
   return useQuery({
     queryKey: ['public-builds', limit],
     staleTime: 5 * 60 * 1000, // 5 min — public builds change infrequently
     queryFn: async (): Promise<Build[]> => {
-      if (!supabase) {
-        throw new Error('Supabase client is not available');
-      }
-      
-      const { data, error } = await supabase
-        .from('builds')
-        .select(`
-          *,
-          engine:engines(name, brand, horsepower),
-          profile:profiles(username, avatar_url)
-        `)
-        .eq('is_public', true)
-        .order('created_at', { ascending: false })
-        .limit(limit);
-      
-      if (error) throw error;
-      return data || [];
+      const res = await getPublicBuilds({ limit });
+      if (!res.success) throw new Error(res.error ?? 'Failed to load public builds');
+      return res.data ?? [];
     },
   });
 }
 
 /**
- * Fetch single build by ID
+ * Fetch single build by ID (via server action so profile comes from profile_display, no email leak).
  */
 export function useBuild(id: string) {
-  const supabase = createClient();
-  
   return useQuery({
     queryKey: ['build', id],
     staleTime: 2 * 60 * 1000, // 2 min — single build detail
     queryFn: async (): Promise<Build> => {
-      if (!supabase) {
-        throw new Error('Supabase client is not available');
-      }
-      
-      const { data, error } = await supabase
-        .from('builds')
-        .select(`
-          *,
-          engine:engines(*),
-          motor:electric_motors(*),
-          profile:profiles(username, avatar_url)
-        `)
-        .eq('id', id)
-        .single();
-      
-      if (error) throw error;
-      return data;
+      const res = await getBuild(id);
+      if (!res.success) throw new Error(res.error ?? 'Failed to load build');
+      return res.data as Build;
     },
     enabled: !!id,
   });
@@ -212,39 +179,19 @@ export function useDeleteBuild() {
 }
 
 /**
- * Fetch multiple builds for comparison
+ * Fetch multiple builds for comparison (via server action so profile comes from profile_display).
  */
 export function useBuildsForComparison(buildIds: string[]) {
-  const supabase = createClient();
-  
   return useQuery({
     queryKey: ['builds-comparison', buildIds.sort().join(',')],
     queryFn: async (): Promise<Build[]> => {
-      if (!supabase) {
-        throw new Error('Supabase client is not available');
-      }
-      
       if (buildIds.length === 0 || buildIds.length > 3) {
         throw new Error('Invalid number of build IDs');
       }
 
-      // Fetch builds in parallel
-      const buildPromises = buildIds.map(async (id) => {
-        const { data, error } = await supabase
-          .from('builds')
-          .select(`
-            *,
-            engine:engines(*),
-            profile:profiles(username, avatar_url)
-          `)
-          .eq('id', id)
-          .single();
-
-        if (error) throw error;
-        return data;
-      });
-
-      const builds = await Promise.all(buildPromises);
+      const res = await getBuildsForComparison(buildIds);
+      if (!res.success) throw new Error(res.error ?? 'Failed to load builds for comparison');
+      const builds = res.data ?? [];
       
       // Filter out null/undefined results
       return builds.filter((b): b is Build => b !== null && b !== undefined);

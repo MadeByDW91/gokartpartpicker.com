@@ -194,10 +194,18 @@ export const TORQUE_SPECS: Record<string, EngineTorqueSpecs> = {
 };
 
 /**
+ * Normalize slug for lookup (lowercase, trim)
+ */
+function normalizeSlug(slug: string): string {
+  return slug.trim().toLowerCase();
+}
+
+/**
  * Get torque specs for an engine by slug
  */
 export function getTorqueSpecs(engineSlug: string): EngineTorqueSpecs | null {
-  return TORQUE_SPECS[engineSlug] || null;
+  const key = normalizeSlug(engineSlug);
+  return TORQUE_SPECS[key] ?? TORQUE_SPECS[engineSlug] ?? null;
 }
 
 /**

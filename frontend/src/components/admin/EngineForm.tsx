@@ -16,8 +16,9 @@ import {
   updateEngineSupplierLinks,
   type EngineSupplierLink 
 } from '@/actions/admin/engine-suppliers';
+import { fetchEngineFromLink } from '@/actions/admin/fetch-engine-from-link';
 import type { AdminEngine, EngineFormInput } from '@/types/admin';
-import { Plus, Trash2, ExternalLink, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Trash2, ExternalLink, ArrowUp, ArrowDown, Link2 } from 'lucide-react';
 
 interface EngineFormProps {
   engine?: AdminEngine;
@@ -55,6 +56,9 @@ export function EngineForm({ engine, mode }: EngineFormProps) {
   const [success, setSuccess] = useState(false);
   const [supplierLinks, setSupplierLinks] = useState<SupplierLinkFormData[]>([]);
   const [loadingLinks, setLoadingLinks] = useState(false);
+  const [fillFromLinkUrl, setFillFromLinkUrl] = useState('');
+  const [fillFromLinkLoading, setFillFromLinkLoading] = useState(false);
+  const [fillFromLinkError, setFillFromLinkError] = useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = useState<EngineFormInput>({
@@ -203,6 +207,54 @@ export function EngineForm({ engine, mode }: EngineFormProps) {
     setSupplierLinks(newLinks);
   };
 
+  const handleFillFromLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fillFromLinkUrl.trim()) return;
+    setFillFromLinkError(null);
+    setFillFromLinkLoading(true);
+    try {
+      const result = await fetchEngineFromLink(fillFromLinkUrl.trim());
+      if (!result.success) {
+        setFillFromLinkError(result.error || 'Could not fetch product');
+        return;
+      }
+      const d = result.data;
+      if (!d) {
+        setFillFromLinkError('Could not fetch product');
+        return;
+      }
+      setFormData((prev) => ({
+        ...prev,
+        name: d.name || prev.name,
+        slug: slugify(d.name || prev.name),
+        brand: d.brand || prev.brand,
+        model: d.model ?? prev.model ?? '',
+        displacement_cc: d.displacement_cc ?? prev.displacement_cc ?? 212,
+        image_url: d.image_url ?? prev.image_url ?? '',
+        price: d.price ?? prev.price ?? null,
+      }));
+      const newLink: SupplierLinkFormData = {
+        supplier_name: d.supplier_name,
+        supplier_url: d.supplier_url,
+        price: d.price,
+        shipping_cost: 0,
+        availability_status: 'in_stock',
+        display_order: supplierLinks.length,
+        is_active: true,
+        notes: null,
+      };
+      setSupplierLinks((prev) => {
+        const withoutSame = prev.filter((l) => l.supplier_url !== d.supplier_url);
+        return [...withoutSame, newLink];
+      });
+      setFillFromLinkUrl('');
+    } catch (err) {
+      setFillFromLinkError(err instanceof Error ? err.message : 'Failed to fetch');
+    } finally {
+      setFillFromLinkLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -305,6 +357,63 @@ export function EngineForm({ engine, mode }: EngineFormProps) {
             {mode === 'create' ? 'Engine created successfully!' : 'Engine updated successfully!'}
           </p>
         </div>
+      )}
+
+      {/* Fill from product link (create only) */}
+      {mode === 'create' && (
+        <Card className="border-orange-500/20 bg-orange-500/5">
+          <CardHeader>
+            <h2 className="text-lg font-semibold text-cream-100 flex items-center gap-2">
+              <Link2 className="w-5 h-5 text-orange-400" />
+              Fill from product link
+            </h2>
+            <p className="text-sm text-cream-400 mt-1">
+              Paste an Amazon or Harbor Freight product page URL to pre-fill name, brand, image, price, and supplier link.
+            </p>
+            <p className="text-xs text-cream-500 mt-1">
+              Tip: For Amazon links, set Amazon PA API credentials (AMAZON_PAAPI_ACCESS_KEY, etc.) for fastest, most reliable results.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Input
+                type="url"
+                placeholder="https://www.harborfreight.com/... or https://www.amazon.com/dp/..."
+                value={fillFromLinkUrl}
+                onChange={(e) => {
+                  setFillFromLinkUrl(e.target.value);
+                  setFillFromLinkError(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleFillFromLink(e as unknown as React.FormEvent);
+                  }
+                }}
+                className="flex-1"
+                disabled={fillFromLinkLoading}
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                loading={fillFromLinkLoading}
+                disabled={!fillFromLinkUrl.trim()}
+                className="shrink-0"
+                onClick={(e) => handleFillFromLink(e as unknown as React.FormEvent)}
+              >
+                Fetch & fill
+              </Button>
+            </div>
+            {fillFromLinkError && (
+              <div className="mt-2 space-y-1">
+                <p className="text-sm text-[var(--error)]">{fillFromLinkError}</p>
+                {fillFromLinkError.toLowerCase().includes('pa api') && (
+                  <p className="text-xs text-cream-500">Add AMAZON_PAAPI_ACCESS_KEY, AMAZON_PAAPI_SECRET_KEY, and AMAZON_PAAPI_PARTNER_TAG to your env for reliable auto-fill.</p>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* Basic Info */}

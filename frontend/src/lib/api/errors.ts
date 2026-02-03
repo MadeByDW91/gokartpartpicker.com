@@ -1,9 +1,11 @@
 /**
  * User-friendly error message utilities
- * Translates technical errors into messages users can understand
+ * Translates technical errors into messages users can understand.
+ * Logging uses secure-logging so we never leak PII or stack traces to logs.
  */
 
 import type { PostgrestError } from '@supabase/supabase-js';
+import { secureError } from '@/lib/secure-logging';
 
 /**
  * Map Supabase error codes to user-friendly messages
@@ -107,17 +109,16 @@ export function handleErrorWithContext<T>(
   context: string,
   resourceName?: string
 ): { success: false; error: string; fieldErrors?: Record<string, string[]> } {
-  // Log full error details for debugging
-  console.error(`[${context}] Error:`, {
-    error: err,
+  // Log with PII/stack redaction so we never leak to Vercel logs
+  secureError(`[${context}] Error`, {
+    message: err instanceof Error ? err.message : String(err),
     context,
     resourceName,
     timestamp: new Date().toISOString(),
   });
-  
-  // Get user-friendly message
+
   const userMessage = getUserFriendlyError(err, resourceName);
-  
+
   return {
     success: false,
     error: userMessage,

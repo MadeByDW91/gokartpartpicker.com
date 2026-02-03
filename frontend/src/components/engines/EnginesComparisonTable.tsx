@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { formatPrice, cn } from '@/lib/utils';
+import { formatPrice, cn, getMotorBrandDisplay } from '@/lib/utils';
 import type { Engine, ElectricMotor } from '@/types/database';
 
 interface EnginesComparisonTableProps {
@@ -214,7 +214,7 @@ export function EnginesComparisonTable({
                           {item.name}
                         </div>
                         <div className="text-xs text-cream-400 mt-0.5">
-                          {item.brand}
+                          {getMotorBrandDisplay(item.brand)}
                         </div>
                       </div>
                     </div>

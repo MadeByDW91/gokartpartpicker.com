@@ -33,6 +33,7 @@ const GAS_SYSTEM_ITEMS: {
   { id: 'chain', label: 'Chain', category: 'chain', required: true, description: 'Drive chain — size must match sprockets' },
   { id: 'sprocket', label: 'Sprocket', category: 'sprocket', required: true, description: 'Axle & engine sprockets — match chain' },
   { id: 'throttle', label: 'Throttle', category: 'throttle', required: true, description: 'Throttle cable & pedal' },
+  { id: 'pedals', label: 'Pedals', category: 'pedals', required: false, description: 'Gas & brake pedals (often in pairs)' },
   { id: 'fuel_system', label: 'Fuel system', category: 'fuel_system', required: true, description: 'Tank, lines, filter' },
   { id: 'air_filter', label: 'Air filter', category: 'air_filter', required: false, description: 'Protect engine — many kits include' },
   { id: 'exhaust', label: 'Exhaust', category: 'exhaust', required: false, description: 'Header or stock muffler' },

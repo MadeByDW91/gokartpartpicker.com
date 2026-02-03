@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { Package, ExternalLink, Plus, DollarSign, Tag } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { formatPrice, getCategoryLabel, cn } from '@/lib/utils';
+import { formatPrice, getCategoryLabel, getPartBrandDisplay, cn } from '@/lib/utils';
 import type { Part } from '@/types/database';
 
 interface PartCardProps {
@@ -184,7 +184,7 @@ export function PartCard({
           >
             {part.name}
           </Link>
-          {part.brand && <p className="text-xs text-cream-500 font-medium">{part.brand}</p>}
+          <p className="text-xs text-cream-500 font-medium">{getPartBrandDisplay(part.brand)}</p>
         </div>
 
         {/* Spec chips – same style as engine card (3 pills) */}
@@ -199,7 +199,7 @@ export function PartCard({
           </div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/15 transition-colors">
             <Tag className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-            <span className="text-xs font-bold text-cream-100 truncate max-w-[80px]" title={part.brand || undefined}>{part.brand || '—'}</span>
+            <span className="text-xs font-bold text-cream-100 truncate max-w-[80px]" title={getPartBrandDisplay(part.brand)}>{getPartBrandDisplay(part.brand)}</span>
           </div>
         </div>
 

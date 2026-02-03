@@ -8,7 +8,7 @@ import { Zap, Battery, Gauge, ExternalLink, Plus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { formatPrice, cn } from '@/lib/utils';
+import { formatPrice, cn, getMotorBrandDisplay } from '@/lib/utils';
 import type { ElectricMotor } from '@/types/database';
 
 interface MotorCardProps {
@@ -106,9 +106,7 @@ export function MotorCard({
           >
             {motor.name}
           </Link>
-          {motor.brand && (
-            <p className="text-xs text-cream-500 font-medium">{motor.brand}</p>
-          )}
+          <p className="text-xs text-cream-500 font-medium">{getMotorBrandDisplay(motor.brand)}</p>
         </div>
         
         {/* Specs - Clean, Consistent Pills */}

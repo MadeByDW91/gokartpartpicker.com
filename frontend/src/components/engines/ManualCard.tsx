@@ -1,29 +1,31 @@
 'use client';
 
 import { useState } from 'react';
-import { FileText, Download, Eye, Printer } from 'lucide-react';
+import Link from 'next/link';
+import { toast } from 'sonner';
+import { FileText, Download, Eye, Printer, Wrench } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { DropdownMenu } from '@/components/ui/DropdownMenu';
+import { getAbsoluteManualUrl } from '@/lib/manual-url';
 import { ManualViewer } from './ManualViewer';
 
 interface ManualCardProps {
   manualUrl: string;
   engineName: string;
   type?: 'manual' | 'schematic';
+  /** When set, show a link to the printable torque specs page */
+  torqueSpecsHref?: string;
 }
 
-export function ManualCard({ manualUrl, engineName, type = 'manual' }: ManualCardProps) {
+export function ManualCard({ manualUrl, engineName, type = 'manual', torqueSpecsHref }: ManualCardProps) {
   const [showViewer, setShowViewer] = useState(false);
 
-  const title = 'Engine Manual Available';
+  const title = 'Engine Manual';
   const description = 'Access the complete owner\'s manual with detailed specifications, maintenance instructions, and technical diagrams.';
   const filename = manualUrl.split('/').pop() || 'manual.pdf';
-  
-  // Ensure URL is absolute for download link
-  const getAbsoluteUrl = (url: string) => {
-    if (typeof window === 'undefined') return url;
-    return url.startsWith('http') ? url : `${window.location.origin}${url.startsWith('/') ? url : `/${url}`}`;
-  };
+
+  // Resolve to absolute URL; /manuals/* paths become Supabase storage URLs so they don't 404
+  const getAbsoluteUrl = getAbsoluteManualUrl;
 
   const handleView = () => {
     setShowViewer(true);
@@ -51,11 +53,11 @@ export function ManualCard({ manualUrl, engineName, type = 'manual' }: ManualCar
   };
 
   const handlePrint = () => {
-    const printWindow = window.open(getAbsoluteUrl(manualUrl), '_blank');
-    if (printWindow) {
-      printWindow.onload = () => {
-        printWindow.print();
-      };
+    // Open manual in new tab; user can use browser Print (Ctrl/Cmd+P) there. Programmatic print() is unreliable for PDFs.
+    const url = getAbsoluteUrl(manualUrl);
+    const opened = window.open(url, '_blank', 'noopener,noreferrer');
+    if (opened) {
+      toast.info('Opened in new tab — use Print (Ctrl/Cmd+P) there to print.');
     }
   };
 
@@ -90,6 +92,15 @@ export function ManualCard({ manualUrl, engineName, type = 'manual' }: ManualCar
               <p className="text-sm text-cream-400/90 leading-relaxed">
                 {description}
               </p>
+              {torqueSpecsHref && (
+                <Link
+                  href={torqueSpecsHref}
+                  className="inline-flex items-center gap-1.5 mt-2 text-xs text-orange-400 hover:text-orange-300 transition-colors"
+                >
+                  <Wrench className="w-3.5 h-3.5" />
+                  Printable torque specs
+                </Link>
+              )}
             </div>
           </div>
           <div className="mt-auto">

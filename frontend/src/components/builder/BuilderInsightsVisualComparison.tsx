@@ -1,231 +1,178 @@
 'use client';
 
 import { useMemo } from 'react';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts';
 import { formatPrice } from '@/lib/utils';
 import type { Engine, ElectricMotor } from '@/types/database';
-
-const GAS_COLOR = '#f97316';
-const ELECTRIC_COLOR = '#3b82f6';
-const HP_COLOR = '#eab308';
-const COST_COLOR = '#22c55e';
+import { TrendingUp, Zap } from 'lucide-react';
 
 interface BuilderInsightsVisualComparisonProps {
   engines: Engine[];
   motors: ElectricMotor[];
+  /** When set, show how this engine/motor compares and suggest alternatives */
+  selectedItem?: Engine | ElectricMotor | null;
   maxItems?: number;
-}
-
-interface HpCostItem {
-  name: string;
-  shortName: string;
-  hp: number;
-  cost: number;
-  powerSource: 'Gas' | 'EV';
-}
-
-interface EvGasItem {
-  name: string;
-  gas: number;
-  ev: number;
 }
 
 export function BuilderInsightsVisualComparison({
   engines = [],
   motors = [],
-  maxItems = 10,
+  selectedItem,
 }: BuilderInsightsVisualComparisonProps) {
-  const hpCostData = useMemo<HpCostItem[]>(() => {
-    const engineItems: HpCostItem[] = (Array.isArray(engines) ? engines : []).map((e) => ({
-      name: e.name,
-      shortName: e.name.length > 14 ? `${e.name.slice(0, 11)}…` : e.name,
+  const combined = useMemo(() => {
+    const engineItems = (Array.isArray(engines) ? engines : []).map((e) => ({
+      ...e,
+      powerSource: 'gas' as const,
       hp: e.horsepower ?? 0,
       cost: e.price ?? 0,
-      powerSource: 'Gas' as const,
     }));
-    const motorItems: HpCostItem[] = (Array.isArray(motors) ? motors : []).map((m) => ({
-      name: m.name,
-      shortName: m.name.length > 14 ? `${m.name.slice(0, 11)}…` : m.name,
+    const motorItems = (Array.isArray(motors) ? motors : []).map((m) => ({
+      ...m,
+      powerSource: 'electric' as const,
       hp: m.horsepower ?? 0,
       cost: m.price ?? 0,
-      powerSource: 'EV' as const,
     }));
-    return [...engineItems, ...motorItems]
-      .sort((a, b) => b.hp - a.hp)
-      .slice(0, maxItems);
-  }, [engines, motors, maxItems]);
-
-  const evGasData = useMemo<EvGasItem[]>(() => {
-    const gasCount = (Array.isArray(engines) ? engines : []).length;
-    const evCount = (Array.isArray(motors) ? motors : []).length;
-    const gasAvgHp =
-      engines.length > 0
-        ? engines.reduce((s, e) => s + (e.horsepower ?? 0), 0) / engines.length
-        : 0;
-    const evAvgHp =
-      motors.length > 0
-        ? motors.reduce((s, m) => s + (m.horsepower ?? 0), 0) / motors.length
-        : 0;
-    return [
-      { name: 'Count', gas: gasCount, ev: evCount },
-      { name: 'Avg HP', gas: Math.round(gasAvgHp * 10) / 10, ev: Math.round(evAvgHp * 10) / 10 },
-    ];
+    return [...engineItems, ...motorItems].sort((a, b) => b.hp - a.hp);
   }, [engines, motors]);
 
-  const hasHpCost = hpCostData.length > 0;
-  const hasEvGas = (engines?.length ?? 0) > 0 || (motors?.length ?? 0) > 0;
+  const gas = combined.filter((x) => x.powerSource === 'gas');
+  const ev = combined.filter((x) => x.powerSource === 'electric');
 
-  if (!hasHpCost && !hasEvGas) {
+  const catalogSummary = useMemo(() => {
+    if (combined.length === 0) return null;
+    const withPrice = combined.filter((x) => x.cost > 0);
+    const minPrice = withPrice.length ? Math.min(...withPrice.map((x) => x.cost)) : 0;
+    const maxPrice = withPrice.length ? Math.max(...withPrice.map((x) => x.cost)) : 0;
+    const maxHp = Math.max(...combined.map((x) => x.hp), 0);
+    const bestValue = [...combined]
+      .filter((x) => x.cost > 0 && x.hp > 0)
+      .sort((a, b) => (a.cost / a.hp) - (b.cost / b.hp))[0];
+    return { minPrice, maxPrice, maxHp, bestValue, gasCount: gas.length, evCount: ev.length };
+  }, [combined, gas.length, ev.length]);
+
+  const selectedAnalysis = useMemo(() => {
+    if (!selectedItem || combined.length === 0) return null;
+    const isEngine = 'displacement_cc' in selectedItem;
+    const hp = isEngine ? (selectedItem as Engine).horsepower ?? 0 : (selectedItem as ElectricMotor).horsepower ?? 0;
+    const cost = selectedItem.price ?? 0;
+    const sameType = combined
+      .filter((x) => (isEngine ? x.powerSource === 'gas' : x.powerSource === 'electric'))
+      .sort((a, b) => b.hp - a.hp);
+    const rankByHp = sameType.findIndex((x) => x.id === selectedItem.id) + 1;
+    const hpRank = rankByHp > 0 ? `${rankByHp} of ${sameType.length} by HP` : null;
+    const cheaperWithSimilarHp = sameType
+      .filter((x) => x.id !== selectedItem.id && x.cost < cost && x.hp >= hp * 0.9)
+      .sort((a, b) => a.cost - b.cost)[0];
+    const moreHpSimilarCost = sameType
+      .filter((x) => x.id !== selectedItem.id && x.hp > hp && x.cost <= cost * 1.2)
+      .sort((a, b) => b.hp - a.hp)[0];
+    const costPerHp = cost > 0 && hp > 0 ? cost / hp : null;
+    const avgCostPerHp = sameType.filter((x) => x.cost > 0 && x.hp > 0).length
+      ? sameType.reduce((s, x) => s + x.cost / x.hp, 0) / sameType.filter((x) => x.cost > 0 && x.hp > 0).length
+      : null;
+    const valueVerdict = costPerHp != null && avgCostPerHp != null
+      ? costPerHp < avgCostPerHp * 0.95
+        ? 'Good value (below average $/HP)'
+        : costPerHp > avgCostPerHp * 1.05
+          ? 'Premium (above average $/HP)'
+          : 'Average value'
+      : null;
+    return {
+      hpRank,
+      valueVerdict,
+      cheaperWithSimilarHp,
+      moreHpSimilarCost,
+    };
+  }, [selectedItem, combined]);
+
+  if (combined.length === 0) {
     return (
       <div className="py-8 text-center">
-        <p className="text-cream-400">No engine or motor data available for comparison.</p>
+        <p className="text-cream-400 text-sm">No engine or motor data available.</p>
       </div>
     );
   }
 
+  const summary = catalogSummary!;
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-      {/* HP vs Cost bar chart */}
-      <div className="bg-olive-800/20 rounded-lg border border-olive-700/50 p-4">
-        <h3 className="text-sm font-semibold text-cream-100 mb-3">HP vs Cost</h3>
-        {hasHpCost ? (
-          <div className="h-[280px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={hpCostData}
-                margin={{ top: 8, right: 8, left: 0, bottom: 4 }}
-                barGap={4}
-                barCategoryGap="20%"
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(212,212,212,0.1)" />
-                <XAxis
-                  dataKey="shortName"
-                  tick={{ fill: '#d4d4d4', fontSize: 10 }}
-                  tickLine={false}
-                  axisLine={{ stroke: 'rgba(212,212,212,0.2)' }}
-                />
-                <YAxis
-                  yAxisId="left"
-                  tick={{ fill: '#d4d4d4', fontSize: 10 }}
-                  tickLine={false}
-                  axisLine={{ stroke: 'rgba(212,212,212,0.2)' }}
-                  label={{ value: 'HP', angle: -90, position: 'insideLeft', fill: '#d4d4d4', fontSize: 10 }}
-                />
-                <YAxis
-                  yAxisId="right"
-                  orientation="right"
-                  tick={{ fill: '#d4d4d4', fontSize: 10 }}
-                  tickLine={false}
-                  axisLine={{ stroke: 'rgba(212,212,212,0.2)' }}
-                  tickFormatter={(v) => `$${v}`}
-                  label={{ value: 'Cost', angle: 90, position: 'insideRight', fill: '#d4d4d4', fontSize: 10 }}
-                />
-                <Tooltip
-                  content={({ active, payload }) => {
-                    if (!active || !payload?.length) return null;
-                    const d = payload[0].payload as HpCostItem;
-                    return (
-                      <div className="bg-olive-800 border border-olive-600 rounded-lg px-3 py-2 shadow-lg text-sm">
-                        <p className="font-semibold text-cream-100">{d.name}</p>
-                        <p className="text-cream-400">
-                          HP: <span className="text-cream-100">{d.hp}</span> · Cost:{' '}
-                          <span className="text-cream-100">{formatPrice(d.cost)}</span>
-                        </p>
-                      </div>
-                    );
-                  }}
-                />
-                <Legend
-                  wrapperStyle={{ fontSize: 11 }}
-                  formatter={(value) => <span className="text-cream-300">{value}</span>}
-                />
-                <Bar
-                  yAxisId="left"
-                  dataKey="hp"
-                  name="HP"
-                  fill={HP_COLOR}
-                  radius={[2, 2, 0, 0]}
-                  maxBarSize={28}
-                />
-                <Bar
-                  yAxisId="right"
-                  dataKey="cost"
-                  name="Cost ($)"
-                  fill={COST_COLOR}
-                  radius={[2, 2, 0, 0]}
-                  maxBarSize={28}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        ) : (
-          <p className="text-sm text-cream-500 py-8 text-center">No data</p>
-        )}
+    <div className="space-y-6">
+      {/* Catalog summary — always useful */}
+      <div className="rounded-lg border border-olive-700/50 bg-olive-800/20 p-4">
+        <h3 className="text-sm font-semibold text-cream-100 mb-3 flex items-center gap-2">
+          <Zap className="w-4 h-4 text-orange-400" />
+          Catalog at a glance
+        </h3>
+        <ul className="space-y-2 text-sm">
+          {summary.gasCount > 0 && (
+            <li className="text-cream-300">
+              <span className="font-medium text-cream-100">{summary.gasCount}</span> gas engine{summary.gasCount !== 1 ? 's' : ''}
+              {summary.minPrice > 0 || summary.maxPrice > 0 ? (
+                <span className="text-cream-400"> · {formatPrice(summary.minPrice)} – {formatPrice(summary.maxPrice)}</span>
+              ) : null}
+            </li>
+          )}
+          {summary.evCount > 0 && (
+            <li className="text-cream-300">
+              <span className="font-medium text-cream-100">{summary.evCount}</span> electric motor{summary.evCount !== 1 ? 's' : ''}
+            </li>
+          )}
+          {summary.maxHp > 0 && (
+            <li className="text-cream-300">
+              Up to <span className="font-medium text-cream-100">{summary.maxHp} HP</span> in this catalog
+            </li>
+          )}
+          {summary.bestValue && (
+            <li className="text-cream-300 pt-1 border-t border-olive-700/50 mt-2">
+              <span className="text-cream-400">Best value (HP per dollar):</span>{' '}
+              <span className="font-medium text-cream-100">{summary.bestValue.name}</span>
+            </li>
+          )}
+        </ul>
       </div>
 
-      {/* EV vs Gas bar chart */}
-      <div className="bg-olive-800/20 rounded-lg border border-olive-700/50 p-4">
-        <h3 className="text-sm font-semibold text-cream-100 mb-3">EV vs Gas</h3>
-        {hasEvGas ? (
-          <div className="h-[280px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={evGasData}
-                layout="vertical"
-                margin={{ top: 16, right: 24, left: 48, bottom: 8 }}
-                barGap={8}
-                barCategoryGap="24%"
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(212,212,212,0.1)" horizontal={false} />
-                <XAxis
-                  type="number"
-                  tick={{ fill: '#d4d4d4', fontSize: 10 }}
-                  tickLine={false}
-                  axisLine={{ stroke: 'rgba(212,212,212,0.2)' }}
-                />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  tick={{ fill: '#d4d4d4', fontSize: 11 }}
-                  tickLine={false}
-                  axisLine={{ stroke: 'rgba(212,212,212,0.2)' }}
-                  width={44}
-                />
-                <Tooltip
-                  content={({ active, payload }) => {
-                    if (!active || !payload?.length) return null;
-                    const row = payload[0].payload as EvGasItem;
-                    return (
-                      <div className="bg-olive-800 border border-olive-600 rounded-lg px-3 py-2 shadow-lg text-sm">
-                        <p className="font-semibold text-cream-100">{row.name}</p>
-                        <p className="text-orange-400">Gas: {row.gas}</p>
-                        <p className="text-blue-400">EV: {row.ev}</p>
-                      </div>
-                    );
-                  }}
-                />
-                <Legend
-                  wrapperStyle={{ fontSize: 11 }}
-                  formatter={(value) => <span className="text-cream-300">{value}</span>}
-                />
-                <Bar dataKey="gas" name="Gas" fill={GAS_COLOR} radius={[0, 2, 2, 0]} maxBarSize={32} />
-                <Bar dataKey="ev" name="EV" fill={ELECTRIC_COLOR} radius={[0, 2, 2, 0]} maxBarSize={32} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        ) : (
-          <p className="text-sm text-cream-500 py-8 text-center">No data</p>
-        )}
-      </div>
+      {/* When something is selected: how it compares + alternatives */}
+      {selectedItem && selectedAnalysis && (
+        <div className="rounded-lg border border-olive-700/50 bg-olive-800/20 p-4">
+          <h3 className="text-sm font-semibold text-cream-100 mb-3 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-orange-400" />
+            How {selectedItem.name} compares
+          </h3>
+          <ul className="space-y-2 text-sm">
+            {selectedAnalysis.hpRank && (
+              <li className="text-cream-300">
+                <span className="text-cream-400">HP ranking:</span>{' '}
+                <span className="text-cream-100">{selectedAnalysis.hpRank}</span>
+              </li>
+            )}
+            {selectedAnalysis.valueVerdict && (
+              <li className="text-cream-300">
+                <span className="text-cream-400">Value:</span>{' '}
+                <span className="text-cream-100">{selectedAnalysis.valueVerdict}</span>
+              </li>
+            )}
+            {selectedAnalysis.cheaperWithSimilarHp && (
+              <li className="text-cream-300">
+                <span className="text-cream-400">Similar HP, lower cost:</span>{' '}
+                <span className="font-medium text-cream-100">{selectedAnalysis.cheaperWithSimilarHp.name}</span>
+                <span className="text-cream-400"> ({formatPrice(selectedAnalysis.cheaperWithSimilarHp.cost)})</span>
+              </li>
+            )}
+            {selectedAnalysis.moreHpSimilarCost && (
+              <li className="text-cream-300">
+                <span className="text-cream-400">More HP, similar price:</span>{' '}
+                <span className="font-medium text-cream-100">{selectedAnalysis.moreHpSimilarCost.name}</span>
+                <span className="text-cream-400"> ({selectedAnalysis.moreHpSimilarCost.hp} HP)</span>
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
+
+      {!selectedItem && (
+        <p className="text-xs text-cream-500 text-center py-2">
+          Select an engine or motor above to see how it compares and get alternatives.
+        </p>
+      )}
     </div>
   );
 }

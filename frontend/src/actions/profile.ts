@@ -2,9 +2,34 @@
 
 /**
  * Server actions for user profile management
+ * Use profile_display (no email) for public display; profiles (full) only for self or admin.
  */
 
 import { createClient } from '@/lib/supabase/server';
+
+/** Public display slice: id, username, avatar_url only (no email). Use for forums, builds, templates. */
+export type ProfileDisplay = { id: string; username: string | null; avatar_url: string | null };
+
+/**
+ * Fetch profile_display for many user IDs. Use after restricting profiles RLS (owner/admin only).
+ * Returns a map id -> ProfileDisplay for merging into list results.
+ */
+export async function getProfileDisplayMap(
+  userIds: string[]
+): Promise<Record<string, ProfileDisplay>> {
+  if (userIds.length === 0) return {};
+  const uniq = [...new Set(userIds)];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('profile_display')
+    .select('id, username, avatar_url')
+    .in('id', uniq);
+  const map: Record<string, ProfileDisplay> = {};
+  for (const row of data ?? []) {
+    map[row.id] = { id: row.id, username: row.username ?? null, avatar_url: row.avatar_url ?? null };
+  }
+  return map;
+}
 import { 
   type ActionResult, 
   success, 

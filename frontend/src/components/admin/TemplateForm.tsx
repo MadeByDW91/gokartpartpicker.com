@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import { createTemplate, updateTemplate } from '@/actions/templates';
 import { getAdminEngines, getAdminParts } from '@/actions/admin';
 import { PART_CATEGORIES } from '@/types/database';
-import { getCategoryLabel } from '@/lib/utils';
+import { getCategoryLabel, getPartBrandDisplay } from '@/lib/utils';
 import { TEMPLATE_GOALS } from '@/types/templates';
 import type { BuildTemplate, TemplateFormInput } from '@/types/templates';
 import type { Engine, Part } from '@/types/database';
@@ -258,7 +258,7 @@ export function TemplateForm({ template, mode }: TemplateFormProps) {
                     .filter((p) => p.is_active)
                     .map((part) => (
                       <option key={part.id} value={part.id}>
-                        {part.name} {part.brand ? `(${part.brand})` : ''}
+                        {part.name} ({getPartBrandDisplay(part.brand)})
                       </option>
                     ))}
                 </Select>

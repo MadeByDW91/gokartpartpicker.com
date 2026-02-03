@@ -450,12 +450,12 @@ export default function AdminEnginesPage() {
               Export
             </Button>
           </Link>
-          <Link href="/admin/engines/new">
+          <Link href="/admin/add?type=gas">
             <Button size="sm" icon={<Fuel className="w-4 h-4" />}>
               Add Gas Engine
             </Button>
           </Link>
-          <Link href="/admin/motors/new">
+          <Link href="/admin/add?type=ev">
             <Button size="sm" icon={<Zap className="w-4 h-4" />}>
               Add Electric Motor
             </Button>

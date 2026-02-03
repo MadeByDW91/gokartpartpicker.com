@@ -50,7 +50,7 @@ export function useRecommendations(
     // Recommendation 1: Same brand parts (popular combinations)
     if (selectedEngine) {
       const brandParts = candidateParts.filter(
-        (p) => p.brand.toLowerCase() === selectedEngine.brand.toLowerCase()
+        (p) => (p.brand ?? '').toLowerCase() === selectedEngine.brand.toLowerCase()
       );
       brandParts.forEach((part) => {
         recommendations.push({
@@ -66,7 +66,7 @@ export function useRecommendations(
     const categoryGroups: Record<string, PartCategory[]> = {
       drivetrain: ['clutch', 'torque_converter', 'chain', 'sprocket'],
       engine_parts: ['carburetor', 'exhaust', 'air_filter', 'camshaft', 'valve_spring'],
-      chassis: ['axle', 'wheel', 'tire', 'brake', 'throttle'],
+      chassis: ['axle', 'wheel', 'tire', 'brake', 'throttle', 'pedals'],
     };
 
     Object.entries(categoryGroups).forEach(([group, categories]) => {
