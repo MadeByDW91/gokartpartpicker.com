@@ -108,6 +108,7 @@ export function useRecommendations(
 
     // Recommendation 4: Price-conscious alternatives (if user has expensive parts)
     const expensiveParts = Array.from(selectedParts.values())
+      .flat()
       .filter((p) => (p.price || 0) > 100)
       .sort((a, b) => (b.price || 0) - (a.price || 0));
 
