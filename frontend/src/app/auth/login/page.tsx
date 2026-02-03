@@ -2,6 +2,7 @@
 
 import { useState, useRef, Suspense, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useAdmin } from '@/hooks/use-admin';
@@ -9,7 +10,7 @@ import { secureSignIn, getIsAdmin } from '@/actions/auth-secure';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
-import { Wrench, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
   HCaptchaWidget,
@@ -139,10 +140,17 @@ function LoginPageContent() {
   return (
     <div className="min-h-screen bg-olive-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
+        {/* Logo - canonical brand iconmark */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-4">
-            <Wrench className="w-10 h-10 text-orange-400" />
+            <div className="relative w-10 h-10 rounded-lg border-2 border-orange-500 flex-shrink-0 overflow-hidden">
+              <Image
+                src="/brand/brand-iconmark-v1.svg"
+                alt=""
+                fill
+                className="object-contain p-1"
+              />
+            </div>
             <div>
               <span className="text-display text-2xl text-cream-100">GoKart</span>
               <span className="text-display text-2xl text-orange-500">PartPicker</span>

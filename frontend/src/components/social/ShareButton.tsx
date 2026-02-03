@@ -15,6 +15,7 @@ import {
   X,
   ChevronRight,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import {
   shareContent,
   shareToTwitter,
@@ -88,7 +89,8 @@ export function ShareButton({ options, variant = 'default', className }: ShareBu
           size="sm"
           onClick={() => setShowMenu(!showMenu)}
           icon={<Share2 className="w-4 h-4" />}
-          className={className}
+          className={cn('min-h-[44px] min-w-[44px] touch-manipulation', className)}
+          aria-label="Share"
         />
         {showMenu && <ShareMenu options={options} onClose={() => setShowMenu(false)} onShare={handleShare} onCopy={handleCopyLink} copied={copied} />}
       </div>

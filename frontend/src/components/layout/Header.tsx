@@ -296,10 +296,10 @@ export function Header() {
           
           {/* Mobile Actions - Minimal: Only essential buttons */}
           <div className="flex md:hidden items-center gap-0.5 flex-shrink-0 ml-auto min-w-0 max-w-none">
-            {/* Search Icon Button - Mobile (compact) */}
+            {/* Search Icon Button - Mobile (44px touch target) */}
             <button
               onClick={() => setSearchModalOpen(true)}
-              className="flex items-center justify-center w-9 h-9 text-cream-200 hover:text-orange-400 rounded-lg hover:bg-olive-800 active:bg-olive-700 transition-colors touch-manipulation flex-shrink-0"
+              className="flex items-center justify-center min-w-[44px] min-h-[44px] text-cream-200 hover:text-orange-400 rounded-lg hover:bg-olive-800 active:bg-olive-700 transition-colors touch-manipulation flex-shrink-0"
               aria-label="Search"
             >
               <Search className="w-4 h-4" />
@@ -318,7 +318,7 @@ export function Header() {
                     calculateMenuPosition();
                     setUserMenuOpen((prev) => !prev);
                   }}
-                  className="flex items-center justify-center w-9 h-9 rounded-lg bg-orange-500 text-cream-100 font-bold text-xs hover:bg-orange-400 active:bg-orange-600 transition-colors touch-manipulation cursor-pointer"
+                  className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg bg-orange-500 text-cream-100 font-bold text-xs hover:bg-orange-400 active:bg-orange-600 transition-colors touch-manipulation cursor-pointer"
                   aria-label="User menu"
                   aria-expanded={userMenuOpen}
                   aria-haspopup="true"
@@ -380,10 +380,10 @@ export function Header() {
             )}
           </div>
           
-          {/* Mobile Menu Button - Compact */}
+          {/* Mobile Menu Button - 44px touch target */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden flex items-center justify-center w-9 h-9 text-cream-200 hover:text-orange-400 rounded-lg hover:bg-olive-800 active:bg-olive-700 transition-colors touch-manipulation flex-shrink-0"
+            className="lg:hidden flex items-center justify-center min-w-[44px] min-h-[44px] text-cream-200 hover:text-orange-400 rounded-lg hover:bg-olive-800 active:bg-olive-700 transition-colors touch-manipulation flex-shrink-0"
             aria-label="Toggle menu"
             aria-expanded={mobileMenuOpen}
           >

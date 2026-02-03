@@ -356,7 +356,7 @@ export default function EnginesPage() {
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-cream-400 hover:text-cream-100 hover:bg-olive-700/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-cream-400 hover:text-cream-100 hover:bg-olive-700/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800 touch-manipulation"
                   aria-label="Clear search"
                 >
                   <X className="w-4 h-4" aria-hidden />
@@ -373,7 +373,7 @@ export default function EnginesPage() {
                 type="button"
                 onClick={() => handlePowerSourceChange('all')}
                 className={cn(
-                  'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800',
+                  'inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800 touch-manipulation',
                   powerSourceView === 'all'
                     ? 'bg-cream-500/15 text-cream-100 border border-cream-500/30 focus-visible:ring-cream-400'
                     : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700/50 focus-visible:ring-orange-500'
@@ -389,7 +389,7 @@ export default function EnginesPage() {
                 type="button"
                 onClick={() => handlePowerSourceChange('gas')}
                 className={cn(
-                  'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800',
+                  'inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800 touch-manipulation',
                   powerSourceView === 'gas'
                     ? 'bg-orange-500/25 text-orange-400 border border-orange-500/50 focus-visible:ring-orange-500'
                     : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700/50 focus-visible:ring-orange-500'
@@ -405,7 +405,7 @@ export default function EnginesPage() {
                 type="button"
                 onClick={() => handlePowerSourceChange('electric')}
                 className={cn(
-                  'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800',
+                  'inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800 touch-manipulation',
                   powerSourceView === 'electric'
                     ? 'bg-blue-500/25 text-blue-400 border border-blue-500/50 focus-visible:ring-blue-500'
                     : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700/50 focus-visible:ring-blue-500'
@@ -424,7 +424,7 @@ export default function EnginesPage() {
               type="button"
               onClick={() => setShowFiltersPanel((p) => !p)}
               className={cn(
-                'inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all border focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800',
+                'inline-flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-xl text-sm font-medium transition-all border focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800 touch-manipulation',
                 hasActiveFilters
                   ? 'bg-olive-700/60 border-cream-200 text-cream-100'
                   : 'bg-olive-800/60 border-olive-700/50 text-cream-400 hover:text-cream-100 hover:bg-olive-700/50'
@@ -538,7 +538,7 @@ export default function EnginesPage() {
                 type="button"
                 onClick={() => setViewMode('grid')}
                 className={cn(
-                  'px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800',
+                  'px-3 py-2 min-h-[44px] min-w-[44px] rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800 touch-manipulation flex items-center justify-center',
                   viewMode === 'grid'
                     ? 'bg-orange-500/20 text-orange-400'
                     : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700/50'
@@ -551,7 +551,7 @@ export default function EnginesPage() {
                 type="button"
                 onClick={() => setViewMode('list')}
                 className={cn(
-                  'px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800',
+                  'px-3 py-2 min-h-[44px] min-w-[44px] rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-800 touch-manipulation flex items-center justify-center',
                   viewMode === 'list'
                     ? 'bg-orange-500/20 text-orange-400'
                     : 'text-cream-400 hover:text-cream-100 hover:bg-olive-700/50'

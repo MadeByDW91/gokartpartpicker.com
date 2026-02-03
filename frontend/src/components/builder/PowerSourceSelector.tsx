@@ -83,7 +83,7 @@ export function PowerSourceSelector({
   };
 
   const tabBase =
-    'flex-1 min-w-0 flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-6 py-3.5 sm:py-4 rounded-t-xl border-2 border-b-0 transition-all duration-200 text-left sm:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-900';
+    'flex-1 min-w-0 flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-6 py-3.5 sm:py-4 min-h-[44px] rounded-t-xl border-2 border-b-0 transition-all duration-200 text-left sm:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-olive-900 touch-manipulation';
   const tabAll =
     activeViewType === 'all'
       ? 'bg-gradient-to-b from-purple-500/20 to-purple-500/10 border-purple-500/60 text-purple-400'
